@@ -1,5 +1,7 @@
 package com.jajaja.domain.review.entity;
 
+import com.jajaja.domain.product.entity.Product;
+import com.jajaja.domain.product.entity.ProductOption;
 import com.jajaja.domain.user.entity.User;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
@@ -38,4 +40,12 @@ public class Review extends BaseEntity {
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewLike> reviewLikes = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_option_id")
+    private ProductOption productOption;
 }

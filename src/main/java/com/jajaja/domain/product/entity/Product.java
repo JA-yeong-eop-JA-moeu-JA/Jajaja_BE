@@ -1,8 +1,7 @@
 package com.jajaja.domain.product.entity;
 
-import com.jajaja.domain.product.entity.category.Category;
-import com.jajaja.domain.product.entity.category.CategoryGroup;
-import com.jajaja.domain.product.entity.category.SubCategory;
+import com.jajaja.domain.product.entity.category.ProductSubCategory;
+import com.jajaja.domain.team.entity.Team;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,15 +41,9 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductOption> productOptions = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_group_id")
-    private CategoryGroup categoryGroup;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductSubCategory> productSubCategories = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subcategory_id")
-    private SubCategory subcategory;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Team> teams = new ArrayList<>();
 }

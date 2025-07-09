@@ -47,7 +47,7 @@ public class Coupon extends BaseEntity {
     @Column
     private LocalDateTime expiresAt;
 
-    @OneToMany(mappedBy = "coupon", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "coupon")
     private List<Order> orders = new ArrayList<>();
 
     @OneToMany(mappedBy = "coupon", cascade = CascadeType.ALL, orphanRemoval = true)
