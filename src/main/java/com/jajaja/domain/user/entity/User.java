@@ -1,0 +1,70 @@
+package com.jajaja.domain.user.entity;
+
+import com.jajaja.domain.notification.entity.Notification;
+import com.jajaja.domain.point.entity.Point;
+import com.jajaja.domain.review.entity.Review;
+import com.jajaja.domain.review.entity.ReviewLike;
+import com.jajaja.domain.team.entity.Team;
+import com.jajaja.domain.team.entity.TeamMember;
+import com.jajaja.domain.user.entity.enums.OauthType;
+import com.jajaja.global.common.domain.BaseEntity;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class User extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private OauthType oauthType;
+
+    @Column(nullable = false)
+    private String oauthId;
+
+    @Column(nullable = false, length = 10)
+    private String name;
+
+    @Column(name = "profile_url", length = 512)
+    private String profileUrl;
+
+    @Column(length = 13)
+    private String phone;
+
+    @Column(nullable = false)
+    private String email;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private UserBusinessCategory userBusinessCategory;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserCoupon> userCoupons = new ArrayList <>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TeamMember> teamMembers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "leader", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Team> teamsAsLeader = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Point> points = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLike> reviewLikes = new ArrayList<>();
+}
