@@ -1,4 +1,4 @@
-package com.jajaja.domain.user.dto.oauth2;
+package com.jajaja.domain.auth.dto;
 
 import com.jajaja.domain.user.dto.UserDto;
 import org.springframework.security.core.GrantedAuthority;

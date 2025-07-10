@@ -1,10 +1,11 @@
-package com.jajaja.domain.user.service;
+package com.jajaja.domain.auth.service;
 
 import com.jajaja.domain.user.dto.UserDto;
-import com.jajaja.domain.user.dto.oauth2.CustomOAuth2User;
-import com.jajaja.domain.user.dto.oauth2.GoogleResponseDto;
-import com.jajaja.domain.user.dto.oauth2.KakaoResponseDto;
-import com.jajaja.domain.user.dto.oauth2.OAuth2ResponseDto;
+import com.jajaja.domain.auth.dto.UserDto;
+import com.jajaja.domain.auth.dto.CustomOAuth2User;
+import com.jajaja.domain.auth.dto.GoogleResponseDto;
+import com.jajaja.domain.auth.dto.KakaoResponseDto;
+import com.jajaja.domain.auth.dto.OAuth2ResponseDto;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;

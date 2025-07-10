@@ -1,4 +1,4 @@
-package com.jajaja.config.security;
+package com.jajaja.global.config.security.oauth;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

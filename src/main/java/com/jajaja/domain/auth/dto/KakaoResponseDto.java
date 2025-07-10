@@ -1,4 +1,4 @@
-package com.jajaja.domain.user.dto.oauth2;
+package com.jajaja.domain.auth.dto;
 
 import java.util.Map;
 

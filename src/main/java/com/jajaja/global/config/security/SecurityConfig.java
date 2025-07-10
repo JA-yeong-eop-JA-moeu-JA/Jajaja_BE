@@ -1,6 +1,7 @@
-package com.jajaja.config.security;
+package com.jajaja.global.config.security;
 
-import com.jajaja.domain.user.service.CustomOAuth2UserService;
+import com.jajaja.domain.auth.service.CustomOAuth2UserService;
+import com.jajaja.global.config.security.oauth.CustomOAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

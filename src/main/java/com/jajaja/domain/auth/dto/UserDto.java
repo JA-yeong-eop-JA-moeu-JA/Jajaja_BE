@@ -1,14 +1,15 @@
-package com.jajaja.domain.user.dto;
+package com.jajaja.domain.auth.dto;
 
+import com.jajaja.domain.user.entity.enums.OauthType;
 import lombok.Builder;
 
 @Builder
 public record UserDto(
-        String oAuthType,
+        OauthType oAuthType,
         String oAuthId,
         String name
 ) {
-    public static UserDto of(String provider, String providerId, String name) {
+    public static UserDto of(OauthType provider, String providerId, String name) {
         return UserDto.builder()
                 .oAuthType(provider)
                 .oAuthId(providerId)
