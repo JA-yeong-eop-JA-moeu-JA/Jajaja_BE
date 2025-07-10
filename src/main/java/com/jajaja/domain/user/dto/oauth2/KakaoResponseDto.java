@@ -1,0 +1,36 @@
+package com.jajaja.domain.user.dto.oauth2;
+
+import java.util.Map;
+
+public record KakaoResponseDto(
+        Map<String, Object> attribute
+) implements OAuth2ResponseDto {
+    private Map<String, Object> getKakaoAccount() {
+        return (Map<String, Object>) attribute.get("kakao_account");
+    }
+
+    @Override
+    public String getProvider() {
+        return "kakao";
+    }
+
+    @Override
+    public String getProviderId() {
+        return attribute.get("id").toString();
+    }
+
+    @Override
+    public String getName() {
+        return getKakaoAccount().get("name").toString();
+    }
+
+    @Override
+    public String getPhone() {
+        return getKakaoAccount().get("phone_number").toString();
+    }
+
+    @Override
+    public String getEmail() {
+        return getKakaoAccount().get("email").toString();
+    }
+}
