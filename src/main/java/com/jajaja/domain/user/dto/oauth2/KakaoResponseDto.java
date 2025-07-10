@@ -11,7 +11,7 @@ public record KakaoResponseDto(
 
     @Override
     public String getProvider() {
-        return "kakao";
+        return "KAKAO";
     }
 
     @Override

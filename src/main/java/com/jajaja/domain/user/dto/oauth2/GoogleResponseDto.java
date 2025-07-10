@@ -7,7 +7,7 @@ public record GoogleResponseDto(
 ) implements OAuth2ResponseDto {
     @Override
     public String getProvider() {
-        return "google";
+        return "GOOGLE";
     }
 
     @Override
