@@ -1,5 +1,7 @@
 package com.jajaja.domain.auth.dto;
 
+import com.jajaja.domain.user.entity.enums.OauthType;
+
 import java.util.Map;
 
 public record KakaoResponseDto(
@@ -10,8 +12,8 @@ public record KakaoResponseDto(
     }
 
     @Override
-    public String getProvider() {
-        return "KAKAO";
+    public OauthType getProvider() {
+        return OauthType.KAKAO;
     }
 
     @Override

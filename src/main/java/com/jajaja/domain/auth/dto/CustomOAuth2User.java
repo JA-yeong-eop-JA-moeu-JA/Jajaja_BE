@@ -1,10 +1,10 @@
 package com.jajaja.domain.auth.dto;
 
-import com.jajaja.domain.user.dto.UserDto;
+import com.jajaja.domain.user.entity.enums.OauthType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.Collection;;
+import java.util.Collection;
 import java.util.Map;
 
 public record CustomOAuth2User(
@@ -29,7 +29,7 @@ public record CustomOAuth2User(
         return userDto.oAuthId();
     }
 
-    public String getOAuthType() {
+    public OauthType getOAuthType() {
         return userDto.oAuthType();
     }
 }
