@@ -22,7 +22,7 @@ public record CustomOAuth2User(
 
     @Override
     public String getName() {
-        return userDto.name();
+        return String.valueOf(userDto.userId());
     }
 
     public String getOAuthId() {
@@ -31,5 +31,9 @@ public record CustomOAuth2User(
 
     public OauthType getOAuthType() {
         return userDto.oAuthType();
+    }
+
+    public String getUserName() {
+        return userDto.name();
     }
 }

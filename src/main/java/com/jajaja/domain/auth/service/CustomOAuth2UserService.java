@@ -39,15 +39,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String oauthId = oAuth2Response.getProviderId();
         OauthType oauthType = oAuth2Response.getProvider();
         User existingUser = userRepository.findByOauthIdAndOauthType(oauthId, oauthType);
+        User user = null;
         if (existingUser == null) {
-            User user = UserConverter.toEntity(oAuth2Response);
+            user = UserConverter.toEntity(oAuth2Response);
             userRepository.save(user);
         } else {
             existingUser.updateName(oAuth2Response.getName());
             existingUser.updatePhone(oAuth2Response.getPhone());
             existingUser.updateEmail(oAuth2Response.getEmail());
+            user = existingUser;
         }
-        UserDto userDto = UserDto.of(oauthType, oauthId, oAuth2Response.getName());
+        UserDto userDto = UserDto.of(user.getId(), oauthType, oauthId, oAuth2Response.getName());
         return new CustomOAuth2User(userDto);
     }
 }

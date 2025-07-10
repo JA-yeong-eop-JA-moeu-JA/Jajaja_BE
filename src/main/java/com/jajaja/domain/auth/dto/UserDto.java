@@ -5,12 +5,14 @@ import lombok.Builder;
 
 @Builder
 public record UserDto(
+        long userId,
         OauthType oAuthType,
         String oAuthId,
         String name
 ) {
-    public static UserDto of(OauthType provider, String providerId, String name) {
+    public static UserDto of(long userId, OauthType provider, String providerId, String name) {
         return UserDto.builder()
+                .userId(userId)
                 .oAuthType(provider)
                 .oAuthId(providerId)
                 .name(name)
