@@ -29,6 +29,6 @@ public record GoogleResponseDto(
 
     @Override
     public String getPhone() {
-        return attribute.get("phone_number").toString();
+        return attribute.get("phone_number") != null ? attribute.get("phone_number").toString() : null;
     }
 }
