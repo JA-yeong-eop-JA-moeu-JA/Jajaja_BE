@@ -1,5 +1,6 @@
 package com.jajaja.domain.product.dto.response;
 
+import com.jajaja.domain.product.entity.ProductOption;
 import lombok.Builder;
 
 @Builder
@@ -10,15 +11,13 @@ public record ProductOptionResponseDto(
         Integer unitPrice
 ) {
     public static ProductOptionResponseDto of(
-            Long id,
-            String name,
-            Integer originPrice,
+            ProductOption productOption,
             Integer unitPrice
     ) {
         return ProductOptionResponseDto.builder()
-                .id(id)
-                .name(name)
-                .originPrice(originPrice)
+                .id(productOption.getId())
+                .name(productOption.getName())
+                .originPrice(productOption.getPrice())
                 .unitPrice(unitPrice)
                 .build();
     }

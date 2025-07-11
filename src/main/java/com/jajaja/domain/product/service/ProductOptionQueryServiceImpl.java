@@ -26,9 +26,7 @@ public class ProductOptionQueryServiceImpl implements ProductOptionQueryService 
 
         return product.getProductOptions().stream()
                 .map(option -> ProductOptionResponseDto.of(
-                        option.getId(),
-                        option.getName(),
-                        option.getPrice(),
+                        option,
                         ProductPriceCalculator.calculateDiscountedPrice(
                                 option.getPrice(),
                                 product.getDiscountRate()
