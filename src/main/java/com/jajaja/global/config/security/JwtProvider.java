@@ -33,7 +33,7 @@ public class JwtProvider {
     public String generateToken(Authentication authentication, long expirationTime) {
         String userId = authentication.getName();
         return Jwts.builder()
-                .claim("userId", userId)
+                .claim("userId", Long.parseLong(userId))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey())
