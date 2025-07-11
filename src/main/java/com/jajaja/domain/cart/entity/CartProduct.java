@@ -19,6 +19,9 @@ public class CartProduct extends BaseEntity {
 
     @Column(nullable = false)
     private Integer quantity;
+    
+    @Column(nullable = false)
+    private Integer totalPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id")
