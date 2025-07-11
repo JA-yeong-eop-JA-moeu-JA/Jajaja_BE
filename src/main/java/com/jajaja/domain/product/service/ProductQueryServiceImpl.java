@@ -7,7 +7,7 @@ import com.jajaja.domain.product.util.ProductPriceCalculator;
 import com.jajaja.domain.review.converter.ReviewConverter;
 import com.jajaja.domain.review.dto.response.ReviewResponseDto;
 import com.jajaja.domain.review.entity.Review;
-import com.jajaja.domain.team.converter.TeamConverter;
+import com.jajaja.domain.review.repository.ReviewRepository;
 import com.jajaja.domain.team.dto.response.TeamResponseDto;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
@@ -24,12 +24,14 @@ import java.util.List;
 public class ProductQueryServiceImpl implements ProductQueryService {
 
     private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
 
     @Override
     public ProductDetailResponseDto getProductDetail(Long userId, Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
+        // 모집 중인 팀 조회
         List<TeamResponseDto> teamResponseDtoList = product.getTeams().stream()
                 .filter(team ->
                         team.getStatus() == TeamStatus.MATCHING &&
@@ -39,16 +41,26 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 .map(TeamResponseDto::of)
                 .toList();
 
-        List<ReviewResponseDto> reviewResponseDtoList = product.getReviews().stream()
-                .sorted((r1, r2) -> Integer.compare(
-                        r2.getReviewLikes().size(),
-                        r1.getReviewLikes().size()
-                ))
-                .limit(3)
-                .map(review -> ReviewConverter.toReviewResponseDto(review, userId))
+        // 좋아요 수 상위 3개 리뷰만 조회
+        List<Review> topReviews = reviewRepository.findTop3ByProductIdOrderByLikeCountDesc(productId);
+
+        // 회원/비회원 경우 나눠서, review 조회
+        List<ReviewResponseDto> reviewResponseDtoList = topReviews.stream()
+                .map(review -> {
+                    boolean isLike = false;
+                    if (userId != null) {
+                        isLike = review.getReviewLikes().stream()
+                                .anyMatch(like -> like.getMember().getId().equals(userId));
+                    }
+                    return ReviewConverter.toReviewResponseDto(review, isLike);
+                })
                 .toList();
 
-        int salePrice = ProductPriceCalculator.calculateDiscountedPrice(product.getPrice(), product.getDiscountRate());
+        int salePrice = ProductPriceCalculator.calculateDiscountedPrice(
+                product.getPrice(),
+                product.getDiscountRate()
+        );
+
         double averageRating = calculateAverageRating(product.getReviews());
 
         return ProductDetailResponseDto.of(
@@ -65,7 +77,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 teamResponseDtoList,
                 reviewResponseDtoList
         );
-    };
+    }
 
     /**
      * 할인율 적용한 할인 가격 계산하는 메소드

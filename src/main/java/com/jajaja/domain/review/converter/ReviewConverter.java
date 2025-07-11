@@ -10,18 +10,12 @@ import java.util.stream.Collectors;
 
 public class ReviewConverter {
 
-    public static ReviewResponseDto toReviewResponseDto(Review review, Long userId) {
-        // 비회원일 경우
-        boolean isLike = false;
-
-        // 회원일 경우
-        if (userId != null) {
-            isLike = review.getReviewLikes().stream()
-                    .anyMatch(like -> like.getMember().getId().equals(userId));
-        }
-
+    public static ReviewResponseDto toReviewResponseDto(
+            Review review,
+            boolean isLike
+    ) {
         List<String> imageUrls = review.getReviewImages().stream()
-                .map(ReviewImage::getImageUrl)
+                .map(image -> image.getImageUrl())
                 .collect(Collectors.toList());
 
         return ReviewResponseDto.of(
