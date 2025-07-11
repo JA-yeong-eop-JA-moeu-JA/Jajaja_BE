@@ -20,7 +20,9 @@ public class UserBusinessCategory extends BaseEntity {
     @JoinColumn(name = "user_id", unique = true)
     private User user;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_category_id")
     private BusinessCategory businessCategory;
+
 }
