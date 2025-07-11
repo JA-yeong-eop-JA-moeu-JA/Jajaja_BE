@@ -9,15 +9,5 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ReviewRepository extends JpaRepository<Review, Long> {
-
-    @Query("""
-        SELECT r
-        FROM Review r
-        LEFT JOIN r.reviewLikes likes
-        WHERE r.product.id = :productId
-        GROUP BY r
-        ORDER BY COUNT(likes) DESC
-    """)
-    List<Review> findTop3ByProductIdOrderByLikeCountDesc(@Param("productId") Long productId);
+public interface ReviewRepository extends JpaRepository<Review, Long>, ReviewRepositoryCustom {
 }
