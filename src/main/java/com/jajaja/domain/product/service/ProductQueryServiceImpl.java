@@ -3,6 +3,7 @@ package com.jajaja.domain.product.service;
 import com.jajaja.domain.product.dto.response.ProductDetailResponseDto;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductRepository;
+import com.jajaja.domain.product.util.ProductPriceCalculator;
 import com.jajaja.domain.review.converter.ReviewConverter;
 import com.jajaja.domain.review.dto.response.ReviewResponseDto;
 import com.jajaja.domain.review.entity.Review;
@@ -47,7 +48,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 .map(review -> ReviewConverter.toReviewResponseDto(review, userId))
                 .toList();
 
-        int salePrice = calculateSalePrice(product);
+        int salePrice = ProductPriceCalculator.calculateDiscountedPrice(product.getPrice(), product.getDiscountRate());
         double averageRating = calculateAverageRating(product.getReviews());
 
         return ProductDetailResponseDto.of(
