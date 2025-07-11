@@ -19,11 +19,12 @@ public record TeamResponseDto(
                 .build();
     }
 
-    public static TeamResponseDto of(Team team) {
+    public static TeamResponseDto from(Team team) {
         return TeamResponseDto.builder()
                 .id(team.getId().intValue())
                 .nickname(team.getLeader().getName())
                 .createdAt(team.getCreatedAt())
                 .build();
     }
+
 }

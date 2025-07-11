@@ -38,7 +38,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                                 team.getLeader() != null &&
                                 team.getTeamMembers().isEmpty()
                 )
-                .map(TeamResponseDto::of)
+                .map(TeamResponseDto::from)
                 .toList();
 
         // 좋아요 수 상위 3개 리뷰만 조회
@@ -64,16 +64,9 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         double averageRating = calculateAverageRating(product.getReviews());
 
         return ProductDetailResponseDto.of(
-                product.getThumbnailUrl(),
-                product.getStore(),
-                product.getName(),
-                product.getPrice(),
+                product,
                 salePrice,
-                product.getDiscountRate(),
-                product.getImageUrl(),
                 averageRating,
-                product.getReviews().size(),
-                product.getDeliveryPeriod(),
                 teamResponseDtoList,
                 reviewResponseDtoList
         );

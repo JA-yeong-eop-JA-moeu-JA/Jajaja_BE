@@ -3,7 +3,6 @@ package com.jajaja.domain.review.converter;
 
 import com.jajaja.domain.review.dto.response.ReviewResponseDto;
 import com.jajaja.domain.review.entity.Review;
-import com.jajaja.domain.review.entity.ReviewImage;
 
 import java.util.List;
 import java.util.stream.Collectors;
