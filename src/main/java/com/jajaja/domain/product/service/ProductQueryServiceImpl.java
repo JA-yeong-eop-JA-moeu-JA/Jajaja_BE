@@ -36,7 +36,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                                 team.getLeader() != null &&
                                 team.getTeamMembers().isEmpty()
                 )
-                .map(TeamConverter::toTeamResponseDto)
+                .map(TeamResponseDto::of)
                 .toList();
 
         List<ReviewResponseDto> reviewResponseDtoList = product.getReviews().stream()
