@@ -1,4 +1,4 @@
-package com.jajaja.converter;
+package com.jajaja.domain.cart.converter;
 
 import com.jajaja.domain.cart.dto.CartResponseDto;
 import com.jajaja.domain.cart.entity.Cart;
