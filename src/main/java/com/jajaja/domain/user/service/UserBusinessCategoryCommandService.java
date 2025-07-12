@@ -7,27 +7,19 @@ import com.jajaja.domain.user.entity.User;
 import com.jajaja.domain.user.entity.UserBusinessCategory;
 import com.jajaja.domain.user.repository.UserBusinessCategoryRepository;
 import com.jajaja.domain.user.repository.UserRepository;
+import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
+import com.jajaja.global.apiPayload.exception.GeneralException;
 
 @Service
-public class UserBusinessCategoryService {
+@RequiredArgsConstructor
+public class UserBusinessCategoryCommandService {
 
     private final UserRepository userRepository;
     private final BusinessCategoryRepository businessCategoryRepository;
     private final UserBusinessCategoryRepository userBusinessCategoryRepository;
-
-    public UserBusinessCategoryService(
-            UserRepository userRepository,
-            BusinessCategoryRepository businessCategoryRepository,
-            UserBusinessCategoryRepository userBusinessCategoryRepository
-    ) {
-        this.userRepository = userRepository;
-        this.businessCategoryRepository = businessCategoryRepository;
-        this.userBusinessCategoryRepository = userBusinessCategoryRepository;
-    }
 
     /**
      * 유저 업종 등록
@@ -37,18 +29,20 @@ public class UserBusinessCategoryService {
     @Transactional
     public void registerUserBusinessCategory(Long userId, UserBusinessCategoryRequestDto dto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+
+        if (userBusinessCategoryRepository.findByUser(user).isPresent()) {
+            throw new GeneralException(ErrorStatus.BUSINESS_CATEGORY_ALREADY_REGISTERED);
+        }
 
         BusinessCategory businessCategory = businessCategoryRepository.findById(dto.businessCategoryId())
-                .orElseThrow(() -> new NoSuchElementException("해당 업종을 찾을 수 없습니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.BUSINESS_CATEGORY_NOT_FOUND));
 
-        UserBusinessCategory userBusinessCategory = userBusinessCategoryRepository.findByUser(user)
-                .orElseGet(() -> UserBusinessCategory.builder()
-                        .user(user)
-                        .businessCategory(businessCategory)
-                        .build());
+        UserBusinessCategory userBusinessCategory = UserBusinessCategory.builder()
+                .user(user)
+                .businessCategory(businessCategory)
+                .build();
 
-        userBusinessCategory.setBusinessCategory(businessCategory);
         userBusinessCategoryRepository.save(userBusinessCategory);
     }
 }
