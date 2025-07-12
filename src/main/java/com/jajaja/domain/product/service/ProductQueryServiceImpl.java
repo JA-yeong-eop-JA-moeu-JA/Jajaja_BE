@@ -9,7 +9,9 @@ import com.jajaja.domain.review.dto.response.ReviewResponseDto;
 import com.jajaja.domain.review.entity.Review;
 import com.jajaja.domain.review.repository.ReviewRepository;
 import com.jajaja.domain.team.dto.response.TeamResponseDto;
+import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
+import com.jajaja.domain.team.repository.TeamRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
+    private final TeamRepository teamRepository;
 
     @Override
     public ProductDetailResponseDto getProductDetail(Long userId, Long productId) {
@@ -32,12 +35,9 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
         // 모집 중인 팀 조회
-        List<TeamResponseDto> teamResponseDtoList = product.getTeams().stream()
-                .filter(team ->
-                        team.getStatus() == TeamStatus.MATCHING &&
-                                team.getLeader() != null &&
-                                team.getTeamMembers().isEmpty()
-                )
+        List<Team> matchingTeams = teamRepository.findMatchingTeamsByProductId(productId);
+
+        List<TeamResponseDto> teamResponseDtoList = matchingTeams.stream()
                 .map(TeamResponseDto::from)
                 .toList();
 
