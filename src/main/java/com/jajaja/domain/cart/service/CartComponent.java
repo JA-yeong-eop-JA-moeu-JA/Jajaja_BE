@@ -2,6 +2,7 @@ package com.jajaja.domain.cart.service;
 
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.cart.repository.CartCommandRepository;
+import com.jajaja.domain.product.repository.ProductOptionRepository;
 import com.jajaja.domain.user.entity.User;
 import com.jajaja.domain.user.repository.UserRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
@@ -19,6 +20,7 @@ public class CartComponent {
 	
 	private final CartCommandRepository cartRepository;
 	private final UserRepository userRepository;
+	private final ProductOptionRepository productOptionRepository;
 	
 	/**
 	 * 사용자의 장바구니를 조회하거나 생성합니다.
