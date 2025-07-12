@@ -21,7 +21,11 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // BUSINESS CATEGORY 관련 에러
     BUSINESS_CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATEGORY4001", "업종이 존재하지 않습니다."),
-    BUSINESS_CATEGORY_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "CATEGORY4002", "이미 업종이 등록된 사용자입니다.");
+    BUSINESS_CATEGORY_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "CATEGORY4002", "이미 업종이 등록된 사용자입니다."),
+
+    // PRODUCT 관련 에러
+    PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PRODUCT4001", "상품이 없습니다.");
+
 
     private final HttpStatus httpStatus;
     private final String code;
