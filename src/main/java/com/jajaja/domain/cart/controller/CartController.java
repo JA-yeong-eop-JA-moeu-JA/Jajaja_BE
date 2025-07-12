@@ -1,7 +1,6 @@
 package com.jajaja.domain.cart.controller;
 
 import com.jajaja.domain.cart.dto.CartProductAddRequestDto;
-import com.jajaja.domain.cart.dto.CartProductDeleteRequestDto;
 import com.jajaja.domain.cart.dto.CartResponseDto;
 import com.jajaja.domain.cart.service.CartCommandService;
 import com.jajaja.domain.cart.service.CartQueryService;
@@ -41,8 +40,10 @@ public class CartController {
 			summary = "장바구니 아이템 삭제 API | by 엠마/신윤지",
 			description = "장바구니에 아이템을 추가하거나 수량을 수정합니다.")
 	@DeleteMapping("/products")
-	public ApiResponse<String> deleteCartProduct(@Auth Long memberId, @RequestBody @Valid CartProductDeleteRequestDto request) {
-		cartCommandService.deleteCartProduct(memberId, request);
+	public ApiResponse<String> deleteCartProduct(@Auth Long memberId,
+												 @RequestParam("productId") Long productId,
+												 @RequestParam(name = "optionId", required = false) Long optionId) {
+		cartCommandService.deleteCartProduct(memberId, productId, optionId);
 		return ApiResponse.onSuccess("성공적으로  장바구니 상품이 삭제되었습니다.");
 	}
 }

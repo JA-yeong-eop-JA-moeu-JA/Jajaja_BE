@@ -1,7 +1,6 @@
 package com.jajaja.domain.cart.service;
 
 import com.jajaja.domain.cart.dto.CartProductAddRequestDto;
-import com.jajaja.domain.cart.dto.CartProductDeleteRequestDto;
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.cart.entity.CartProduct;
 import com.jajaja.domain.cart.repository.CartProductRepository;
@@ -52,10 +51,10 @@ public class CartCommandServiceImpl implements CartCommandService {
 	}
 	
 	@Override
-	public void deleteCartProduct(Long memberId, CartProductDeleteRequestDto request) {
-		log.info("[CartCommandService] 사용자 {}의 장바구니에 아이템 {} 삭제", memberId, request.productId());
+	public void deleteCartProduct(Long memberId, Long productId, Long optionId) {
+		log.info("[CartCommandService] 사용자 {}의 장바구니에 아이템 {} 삭제", memberId, productId);
 		
-		CartOpterationContext context = prepareCartOperationContext(memberId, request.productId(), request.optionId());
+		CartOpterationContext context = prepareCartOperationContext(memberId, productId, optionId);
 		
 		CartProduct existingItem = cartProductRepository.findByCartIdAndProductId(context.cart().getId(), context.product().getId())
 				.orElseThrow(() -> new CartHandler((ErrorStatus.CART_PRODUCT_NOT_FOUND)));

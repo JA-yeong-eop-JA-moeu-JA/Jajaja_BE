@@ -70,6 +70,9 @@ public class CartProduct extends BaseEntity {
         this.totalPrice = unitPrice * this.quantity;
     }
     
+    /**
+     *  Cart에서 CartProduct를 추가할 때 부모가 누구인지 알려주기 위해 호출하는 연관관계 편의 메소드입니다.
+     */
     protected void setCart(Cart cart) {
         this.cart = cart;
     }
