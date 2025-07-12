@@ -25,6 +25,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // CATEGORY 관련 에러
     INVALID_CATEGORY_GROUP(HttpStatus.BAD_REQUEST, "CATEGORY4003", "유효하지 않은 카테고리 그룹입니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATEGORY4004", "존재하지 않는 카테고리입니다."),
 
     // PRODUCT 관련 에러
     PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PRODUCT4001", "상품이 없습니다.");
