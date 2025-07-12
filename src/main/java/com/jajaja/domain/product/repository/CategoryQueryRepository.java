@@ -1,9 +1,12 @@
 package com.jajaja.domain.product.repository;
 
-import com.jajaja.domain.product.dto.response.CategorySimpleResponseDto;
+import com.jajaja.domain.product.dto.response.CategoryResponseDto;
+import com.jajaja.domain.product.dto.response.SubCategoryResponseDto;
 
 import java.util.List;
 
 public interface CategoryQueryRepository {
-    List<CategorySimpleResponseDto> findAllByCategoryGroupName(String groupName);
+    List<CategoryResponseDto> findAllByCategoryGroupName(String groupName);
+
+    List<SubCategoryResponseDto> findSubCategoriesByCategoryId(Long categoryId);
 }

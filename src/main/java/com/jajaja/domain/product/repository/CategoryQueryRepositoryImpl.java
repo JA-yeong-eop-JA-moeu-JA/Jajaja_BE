@@ -1,8 +1,10 @@
 package com.jajaja.domain.product.repository;
 
-import com.jajaja.domain.product.dto.response.CategorySimpleResponseDto;
+import com.jajaja.domain.product.dto.response.CategoryResponseDto;
+import com.jajaja.domain.product.dto.response.SubCategoryResponseDto;
 import com.jajaja.domain.product.entity.category.QCategory;
 import com.jajaja.domain.product.entity.category.QCategoryGroup;
+import com.jajaja.domain.product.entity.category.QSubCategory;
 import com.jajaja.domain.product.entity.enums.CategoryGroupName;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.GeneralException;
@@ -18,16 +20,18 @@ import java.util.List;
 public class CategoryQueryRepositoryImpl implements CategoryQueryRepository {
 
     private final JPAQueryFactory queryFactory;
+
     private final QCategory category = QCategory.category;
     private final QCategoryGroup categoryGroup = QCategoryGroup.categoryGroup;
+    private final QSubCategory subCategory = QSubCategory.subCategory;
 
     @Override
-    public List<CategorySimpleResponseDto> findAllByCategoryGroupName(String groupName) {
+    public List<CategoryResponseDto> findAllByCategoryGroupName(String groupName) {
         CategoryGroupName parsedGroupName = parseGroupName(groupName);
 
         return queryFactory
                 .select(Projections.constructor(
-                        CategorySimpleResponseDto.class,
+                        CategoryResponseDto.class,
                         category.id,
                         category.name))
                 .from(category)
@@ -42,6 +46,30 @@ public class CategoryQueryRepositoryImpl implements CategoryQueryRepository {
         } catch (IllegalArgumentException e) {
             throw new GeneralException(ErrorStatus.INVALID_CATEGORY_GROUP);
         }
+    }
+
+    @Override
+    public List<SubCategoryResponseDto> findSubCategoriesByCategoryId(Long categoryId) {
+
+        boolean categoryExists = queryFactory
+                .selectOne()
+                .from(category)
+                .where(category.id.eq(categoryId))
+                .fetchFirst() != null;
+
+        if (!categoryExists) {
+            throw new GeneralException(ErrorStatus.CATEGORY_NOT_FOUND);
+        }
+
+        return queryFactory
+                .select(Projections.constructor(
+                        SubCategoryResponseDto.class,
+                        subCategory.id,
+                        subCategory.name
+                ))
+                .from(subCategory)
+                .where(subCategory.category.id.eq(categoryId))
+                .fetch();
     }
 
 }
