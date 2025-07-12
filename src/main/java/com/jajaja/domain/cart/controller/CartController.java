@@ -21,7 +21,7 @@ public class CartController {
 	private final CartCommandService cartCommandService;
 	
 	@Operation(
-			summary = "장바구니 조회 API",
+			summary = "장바구니 조회 API | by 엠마/신윤지",
 			description = "장바구니를 조회합니다.")
 	@GetMapping("/")
 	public ApiResponse<CartResponseDto> getCart(@Auth Long memberId) {
@@ -29,7 +29,7 @@ public class CartController {
 	}
 	
 	@Operation(
-			summary = "장바구니 아이템 추가 및 수정 API",
+			summary = "장바구니 아이템 추가 및 수정 API | by 엠마/신윤지",
 			description = "장바구니에 아이템을 추가하거나 수량을 수정합니다.")
 	@PostMapping("/products")
 	public ApiResponse<String> addOrUpdateCartProduct(@Auth Long memberId, @RequestBody @Valid CartProductAddRequestDto request) {
@@ -38,7 +38,7 @@ public class CartController {
 	}
 	
 	@Operation(
-			summary = "장바구니 아이템 삭제 API",
+			summary = "장바구니 아이템 삭제 API | by 엠마/신윤지",
 			description = "장바구니에 아이템을 추가하거나 수량을 수정합니다.")
 	@DeleteMapping("/products")
 	public ApiResponse<String> deleteCartProduct(@Auth Long memberId, @RequestBody @Valid CartProductDeleteRequestDto request) {
