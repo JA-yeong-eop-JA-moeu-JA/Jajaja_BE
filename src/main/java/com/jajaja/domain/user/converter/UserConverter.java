@@ -1,4 +1,4 @@
-package com.jajaja.converter;
+package com.jajaja.domain.user.converter;
 
 import com.jajaja.domain.auth.dto.OAuth2ResponseDto;
 import com.jajaja.domain.user.entity.User;

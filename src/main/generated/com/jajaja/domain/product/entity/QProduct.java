@@ -25,6 +25,10 @@ public class QProduct extends EntityPathBase<Product> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
+    public final NumberPath<Integer> deliveryPeriod = createNumber("deliveryPeriod", Integer.class);
+
+    public final NumberPath<Integer> discountRate = createNumber("discountRate", Integer.class);
+
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final StringPath imageUrl = createString("imageUrl");
@@ -39,11 +43,13 @@ public class QProduct extends EntityPathBase<Product> {
 
     public final ListPath<com.jajaja.domain.product.entity.category.ProductSubCategory, com.jajaja.domain.product.entity.category.QProductSubCategory> productSubCategories = this.<com.jajaja.domain.product.entity.category.ProductSubCategory, com.jajaja.domain.product.entity.category.QProductSubCategory>createList("productSubCategories", com.jajaja.domain.product.entity.category.ProductSubCategory.class, com.jajaja.domain.product.entity.category.QProductSubCategory.class, PathInits.DIRECT2);
 
-    public final NumberPath<Float> rating = createNumber("rating", Float.class);
+    public final ListPath<com.jajaja.domain.review.entity.Review, com.jajaja.domain.review.entity.QReview> reviews = this.<com.jajaja.domain.review.entity.Review, com.jajaja.domain.review.entity.QReview>createList("reviews", com.jajaja.domain.review.entity.Review.class, com.jajaja.domain.review.entity.QReview.class, PathInits.DIRECT2);
 
     public final StringPath store = createString("store");
 
     public final ListPath<com.jajaja.domain.team.entity.Team, com.jajaja.domain.team.entity.QTeam> teams = this.<com.jajaja.domain.team.entity.Team, com.jajaja.domain.team.entity.QTeam>createList("teams", com.jajaja.domain.team.entity.Team.class, com.jajaja.domain.team.entity.QTeam.class, PathInits.DIRECT2);
+
+    public final StringPath thumbnailUrl = createString("thumbnailUrl");
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;

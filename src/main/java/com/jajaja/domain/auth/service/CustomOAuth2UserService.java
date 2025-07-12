@@ -1,6 +1,6 @@
 package com.jajaja.domain.auth.service;
 
-import com.jajaja.converter.UserConverter;
+import com.jajaja.domain.user.converter.UserConverter;
 import com.jajaja.domain.auth.dto.UserDto;
 import com.jajaja.domain.auth.dto.CustomOAuth2User;
 import com.jajaja.domain.auth.dto.GoogleResponseDto;

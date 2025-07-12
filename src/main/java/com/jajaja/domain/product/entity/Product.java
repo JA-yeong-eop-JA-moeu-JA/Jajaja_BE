@@ -1,6 +1,7 @@
 package com.jajaja.domain.product.entity;
 
 import com.jajaja.domain.product.entity.category.ProductSubCategory;
+import com.jajaja.domain.review.entity.Review;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
@@ -29,11 +30,17 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Integer price;
 
-    @Column(length = 100)
+    @Column(nullable = false)
+    private String thumbnailUrl;
+
+    @Column(nullable = false)
     private String imageUrl;
 
     @Column
-    private Float rating;
+    private Integer discountRate; // 할인율
+
+    @Column
+    private Integer deliveryPeriod;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductSales> productSalesList = new ArrayList<>();
@@ -46,4 +53,7 @@ public class Product extends BaseEntity {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Team> teams = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
 }
