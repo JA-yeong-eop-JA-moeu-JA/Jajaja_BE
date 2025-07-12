@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // Query 서비스는 읽기 전용으로 성능을 최적화합니다.
+@Transactional(readOnly = true)
 public class CartQueryServiceImpl implements CartQueryService {
 	
 	private final CartComponent cartComponent;
@@ -26,13 +26,16 @@ public class CartQueryServiceImpl implements CartQueryService {
 	public CartResponseDto getCart(Long memberId) {
 		log.info("[CartQueryService] 사용자 {}의 장바구니 조회 시작", memberId);
 		
+		// 이미 생성된 장바구니가 있는지 확인, 없다면 생성
 		Cart cart = cartComponent.findCart(memberId);
 		
+		// 장바구니가 비어있는 경우 emptyDto 반환
 		if (cart.getCartProducts() == null || cart.getCartProducts().isEmpty()) {
 			log.warn("[CartQueryService] 사용자 {}의 장바구니가 비어있습니다.", memberId);
 			return CartConverter.toEmptyCartResponseDto(cart);
 		}
 		
+		// 장바구니 내 아이템에 대해 팀 참여 가능 여부 확인, 매핑
 		List<CartResponseDto.CartItemInfoDto> itemInfos = cart.getCartProducts().stream()
 				.map(cartProduct -> {
 					boolean isTeamAvailable = teamRepository.existsByProductIdAndStatus(cartProduct.getProduct().getId(), TeamStatus.MATCHING);

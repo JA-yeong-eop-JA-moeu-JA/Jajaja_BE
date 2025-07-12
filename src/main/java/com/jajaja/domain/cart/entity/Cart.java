@@ -31,6 +31,9 @@ public class Cart extends BaseEntity {
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartProduct> cartProducts = new ArrayList<>();
     
+    /**
+     *  Cart와 CartProduct의 양방향 관계를 설정합니다.
+     */
     public void addCartProduct(CartProduct cartProduct) {
         this.cartProducts.add(cartProduct);
         cartProduct.setCart(this);
