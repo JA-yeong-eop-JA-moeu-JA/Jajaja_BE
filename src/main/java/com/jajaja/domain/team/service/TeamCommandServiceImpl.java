@@ -4,6 +4,7 @@ import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.team.dto.response.TeamCreateResponseDto;
 import com.jajaja.domain.team.entity.Team;
+import com.jajaja.domain.team.entity.TeamMember;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.domain.team.repository.TeamRepository;
 import com.jajaja.domain.user.entity.User;
@@ -41,6 +42,28 @@ public class TeamCommandServiceImpl implements TeamCommandService {
         teamRepository.save(team);
 
         return TeamCreateResponseDto.from(team);
+    }
+
+    @Override
+    public void joinTeam(Long userId, Long teamId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
+
+        Team team = teamRepository.findById(teamId).orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
+
+        if (!team.getTeamMembers().isEmpty()) {
+            throw new BadRequestException(ErrorStatus.TEAM_ALREADY_HAS_MEMBER);
+        }
+        if (team.getLeader().getId().equals(user.getId())) {
+            throw new BadRequestException(ErrorStatus.CANNOT_JOIN_OWN_TEAM);
+        }
+
+        TeamMember teamMember = TeamMember.builder()
+                .member(user)
+                .team(team)
+                .build();
+
+        team.getTeamMembers().add(teamMember);
+        team.updateStatus(TeamStatus.COMPLETED);
     }
 
 }

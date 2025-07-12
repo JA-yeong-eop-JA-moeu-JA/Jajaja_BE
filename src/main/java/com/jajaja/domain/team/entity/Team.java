@@ -41,5 +41,12 @@ public class Team extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    /**
+     * Team의 status를 업데이트
+     * @paramname status TeamStatus
+     */
+    public void updateStatus(TeamStatus status) {
+        this.status = status;
+    }
 
 }

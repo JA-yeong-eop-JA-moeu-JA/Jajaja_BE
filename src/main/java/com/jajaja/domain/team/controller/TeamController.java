@@ -27,4 +27,14 @@ public class TeamController {
         TeamCreateResponseDto responseDto = teamCommandService.createTeam(userId, productId);
         return ApiResponse.onSuccess(responseDto);
     }
+
+    @Operation(
+            summary = "팀 참여 API | by 지지/이지희",
+            description = "‘참여 버튼’을 통해 해당 팀에 참여하는 기능입니다."
+    )
+    @PostMapping("/join/{teamId}")
+    public ApiResponse<Void> joinTeam(@Auth Long userId, @PathVariable Long teamId) {
+        teamCommandService.joinTeam(userId, teamId);
+        return ApiResponse.onSuccess(null);
+    }
 }
