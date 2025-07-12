@@ -73,17 +73,6 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     }
 
     /**
-     * 할인율 적용한 할인 가격 계산하는 메소드
-     * @paramname product 상품
-     * @return 할인값
-     */
-    private int calculateSalePrice(Product product) {
-        if (product.getDiscountRate() == null) {
-            return product.getPrice();
-        }
-        return (int) (product.getPrice() * (1 - product.getDiscountRate() / 100.0));    }
-
-    /**
      * 리뷰의 별점의 평균을 계산하는 메소드
      * @paramname reviews 리뷰 리스트
      * @return 상품의 평균 리뷰 별점
