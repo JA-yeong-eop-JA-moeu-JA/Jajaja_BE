@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -29,36 +30,41 @@ public class CartCommandServiceImpl implements CartCommandService {
 	private final ProductOptionRepository productOptionRepository;
 	
 	@Override
-	public void addOrUpdateCartProduct(Long memberId, CartProductAddRequestDto request) {
-		log.info("[CartCommandService] 사용자 {}의 장바구니에 아이템 {} 추가/수정", memberId, request.productId());
-		
-		CartOpterationContext context = prepareCartOperationContext(memberId, request.productId(), request.optionId());
-		
-		Optional<CartProduct> existingItem = cartProductRepository.findByCartIdAndProductId(context.cart().getId(), context.product().getId());
-		
-		existingItem.ifPresentOrElse(
-				item -> {
-					log.info("[CartCommandService] 기존 아이템 {}의 옵션과 수량을 변경합니다.", item.getId());
-					item.update(context.productOption(), request.quantity());
-				},
-				() -> {
-					log.info("[CartCommandService] 장바구니에 새로 아이템 {}를 추가합니다.", request.productId());
-					CartProduct newCartProduct = CartProduct.create(context.cart(), context.product(), context.productOption(), request.quantity());
-					context.cart().addCartProduct(newCartProduct);
-					cartProductRepository.save( newCartProduct);
-				}
-		);
+	public void addOrUpdateCartProduct(Long memberId, List<CartProductAddRequestDto> request) {
+		Cart cart = cartComponent.findCart(memberId);
+		request.forEach(req -> {
+			log.info("[CartCommandService] 사용자 {}의 장바구니에 아이템 {} 추가/수정", memberId, req.productId());
+			
+			CartOpterationContext context = prepareCartOperationContext(req.productId(), req.optionId());
+			
+			Optional<CartProduct> existingItem = req.optionId() != null ? cartProductRepository.findByCartIdAndProductIdAndProductOptionId(cart.getId(), context.product().getId(), context.productOption.getId())
+					: cartProductRepository.findByCartIdAndProductIdAndProductOptionIsNull(cart.getId(), context.product().getId());
+			
+			existingItem.ifPresentOrElse(
+					item -> {
+						log.info("[CartCommandService] 기존 아이템 {}의 옵션과 수량을 변경합니다.", item.getId());
+						item.update(context.productOption(), req.quantity());
+					},
+					() -> {
+						log.info("[CartCommandService] 장바구니에 새로 아이템 {}를 추가합니다.", req.productId());
+						CartProduct newCartProduct = CartProduct.create(cart, context.product(), context.productOption(), req.quantity());
+						cart.addCartProduct(newCartProduct);
+						cartProductRepository.save( newCartProduct);
+					}
+			);
+		});
 	}
 	
 	@Override
 	public void deleteCartProduct(Long memberId, Long productId, Long optionId) {
 		log.info("[CartCommandService] 사용자 {}의 장바구니에 아이템 {} 삭제", memberId, productId);
+		Cart cart = cartComponent.findCart(memberId);
 		
-		CartOpterationContext context = prepareCartOperationContext(memberId, productId, optionId);
-		
-		CartProduct existingItem = cartProductRepository.findByCartIdAndProductId(context.cart().getId(), context.product().getId())
-				.orElseThrow(() -> new CartHandler((ErrorStatus.CART_PRODUCT_NOT_FOUND)));
-		cartProductRepository.delete(existingItem);
+		try {
+			cart.deleteCartProduct(productId, optionId);
+		} catch (IllegalArgumentException e) {
+			throw new CartHandler(ErrorStatus.CART_PRODUCT_NOT_FOUND);
+		}
 	}
 	
 	/**
@@ -67,10 +73,8 @@ public class CartCommandServiceImpl implements CartCommandService {
 	 *
 	 * @return 	Cart, Product, ProductOption을 포함한 CartOpterationContext
 	* */
-	private CartOpterationContext prepareCartOperationContext(Long memberId, Long productId, Long optionId) {
-		Cart cart = cartComponent.findCart(memberId);
-		
-		Product product = productRepository.findById(productId)
+	private CartOpterationContext prepareCartOperationContext(Long productId, Long optionId) {
+Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new CartHandler(ErrorStatus.PRODUCT_NOT_FOUND));
 		
 		ProductOption option;
@@ -82,8 +86,8 @@ public class CartCommandServiceImpl implements CartCommandService {
 			option = null;
 		}
 		
-		return new CartOpterationContext(cart, product, option);
+		return new CartOpterationContext(product, option);
 	}
 	
-	private record CartOpterationContext(Cart cart, Product product, ProductOption productOption) {}
+	private record CartOpterationContext(Product product, ProductOption productOption) {}
 }

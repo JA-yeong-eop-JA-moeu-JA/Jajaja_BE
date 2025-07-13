@@ -19,7 +19,7 @@ public record CartResponseDto(
 			String productName,
 			String brand,
 			Long optionId,
-			String option,
+			String optionName,
 			int quantity,
 			String productThumbnail,
 			int unitPrice,
