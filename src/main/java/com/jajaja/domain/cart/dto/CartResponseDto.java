@@ -1,11 +1,9 @@
 package com.jajaja.domain.cart.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jajaja.domain.coupon.entity.enums.ConditionType;
 import com.jajaja.domain.coupon.entity.enums.DiscountType;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
@@ -13,11 +11,7 @@ public record CartResponseDto(
 		List<CartItemInfoDto> data,
 		AppliedCouponInfoDto appliedCoupon,
 		SummaryInfoDto summary,
-		int totalCount,
-		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
-		LocalDateTime createdAt,
-		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
-		LocalDateTime updatedAt
+		int totalCount
 ) {
 	public record CartItemInfoDto(
 			Long id,

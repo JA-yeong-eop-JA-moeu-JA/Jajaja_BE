@@ -20,9 +20,7 @@ public class CartConverter {
 				itemInfos,
 				couponInfo,
 				summaryInfoDto,
-				itemInfos.size(),
-				cart.getCreatedAt(),
-				cart.getUpdatedAt()
+				itemInfos.size()
 		);
 	}
 	
@@ -31,9 +29,7 @@ public class CartConverter {
 				Collections.emptyList(),
 				null,
 				new CartResponseDto.SummaryInfoDto(0),
-				0,
-				cart.getCreatedAt(),
-				cart.getUpdatedAt()
+				0
 		);
 	}
 	
