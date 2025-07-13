@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CartCommandRepository extends JpaRepository<Cart, Long> {
+public interface CartRepository extends JpaRepository<Cart, Long> {
 	@Query("SELECT c FROM Cart  c " +
 	"LEFT JOIN FETCH c.cartProducts cp " +
 	"LEFT JOIN FETCH cp.product p " +

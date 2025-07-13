@@ -1,7 +1,7 @@
 package com.jajaja.domain.cart.service;
 
 import com.jajaja.domain.cart.entity.Cart;
-import com.jajaja.domain.cart.repository.CartCommandRepository;
+import com.jajaja.domain.cart.repository.CartRepository;
 import com.jajaja.domain.product.repository.ProductOptionRepository;
 import com.jajaja.domain.user.entity.User;
 import com.jajaja.domain.user.repository.UserRepository;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CartComponent {
 	
-	private final CartCommandRepository cartRepository;
+	private final CartRepository cartRepository;
 	private final UserRepository userRepository;
 	private final ProductOptionRepository productOptionRepository;
 	
