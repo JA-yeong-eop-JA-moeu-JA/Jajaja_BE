@@ -34,12 +34,12 @@ public class CartComponent {
 	}
 	
 	/**
-	 * 신규 사용자를 위해 장바구니를 생성합니다.
+	 * 장바구니가 없는 경우 장바구니를 새로 생성합니다.
 	 * @param memberId 사용자 ID
 	 * @return Cart
 	 */
 	private Cart createCart(Long memberId) {
-		log.info("[CartComponent] 사용자 {}의 장바구니가 없어 새로 생성합니다.", memberId);
+		log.warn("[CartComponent] 사용자 {}의 장바구니가 없어 새로 생성합니다.", memberId);
 		User user = userRepository.findById(memberId)
 				.orElseThrow(() -> new CartHandler(ErrorStatus.USER_NOT_FOUND));
 		Cart newCart = Cart.builder().member(user).build();
