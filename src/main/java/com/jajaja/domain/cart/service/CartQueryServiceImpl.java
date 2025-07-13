@@ -1,6 +1,7 @@
 package com.jajaja.domain.cart.service;
 
 import com.jajaja.domain.cart.converter.CartConverter;
+import com.jajaja.domain.cart.dto.CartProductResponseDto;
 import com.jajaja.domain.cart.dto.CartResponseDto;
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
@@ -32,14 +33,14 @@ public class CartQueryServiceImpl implements CartQueryService {
 		// 장바구니가 비어있는 경우 emptyDto 반환
 		if (cart.getCartProducts() == null || cart.getCartProducts().isEmpty()) {
 			log.warn("[CartQueryService] 사용자 {}의 장바구니가 비어있습니다.", memberId);
-			return CartConverter.toEmptyCartResponseDto(cart);
+			return CartConverter.toEmptyCartResponseDto();
 		}
 		
 		// 장바구니 내 아이템에 대해 팀 참여 가능 여부 확인, 매핑
-		List<CartResponseDto.CartItemInfoDto> itemInfos = cart.getCartProducts().stream()
+		List<CartProductResponseDto> itemInfos = cart.getCartProducts().stream()
 				.map(cartProduct -> {
 					boolean isTeamAvailable = teamRepository.existsByProductIdAndStatus(cartProduct.getProduct().getId(), TeamStatus.MATCHING);
-					return CartConverter.toCartItemInfoDto(cartProduct, isTeamAvailable);
+					return CartProductResponseDto.of(cartProduct, isTeamAvailable);
 				})
 				.collect(Collectors.toList());
 		
