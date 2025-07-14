@@ -64,6 +64,8 @@ public class TeamCommandServiceImpl implements TeamCommandService {
 
         team.getTeamMembers().add(teamMember);
         team.updateStatus(TeamStatus.COMPLETED);
+
+        // TODO: 팀 매칭이 완료되었음을 알리는 알림을 전송
     }
 
 }
