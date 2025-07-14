@@ -1,5 +1,7 @@
 package com.jajaja.domain.auth.service;
 
+import com.jajaja.domain.cart.entity.Cart;
+import com.jajaja.domain.cart.repository.CartRepository;
 import com.jajaja.domain.user.converter.UserConverter;
 import com.jajaja.domain.auth.dto.UserDto;
 import com.jajaja.domain.auth.dto.CustomOAuth2User;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final CartRepository cartRepository;
 
     @Override
     @Transactional
@@ -43,6 +46,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if (existingUser == null) {
             user = UserConverter.toEntity(oAuth2Response);
             userRepository.save(user);
+            // 장바구니 생성
+            cartRepository.save(Cart.builder().member(user).build());
         } else {
             existingUser.updateName(oAuth2Response.getName());
             existingUser.updatePhone(oAuth2Response.getPhone());
