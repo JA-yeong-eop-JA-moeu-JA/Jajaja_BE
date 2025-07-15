@@ -6,10 +6,7 @@ import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.config.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,8 +30,17 @@ public class TeamController {
             description = "‘참여 버튼’을 통해 해당 팀에 참여하는 기능입니다."
     )
     @PostMapping("/join/{teamId}")
-    public ApiResponse<Void> joinTeam(@Auth Long userId, @PathVariable Long teamId) {
+    public ApiResponse<String> joinTeam(@Auth Long userId, @PathVariable Long teamId) {
         teamCommandService.joinTeam(userId, teamId);
-        return ApiResponse.onSuccess(null);
+        return ApiResponse.onSuccess("팀 참여가 완료되었습니다.");
+    }
+
+    @Operation(
+            summary = "장바구니 상품 팀 참여 API | by 지지/이지희",
+            description = "장바구니 상품의 '팀 참여하기' 버튼을 누를 시, 팀 참여가 진행됩니다.")
+    @PostMapping("/carts/join/{productId}")
+    public ApiResponse<String> joinTeamInCarts(@Auth Long userId, @PathVariable Long productId) {
+        teamCommandService.joinTeamInCarts(userId, productId);
+        return ApiResponse.onSuccess("장바구니 내 상품의 팀 참여가 완료되었습니다.");
     }
 }

@@ -1,10 +1,10 @@
 package com.jajaja.domain.team.service;
 
+import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.team.dto.response.TeamCreateResponseDto;
 import com.jajaja.domain.team.entity.Team;
-import com.jajaja.domain.team.entity.TeamMember;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.domain.team.repository.TeamRepository;
 import com.jajaja.domain.user.entity.User;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class TeamCommandServiceImpl implements TeamCommandService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final TeamRepository teamRepository;
+    private final TeamCommonService teamCommonService;
 
     @Override
     public TeamCreateResponseDto createTeam(Long userId, Long productId) {
@@ -46,26 +48,33 @@ public class TeamCommandServiceImpl implements TeamCommandService {
 
     @Override
     public void joinTeam(Long userId, Long teamId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
+
+        teamCommonService.joinTeam(user, team);
+    }
+
+    @Override
+    public void joinTeamInCarts(Long userId, Long productId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
 
-        Team team = teamRepository.findById(teamId).orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
+        List<Team> matchingTeams = teamRepository.findMatchingTeamsByProductId(productId);
 
-        if (!team.getTeamMembers().isEmpty()) {
-            throw new BadRequestException(ErrorStatus.TEAM_ALREADY_HAS_MEMBER);
-        }
-        if (team.getLeader().getId().equals(user.getId())) {
-            throw new BadRequestException(ErrorStatus.CANNOT_JOIN_OWN_TEAM);
+        if (matchingTeams.isEmpty()) {
+            throw new BadRequestException(ErrorStatus.TEAM_NOT_FOUND);
         }
 
-        TeamMember teamMember = TeamMember.builder()
-                .member(user)
-                .team(team)
-                .build();
+        // 가장 유효 시간에 임박한 팀 선택
+        Team team = matchingTeams.get(0);
 
-        team.getTeamMembers().add(teamMember);
-        team.updateStatus(TeamStatus.COMPLETED);
+        teamCommonService.joinTeam(user, team);
 
-        // TODO: 팀 매칭이 완료되었음을 알리는 알림을 전송
+        // 장바구니에서 해당 product 삭제
+        Cart cart = user.getCart();
+        cart.deleteCartProduct(productId, null);
     }
 
 }

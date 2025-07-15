@@ -28,6 +28,7 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
                         team.leader.isNotNull(),
                         team.teamMembers.isEmpty()
                 )
+                .orderBy(team.expireAt.asc())
                 .fetch();
     }
 
