@@ -1,6 +1,8 @@
 package com.jajaja.domain.team.service;
 
 import com.jajaja.domain.cart.entity.Cart;
+import com.jajaja.domain.cart.entity.CartProduct;
+import com.jajaja.domain.cart.repository.CartRepository;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.team.dto.response.TeamCreateResponseDto;
@@ -12,20 +14,24 @@ import com.jajaja.domain.user.repository.UserRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class TeamCommandServiceImpl implements TeamCommandService {
 
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final TeamRepository teamRepository;
+    private final CartRepository cartRepository;
     private final TeamCommonService teamCommonService;
 
     @Override
@@ -74,7 +80,9 @@ public class TeamCommandServiceImpl implements TeamCommandService {
 
         // 장바구니에서 해당 product 삭제
         Cart cart = user.getCart();
-        cart.deleteCartProduct(productId, null);
+        cart.deleteAllCartProductsByProductId(productId);
+
+        // TODO: 주문 생성으로 넘어가는 로직 작성 필요
     }
 
 }

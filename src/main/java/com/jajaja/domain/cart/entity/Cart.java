@@ -50,4 +50,19 @@ public class Cart extends BaseEntity {
                 .findFirst().orElseThrow(() -> new IllegalArgumentException(("카트에 존재하지 않는 상품입니다.")));
         this.cartProducts.remove(product);
     }
+
+    /**
+     *  Cart에서 한 Product에 대한 CartProduct를 모두 제거합니다.
+     */
+    public void deleteAllCartProductsByProductId(Long productId) {
+        List<CartProduct> toRemove = this.cartProducts.stream()
+                .filter(cp -> cp.getProduct().getId().equals(productId))
+                .toList();
+
+        if (toRemove.isEmpty()) {
+            throw new IllegalArgumentException("카트에 존재하지 않는 상품입니다.");
+        }
+
+        this.cartProducts.removeAll(toRemove);
+    }
 }
