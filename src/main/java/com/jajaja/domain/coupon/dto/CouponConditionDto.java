@@ -11,11 +11,6 @@ public record CouponConditionDto(
 		Integer minOrderAmount
 ) {
 	public static CouponConditionDto from(Coupon coupon) {
-		if(coupon == null) return
-			CouponConditionDto.builder()
-					.build();
-		
-		
 		return CouponConditionDto.builder()
 				.type(coupon.getConditionType())
 				.value(coupon.getConditionValues())
