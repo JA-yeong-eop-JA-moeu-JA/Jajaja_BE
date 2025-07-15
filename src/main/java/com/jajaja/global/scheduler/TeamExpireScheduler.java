@@ -33,6 +33,7 @@ public class TeamExpireScheduler {
         for (Team team : expiredTeams) {
             team.updateStatus(TeamStatus.FAILED);
             log.info("팀 상태 업데이트 → id: {}, status: {}", team.getId(), team.getStatus());
+            // TODO: 팀 매칭 실패 알림 전송
         }
     }
 }
