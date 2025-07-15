@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CartQueryServiceImpl implements CartQueryService {
 	
-	private final CartComponent cartComponent;
+	private final CartCommonService cartCommonService;
 	private final TeamCommandRepository teamRepository;
 	
 	@Override
@@ -28,7 +28,7 @@ public class CartQueryServiceImpl implements CartQueryService {
 		log.info("[CartQueryService] 사용자 {}의 장바구니 조회 시작", memberId);
 		
 		// 이미 생성된 장바구니가 있는지 확인, 없다면 생성
-		Cart cart = cartComponent.findCart(memberId);
+		Cart cart = cartCommonService.findCart(memberId);
 		
 		// 장바구니가 비어있는 경우 emptyDto 반환
 		if (cart.getCartProducts() == null || cart.getCartProducts().isEmpty()) {
