@@ -11,7 +11,7 @@ import java.util.List;
 public class CartConverter {
 	
 	public static CartResponseDto toCartResponseDto(Cart cart, List<CartProductResponseDto> itemInfos) {
-		AppliedCouponResponseDto couponInfo = AppliedCouponResponseDto.from(cart.getCoupon());
+		AppliedCouponResponseDto couponInfo = cart.getCoupon() == null ? null: AppliedCouponResponseDto.from(cart.getCoupon());
 		CartResponseDto.SummaryInfoDto summaryInfoDto = toSummaryInfoDto(0); // TODO: 배송비 계산 로직 구현 필요
 		
 		return new CartResponseDto(
