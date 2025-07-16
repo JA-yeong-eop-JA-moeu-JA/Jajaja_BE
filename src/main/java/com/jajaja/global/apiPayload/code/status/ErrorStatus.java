@@ -33,7 +33,12 @@ public enum ErrorStatus implements BaseErrorCode {
     CART_NOT_FOUND(HttpStatus.BAD_REQUEST,  "CART4001", "장바구니가 없습니다."),
     
     // CART PRODUCT 관련 에러
-    CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CARTPRODUCT4001", "장바구니에 해당 상품이 없습니다.");
+    CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CARTPRODUCT4001", "장바구니에 해당 상품이 없습니다."),
+
+    // TEAM 관련 에러
+    TEAM_NOT_FOUND(HttpStatus.BAD_REQUEST, "TEAM4001", "팀이 없습니다."),
+    TEAM_ALREADY_HAS_MEMBER(HttpStatus.BAD_REQUEST, "TEAM4002", "이미 팀에 멤버가 존재합니다."),
+    CANNOT_JOIN_OWN_TEAM(HttpStatus.BAD_REQUEST, "TEAM4003", "자신이 생성한 팀에는 참여할 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

@@ -2,6 +2,8 @@ package com.jajaja.domain.cart.entity;
 
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.user.entity.User;
+import com.jajaja.global.apiPayload.code.status.ErrorStatus;
+import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -47,7 +49,22 @@ public class Cart extends BaseEntity {
         CartProduct product = this.cartProducts.stream()
                 .filter(cp -> cp.getProduct().getId().equals(productId))
                 .filter(cp ->  Objects.equals(((cp.getProductOption() != null) ? cp.getProductOption().getId() : null), optionId))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException(("카트에 존재하지 않는 상품입니다.")));
+                .findFirst().orElseThrow(() -> new BadRequestException(ErrorStatus.CART_PRODUCT_NOT_FOUND));
         this.cartProducts.remove(product);
+    }
+
+    /**
+     *  Cart에서 한 Product에 대한 CartProduct를 모두 제거합니다.
+     */
+    public void deleteAllCartProductsByProductId(Long productId) {
+        List<CartProduct> toRemove = this.cartProducts.stream()
+                .filter(cp -> cp.getProduct().getId().equals(productId))
+                .toList();
+
+        if (toRemove.isEmpty()) {
+            throw new BadRequestException(ErrorStatus.CART_PRODUCT_NOT_FOUND);
+        }
+
+        this.cartProducts.removeAll(toRemove);
     }
 }
