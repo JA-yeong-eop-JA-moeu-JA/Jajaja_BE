@@ -32,10 +32,6 @@ public class Order extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderStatus status;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private PaymentMethod paymentMethod;
 
     @Column(nullable = false)
@@ -46,6 +42,9 @@ public class Order extends BaseEntity {
 
     @Column(nullable = false)
     private Integer shippingFee;
+
+    @Column(length = 10, nullable = false)
+    private String orderNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")

@@ -1,5 +1,6 @@
 package com.jajaja.domain.order.entity;
 
+import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.entity.ProductOption;
 import com.jajaja.global.common.domain.BaseEntity;
@@ -23,6 +24,10 @@ public class OrderProduct extends BaseEntity {
 
     @Column(nullable = false)
     private Integer price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
