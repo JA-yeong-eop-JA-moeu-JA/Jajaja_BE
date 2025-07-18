@@ -45,7 +45,7 @@ public class ProductListQueryServiceImpl implements ProductListQueryService {
     public HomeProductListResponseDto getProductList(Long userId, Long categoryId) {
         Long targetCategoryId = resolveCategoryId(userId, categoryId);
 
-        // 추천 상품: 해당 업종, 판매량 많은 순 상위 8개
+        // 추천 상품: 해당 업종 내 판매량 많은 순 상위 8개
         List<ProductListResponseDto> recommendProducts = productSalesRepository
                 .findByBusinessCategoryIdOrderBySalesCountDesc(targetCategoryId)
                 .stream()
@@ -57,8 +57,7 @@ public class ProductListQueryServiceImpl implements ProductListQueryService {
         List<ProductListResponseDto> popularProducts = productSalesRepository
                 .findTopProductsByTotalSales(PageRequest.of(0, 8))
                 .stream()
-                .map(ProductSalesRepository.ProductTotalSalesProjection::getProduct)
-                .map(this::convertToDto)
+                .map(dto -> convertToDto(dto.product()))
                 .toList();
 
         // 신상품: 전체 상품 중 생성일 최신 순 상위 8개
