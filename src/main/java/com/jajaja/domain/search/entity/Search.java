@@ -15,9 +15,17 @@ public class Search extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, unique = true)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private Integer searchCount;
+
+    public void increaseCount() {
+        if (this.searchCount == null) {
+            this.searchCount = 1;
+        } else {
+            this.searchCount += 1;
+        }
+    }
 }
