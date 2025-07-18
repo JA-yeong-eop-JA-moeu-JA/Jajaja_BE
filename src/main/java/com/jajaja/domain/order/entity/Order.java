@@ -2,7 +2,6 @@ package com.jajaja.domain.order.entity;
 
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.delivery.entity.Delivery;
-import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.entity.enums.PaymentMethod;
 import com.jajaja.domain.team.entity.Team;
@@ -63,4 +62,14 @@ public class Order extends BaseEntity {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderProduct> orderProducts = new ArrayList<>();
+
+    public int calculateAmount() {
+        return orderProducts.stream()
+                .mapToInt(product -> product.getPrice() * product.getQuantity())
+                .sum();
+    }
+
+    public int calculateFinalAmount() {
+        return calculateAmount() - discountAmount - pointUsedAmount + shippingFee;
+    }
 }

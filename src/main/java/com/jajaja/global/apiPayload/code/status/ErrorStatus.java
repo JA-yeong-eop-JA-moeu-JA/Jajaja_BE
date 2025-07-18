@@ -33,7 +33,11 @@ public enum ErrorStatus implements BaseErrorCode {
     CART_NOT_FOUND(HttpStatus.BAD_REQUEST,  "CART4001", "장바구니기 없습니다."),
     
     // CART PRODUCT 관련 에러
-    CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CARTPRODUCT4001", "장바구니에 해당 상품이 없습니다.");
+    CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CARTPRODUCT4001", "장바구니에 해당 상품이 없습니다."),
+
+    // ORDER 관련 에러
+     ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "ORDER4001", "주문이 없습니다."),
+    ;
 
     private final HttpStatus httpStatus;
     private final String code;
