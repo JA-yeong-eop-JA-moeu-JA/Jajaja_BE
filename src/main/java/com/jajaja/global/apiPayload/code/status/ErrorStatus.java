@@ -18,23 +18,30 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // USER 관련 에러
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER4001", "사용자가 없습니다."),
+    USER_BUSINESS_CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "USERBUSINESS4002", "사용자의 업종 정보가 없습니다."),
     
     // BUSINESS CATEGORY 관련 에러
     BUSINESS_CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATEGORY4001", "업종이 존재하지 않습니다."),
     BUSINESS_CATEGORY_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "CATEGORY4002", "이미 업종이 등록된 사용자입니다."),
+    BUSINESS_CATEGORY_REQUIRED(HttpStatus.BAD_REQUEST, "CATEGORY4003", "업종 정보가 필요합니다."),
     
     // PRODUCT 관련 에러
-    PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PRODUCT4001", "제품이 없습니다."),
+    PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PRODUCT4001", "상품이 없습니다."),
     
     // OPTION 관련 에러
     OPTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "OPTION4001", "옵션이 없습니다."),
 
     // CART 관련 에러
-    CART_NOT_FOUND(HttpStatus.BAD_REQUEST,  "CART4001", "장바구니기 없습니다."),
+    CART_NOT_FOUND(HttpStatus.BAD_REQUEST,  "CART4001", "장바구니가 없습니다."),
     
     // CART PRODUCT 관련 에러
     CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CARTPRODUCT4001", "장바구니에 해당 상품이 없습니다."),
-
+  
+    // TEAM 관련 에러
+    TEAM_NOT_FOUND(HttpStatus.BAD_REQUEST, "TEAM4001", "팀이 없습니다."),
+    TEAM_ALREADY_HAS_MEMBER(HttpStatus.BAD_REQUEST, "TEAM4002", "이미 팀에 멤버가 존재합니다."),
+    CANNOT_JOIN_OWN_TEAM(HttpStatus.BAD_REQUEST, "TEAM4003", "자신이 생성한 팀에는 참여할 수 없습니다."),
+  
     // ORDER 관련 에러
      ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "ORDER4001", "주문이 없습니다."),
     ;

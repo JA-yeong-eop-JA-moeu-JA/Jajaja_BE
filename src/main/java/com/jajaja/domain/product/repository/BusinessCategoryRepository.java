@@ -1,4 +1,4 @@
-package com.jajaja.domain.product.entity.repository;
+package com.jajaja.domain.product.repository;
 
 import com.jajaja.domain.product.entity.BusinessCategory;
 import org.springframework.data.jpa.repository.JpaRepository;

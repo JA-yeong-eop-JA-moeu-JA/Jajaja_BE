@@ -1,5 +1,6 @@
 package com.jajaja.domain.user.entity;
 
+import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.notification.entity.Notification;
 import com.jajaja.domain.point.entity.Point;
 import com.jajaja.domain.review.entity.Review;
@@ -67,6 +68,9 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewLike> reviewLikes = new ArrayList<>();
+
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Cart cart;
 
     public void updateName(String name) {
         this.name = name;

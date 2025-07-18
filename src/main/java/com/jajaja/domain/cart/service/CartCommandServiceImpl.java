@@ -24,14 +24,14 @@ import java.util.Optional;
 @Transactional
 public class CartCommandServiceImpl implements CartCommandService {
 	
-	private final CartComponent cartComponent;
+	private final CartCommonService cartCommonService;
 	private final CartProductRepository cartProductRepository;
 	private final ProductRepository productRepository;
 	private final ProductOptionRepository productOptionRepository;
 	
 	@Override
 	public void addOrUpdateCartProduct(Long memberId, List<CartProductAddRequestDto> request) {
-		Cart cart = cartComponent.findCart(memberId);
+		Cart cart = cartCommonService.findCart(memberId);
 		request.forEach(req -> {
 			log.info("[CartCommandService] 사용자 {}의 장바구니에 아이템 {} 추가/수정", memberId, req.productId());
 			
@@ -58,7 +58,7 @@ public class CartCommandServiceImpl implements CartCommandService {
 	@Override
 	public void deleteCartProduct(Long memberId, Long productId, Long optionId) {
 		log.info("[CartCommandService] 사용자 {}의 장바구니에 아이템 {} 삭제", memberId, productId);
-		Cart cart = cartComponent.findCart(memberId);
+		Cart cart = cartCommonService.findCart(memberId);
 		
 		try {
 			cart.deleteCartProduct(productId, optionId);

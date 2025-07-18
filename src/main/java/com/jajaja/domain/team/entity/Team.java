@@ -8,6 +8,7 @@ import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,9 @@ public class Team extends BaseEntity {
     @JoinColumn(name = "leader_id")
     private User leader;
 
+    @Column(nullable = false)
+    private LocalDateTime expireAt;
+
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamMember> teamMembers = new ArrayList<>();
 
@@ -41,4 +45,12 @@ public class Team extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
+  
+    /**
+     * Team의 status를 업데이트
+     * @paramname status TeamStatus
+     */
+    public void updateStatus(TeamStatus status) {
+        this.status = status;
+    }
 }
