@@ -5,6 +5,7 @@ import com.jajaja.domain.delivery.entity.Delivery;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.entity.enums.PaymentMethod;
+import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.user.entity.User;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
@@ -57,6 +58,9 @@ public class Order extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    private Team team;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderProduct> orderProducts = new ArrayList<>();
