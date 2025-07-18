@@ -1,7 +1,7 @@
 package com.jajaja.domain.user.service;
 
 import com.jajaja.domain.product.entity.BusinessCategory;
-import com.jajaja.domain.product.entity.repository.BusinessCategoryRepository;
+import com.jajaja.domain.product.repository.BusinessCategoryRepository;
 import com.jajaja.domain.user.dto.UserBusinessCategoryRequestDto;
 import com.jajaja.domain.user.entity.User;
 import com.jajaja.domain.user.entity.UserBusinessCategory;
