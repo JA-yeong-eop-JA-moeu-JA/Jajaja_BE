@@ -27,7 +27,8 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/api/auth/token",
-            "/api/products/**"
+            "/api/products/**",
+            "/api/categories/**",
     };
 
     @Bean
