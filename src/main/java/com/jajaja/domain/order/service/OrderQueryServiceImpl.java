@@ -1,7 +1,6 @@
 package com.jajaja.domain.order.service;
 
-import com.jajaja.domain.order.dto.response.OrderDetailResponseDto;
-import com.jajaja.domain.order.dto.response.OrderItemDto;
+import com.jajaja.domain.order.dto.response.*;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.domain.team.entity.Team;
@@ -9,6 +8,8 @@ import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,24 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 
     private final OrderRepository orderRepository;
 
+    @Override
+    public PagingOrderListResponseDto getMyOrders(Long userId, Pageable pageable) {
+        Page<Order> orderPage = orderRepository.findByMemberId(userId, pageable);
+        List<OrderListDto> orderListDtos = orderPage.getContent().stream()
+                .map(order -> {
+                    TeamStatus teamStatus = Optional.ofNullable(order.getTeam())
+                            .map(Team::getStatus)
+                            .orElse(null);
+                    List<OrderItemDto> items = order.getOrderProducts().stream()
+                            .map(orderProduct -> OrderItemDto.of(orderProduct, teamStatus))
+                            .collect(Collectors.toList());
+                    return OrderListDto.of(order, items);
+                })
+                .collect(Collectors.toList());
+        return PagingOrderListResponseDto.of(orderPage, orderListDtos);
+    }
+
+    @Override
     public OrderDetailResponseDto getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
