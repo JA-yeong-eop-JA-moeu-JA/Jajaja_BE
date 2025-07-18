@@ -1,5 +1,6 @@
 package com.jajaja.domain.product.controller;
 
+import com.jajaja.domain.product.dto.response.HomeProductListResponseDto;
 import com.jajaja.domain.product.dto.response.ProductDetailResponseDto;
 import com.jajaja.domain.product.dto.response.ProductOptionResponseDto;
 import com.jajaja.domain.product.service.ProductOptionQueryService;
@@ -8,10 +9,7 @@ import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.config.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,6 +20,20 @@ public class ProductController {
 
     private final ProductQueryService productQueryService;
     private final ProductOptionQueryService productOptionQueryService;
+
+    @Operation(
+            summary = "홈 상품 리스트 조회 API | by 구름/윤윤지",
+            description = "추천 상품, 인기 상품, 신상품을 각각 8개씩 조회합니다. " +
+                    "회원은 자동으로 업종이 조회되며, 비회원은 업종 ID를 쿼리 파라미터로 전달해야 합니다."
+    )
+    @GetMapping("")
+    public ApiResponse<HomeProductListResponseDto> getHomeProducts(
+            @Auth Long userId,
+            @RequestParam(required = false) Long categoryId
+    ) {
+        HomeProductListResponseDto response = productQueryService.getProductList(userId, categoryId);
+        return ApiResponse.onSuccess(response);
+    }
 
     @Operation(
             summary = "상품 상세 조회 API | by 지지/이지희",
@@ -39,7 +51,7 @@ public class ProductController {
     )
     @GetMapping("/{productId}/options")
     public ApiResponse<List<ProductOptionResponseDto>> getProductOptions(@PathVariable Long productId) {
-       List<ProductOptionResponseDto> responseDto = productOptionQueryService.getProductOptions(productId);
+        List<ProductOptionResponseDto> responseDto = productOptionQueryService.getProductOptions(productId);
         return ApiResponse.onSuccess(responseDto);
     }
 }
