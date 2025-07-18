@@ -1,5 +1,6 @@
 package com.jajaja.domain.product.service;
 
+import com.jajaja.domain.product.converter.ProductConverter;
 import com.jajaja.domain.product.dto.response.HomeProductListResponseDto;
 import com.jajaja.domain.product.dto.response.ProductDetailResponseDto;
 import com.jajaja.domain.product.dto.response.ProductListResponseDto;
@@ -44,6 +45,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final UserBusinessCategoryRepository userBusinessCategoryRepository;
     private final UserRepository userRepository;
     private final ProductSalesRepository productSalesRepository;
+    private final ProductCommonService productCommonService;
+    private final ProductConverter productConverter;
 
     @Override
     public ProductDetailResponseDto getProductDetail(Long userId, Long productId) {
@@ -77,7 +80,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 product.getDiscountRate()
         );
 
-        double averageRating = calculateAverageRating(product.getReviews());
+        double averageRating = productCommonService.calculateAverageRating(product.getReviews());
 
         return ProductDetailResponseDto.of(
                 product,
@@ -104,14 +107,14 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 .findByBusinessCategoryIdOrderBySalesCountDesc(targetCategoryId)
                 .stream()
                 .limit(8)
-                .map(ps -> convertToDto(ps.getProduct()))
+                .map(ps -> productConverter.toProductListResponseDto(ps.getProduct()))
                 .collect(Collectors.toList());
 
         // 인기 상품: 전체 상품 중 판매량 많은 순 상위 8개
         List<ProductListResponseDto> popularProducts = productSalesRepository
                 .findTopProductsByTotalSales(PageRequest.of(0, 8))
                 .stream()
-                .map(dto -> convertToDto(dto.product()))
+                .map(dto -> productConverter.toProductListResponseDto(dto.product()))
                 .toList();
 
         // 신상품: 전체 상품 중 생성일 최신 순 상위 8개
@@ -119,7 +122,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 .stream()
                 .sorted(Comparator.comparing(Product::getCreatedAt).reversed())
                 .limit(8)
-                .map(this::convertToDto)
+                .map(productConverter::toProductListResponseDto)
                 .toList();
 
         return HomeProductListResponseDto.of(recommendProducts, popularProducts, newProducts);
@@ -151,30 +154,4 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         throw new BadRequestException(ErrorStatus.BUSINESS_CATEGORY_REQUIRED);
     }
 
-    /**
-     * 상품 엔티티를 상품 리스트 응답 DTO로 변환
-     *
-     * @param product 상품 엔티티
-     * @return 상품 리스트 응답 DTO
-     */
-    private ProductListResponseDto convertToDto(Product product) {
-        double rating = calculateAverageRating(product.getReviews());
-        int reviewCount = product.getReviews().size();
-        return ProductListResponseDto.of(product, rating, reviewCount);
-    }
-
-    /**
-     * 리뷰의 별점의 평균을 계산하는 메소드
-     * @paramname reviews 리뷰 리스트
-     * @return 상품의 평균 리뷰 별점
-     */
-    private double calculateAverageRating(List<Review> reviews) {
-        if (reviews.isEmpty()) {
-            return 0.0;
-        }
-        return reviews.stream()
-                .mapToDouble(review -> review.getRating())
-                .average()
-                .orElse(0.0);
-    }
 }
