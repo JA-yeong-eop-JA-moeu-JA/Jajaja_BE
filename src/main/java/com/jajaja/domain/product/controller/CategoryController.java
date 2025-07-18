@@ -19,7 +19,7 @@ public class CategoryController {
 
     @Operation(
             summary = "상위 카테고리 조회 API | by 루비/이송미",
-            description = "카테고리 그룹(BASIC, INDUSTRY)에 해당하는 상위 카테고리 목록을 조회합니다."
+            description = "카테고리 그룹(DEFAULT, BUSINESS)에 해당하는 상위 카테고리 목록을 조회합니다."
     )
     @GetMapping
     public ApiResponse<List<CategoryResponseDto>> getCategoriesByGroup(@RequestParam String group) {
