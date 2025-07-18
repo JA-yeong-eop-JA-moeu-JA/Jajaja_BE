@@ -3,7 +3,6 @@ package com.jajaja.domain.product.controller;
 import com.jajaja.domain.product.dto.response.HomeProductListResponseDto;
 import com.jajaja.domain.product.dto.response.ProductDetailResponseDto;
 import com.jajaja.domain.product.dto.response.ProductOptionResponseDto;
-import com.jajaja.domain.product.service.ProductListQueryService;
 import com.jajaja.domain.product.service.ProductOptionQueryService;
 import com.jajaja.domain.product.service.ProductQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
@@ -21,7 +20,6 @@ public class ProductController {
 
     private final ProductQueryService productQueryService;
     private final ProductOptionQueryService productOptionQueryService;
-    private final ProductListQueryService productListQueryService;
 
     @Operation(
             summary = "홈 상품 리스트 조회 API | by 구름/윤윤지",
@@ -33,7 +31,7 @@ public class ProductController {
             @Auth Long userId,
             @RequestParam(required = false) Long categoryId
     ) {
-        HomeProductListResponseDto response = productListQueryService.getProductList(userId, categoryId);
+        HomeProductListResponseDto response = productQueryService.getProductList(userId, categoryId);
         return ApiResponse.onSuccess(response);
     }
 
