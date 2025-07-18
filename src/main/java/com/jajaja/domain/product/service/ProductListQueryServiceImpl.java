@@ -94,7 +94,7 @@ public class ProductListQueryServiceImpl implements ProductListQueryService {
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.BUSINESS_CATEGORY_NOT_FOUND));
             return category.getId();
         }
-        throw new BadRequestException(ErrorStatus.CATEGORY_REQUIRED);
+        throw new BadRequestException(ErrorStatus.BUSINESS_CATEGORY_REQUIRED);
     }
 
     /**
