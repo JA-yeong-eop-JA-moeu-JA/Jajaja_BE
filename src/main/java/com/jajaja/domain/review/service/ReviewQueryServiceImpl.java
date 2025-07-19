@@ -63,6 +63,7 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
                                 .anyMatch(like -> like.getMember().getId().equals(userId));
                     }
                     List<String> imageUrls = review.getReviewImages().stream()
+                            .limit(6)
                             .map(ReviewImage::getImageUrl)
                             .toList();
                     return ReviewListDto.from(review, isLike, imageUrls);

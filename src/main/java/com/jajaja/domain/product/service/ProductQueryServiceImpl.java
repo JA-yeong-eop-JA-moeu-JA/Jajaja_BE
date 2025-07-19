@@ -9,9 +9,9 @@ import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.BusinessCategoryRepository;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
-import com.jajaja.domain.review.converter.ReviewConverter;
 import com.jajaja.domain.review.dto.response.ReviewListDto;
 import com.jajaja.domain.review.entity.Review;
+import com.jajaja.domain.review.entity.ReviewImage;
 import com.jajaja.domain.review.repository.ReviewRepository;
 import com.jajaja.domain.team.dto.response.TeamListDto;
 import com.jajaja.domain.team.entity.Team;
@@ -69,7 +69,11 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                         isLike = review.getReviewLikes().stream()
                                 .anyMatch(like -> like.getMember().getId().equals(userId));
                     }
-                    return ReviewConverter.toReviewResponseDto(review, isLike);
+                    List<String> imageUrls = review.getReviewImages().stream()
+                            .limit(6)
+                            .map(ReviewImage::getImageUrl)
+                            .toList();
+                    return ReviewListDto.from(review, isLike, imageUrls);
                 })
                 .toList();
 
