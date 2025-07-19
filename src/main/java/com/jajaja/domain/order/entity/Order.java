@@ -2,9 +2,9 @@ package com.jajaja.domain.order.entity;
 
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.delivery.entity.Delivery;
-import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.entity.enums.PaymentMethod;
+import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.user.entity.User;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
@@ -31,10 +31,6 @@ public class Order extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderStatus status;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private PaymentMethod paymentMethod;
 
     @Column(nullable = false)
@@ -45,6 +41,9 @@ public class Order extends BaseEntity {
 
     @Column(nullable = false)
     private Integer shippingFee;
+
+    @Column(length = 10, nullable = false)
+    private String orderNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -58,6 +57,19 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
 
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    private Team team;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderProduct> orderProducts = new ArrayList<>();
+
+    public int calculateAmount() {
+        return orderProducts.stream()
+                .mapToInt(product -> product.getPrice() * product.getQuantity())
+                .sum();
+    }
+
+    public int calculateFinalAmount() {
+        return calculateAmount() - discountAmount - pointUsedAmount + shippingFee;
+    }
 }
