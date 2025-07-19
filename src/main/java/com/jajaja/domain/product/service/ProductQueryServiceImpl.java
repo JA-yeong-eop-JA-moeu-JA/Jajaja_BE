@@ -18,15 +18,17 @@ import com.jajaja.domain.review.entity.Review;
 import com.jajaja.domain.review.repository.ReviewRepository;
 import com.jajaja.domain.team.dto.response.TeamResponseDto;
 import com.jajaja.domain.team.entity.Team;
-import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.domain.team.repository.TeamRepository;
 import com.jajaja.domain.user.entity.User;
 import com.jajaja.domain.user.entity.UserBusinessCategory;
 import com.jajaja.domain.user.repository.UserBusinessCategoryRepository;
 import com.jajaja.domain.user.repository.UserRepository;
+import com.jajaja.global.apiPayload.PageResponse;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -168,7 +170,13 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             case REVIEW -> productRepository.findBySubCategoryOrderByReviewCountDesc(subcategoryId, pageable);
         };
 
-        List<CategoryProductListResponseDto.ProductItemDto> content = products.stream()
+        boolean hasNext = products.size() > pageable.getPageSize();
+        List<Product> trimmedProducts = hasNext ? products.subList(0, pageable.getPageSize()) : products;
+
+        long totalCount = productRepository.countBySubCategoryId(subcategoryId);
+        Page<Product> productPage = new PageImpl<>(trimmedProducts, pageable, totalCount);
+
+        List<CategoryProductListResponseDto.ProductItemDto> productDtos = trimmedProducts.stream()
                 .map(product -> {
                     int salePrice = ProductPriceCalculator.calculateDiscountedPrice(product.getPrice(), product.getDiscountRate());
                     double rating = productCommonService.calculateAverageRating(product.getReviews());
@@ -187,11 +195,6 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 })
                 .toList();
 
-        boolean hasNext = content.size() > pageable.getPageSize();
-        if (hasNext) {
-            content = content.subList(0, pageable.getPageSize());
-        }
-
-        return new CategoryProductListResponseDto(content, pageable.getPageNumber(), pageable.getPageSize(), hasNext);
+        return new CategoryProductListResponseDto(PageResponse.from(productPage), productDtos);
     }
 }

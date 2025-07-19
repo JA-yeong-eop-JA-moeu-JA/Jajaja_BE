@@ -67,5 +67,21 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
     }
+
+    @Override
+    public long countBySubCategoryId(Long subcategoryId) {
+        QProduct product = QProduct.product;
+        QProductSubCategory psc = QProductSubCategory.productSubCategory;
+
+        Long result = queryFactory
+                .select(product.countDistinct())
+                .from(psc)
+                .join(psc.product, product)
+                .where(psc.subCategory.id.eq(subcategoryId))
+                .fetchOne();
+
+        return result != null ? result : 0L;
+    }
+
 }
 
