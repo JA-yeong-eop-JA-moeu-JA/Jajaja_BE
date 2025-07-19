@@ -1,5 +1,6 @@
 package com.jajaja.domain.team.entity;
 
+import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.domain.user.entity.User;
@@ -41,6 +42,10 @@ public class Team extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+  
     /**
      * Team의 status를 업데이트
      * @paramname status TeamStatus
@@ -48,5 +53,4 @@ public class Team extends BaseEntity {
     public void updateStatus(TeamStatus status) {
         this.status = status;
     }
-
 }
