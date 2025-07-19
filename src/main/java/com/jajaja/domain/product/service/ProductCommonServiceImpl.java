@@ -18,4 +18,13 @@ public class ProductCommonServiceImpl implements ProductCommonService {
                 .average()
                 .orElse(0.0);
     }
+
+    @Override
+    public Integer calculateDiscountedPrice(Integer price, Integer discountRate) {
+        if (discountRate == null || discountRate == 0) {
+            return price;
+        }
+        double discountMultiplier = 1 - (discountRate / 100.0);
+        return Integer.valueOf((int) Math.round(price * discountMultiplier));
+    }
 }

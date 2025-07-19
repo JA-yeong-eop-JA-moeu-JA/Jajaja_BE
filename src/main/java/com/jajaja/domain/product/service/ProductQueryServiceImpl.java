@@ -9,14 +9,12 @@ import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.BusinessCategoryRepository;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
-import com.jajaja.domain.product.util.ProductPriceCalculator;
 import com.jajaja.domain.review.converter.ReviewConverter;
 import com.jajaja.domain.review.dto.response.ReviewResponseDto;
 import com.jajaja.domain.review.entity.Review;
 import com.jajaja.domain.review.repository.ReviewRepository;
 import com.jajaja.domain.team.dto.response.TeamResponseDto;
 import com.jajaja.domain.team.entity.Team;
-import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.domain.team.repository.TeamRepository;
 import com.jajaja.domain.user.entity.User;
 import com.jajaja.domain.user.entity.UserBusinessCategory;
@@ -75,7 +73,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 })
                 .toList();
 
-        int salePrice = ProductPriceCalculator.calculateDiscountedPrice(
+        int salePrice = productCommonService.calculateDiscountedPrice(
                 product.getPrice(),
                 product.getDiscountRate()
         );
