@@ -17,7 +17,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class CategoryQueryRepositoryImpl implements CategoryQueryRepository {
+public class CategoryRepositoryImpl implements CategoryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
