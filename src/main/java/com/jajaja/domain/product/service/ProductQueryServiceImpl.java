@@ -10,10 +10,10 @@ import com.jajaja.domain.product.repository.BusinessCategoryRepository;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.domain.review.converter.ReviewConverter;
-import com.jajaja.domain.review.dto.response.ReviewResponseDto;
+import com.jajaja.domain.review.dto.response.ReviewListDto;
 import com.jajaja.domain.review.entity.Review;
 import com.jajaja.domain.review.repository.ReviewRepository;
-import com.jajaja.domain.team.dto.response.TeamResponseDto;
+import com.jajaja.domain.team.dto.response.TeamListDto;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.repository.TeamRepository;
 import com.jajaja.domain.user.entity.User;
@@ -54,15 +54,15 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         // 모집 중인 팀 조회
         List<Team> matchingTeams = teamRepository.findMatchingTeamsByProductId(productId);
 
-        List<TeamResponseDto> teamResponseDtoList = matchingTeams.stream()
-                .map(TeamResponseDto::from)
+        List<TeamListDto> teamResponseDtoList = matchingTeams.stream()
+                .map(TeamListDto::from)
                 .toList();
 
         // 좋아요 수 상위 3개 리뷰만 조회
         List<Review> topReviews = reviewRepository.findTop3ByProductIdOrderByLikeCountDesc(productId);
 
         // 회원/비회원 경우 나눠서, review 조회
-        List<ReviewResponseDto> reviewResponseDtoList = topReviews.stream()
+        List<ReviewListDto> reviewResponseDtoList = topReviews.stream()
                 .map(review -> {
                     boolean isLike = false;
                     if (userId != null) {

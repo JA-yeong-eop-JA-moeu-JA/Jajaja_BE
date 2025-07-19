@@ -1,8 +1,8 @@
 package com.jajaja.domain.product.dto.response;
 
 import com.jajaja.domain.product.entity.Product;
-import com.jajaja.domain.review.dto.response.ReviewResponseDto;
-import com.jajaja.domain.team.dto.response.TeamResponseDto;
+import com.jajaja.domain.review.dto.response.ReviewListDto;
+import com.jajaja.domain.team.dto.response.TeamListDto;
 import lombok.Builder;
 
 import java.util.List;
@@ -20,15 +20,15 @@ public record ProductDetailResponseDto(
         double rating,
         int reviewCount,
         int deliveryPeriod,
-        List<TeamResponseDto> teams,
-        List<ReviewResponseDto> reviews
+        List<TeamListDto> teams,
+        List<ReviewListDto> reviews
 ) {
     public static ProductDetailResponseDto of(
             Product product,
             int salePrice,
             double averageRating,
-            List<TeamResponseDto> teams,
-            List<ReviewResponseDto> reviews
+            List<TeamListDto> teams,
+            List<ReviewListDto> reviews
     ) {
         return ProductDetailResponseDto.builder()
                 .thumbnailUrl(product.getThumbnailUrl())
