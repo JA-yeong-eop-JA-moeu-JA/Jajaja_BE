@@ -24,7 +24,13 @@ public enum ErrorStatus implements BaseErrorCode {
     BUSINESS_CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATEGORY4001", "업종이 존재하지 않습니다."),
     BUSINESS_CATEGORY_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "CATEGORY4002", "이미 업종이 등록된 사용자입니다."),
     BUSINESS_CATEGORY_REQUIRED(HttpStatus.BAD_REQUEST, "CATEGORY4003", "업종 정보가 필요합니다."),
-    
+
+    // CATEGORY 관련 에러
+    INVALID_CATEGORY_GROUP(HttpStatus.BAD_REQUEST, "CATEGORY4004", "유효하지 않은 카테고리 그룹입니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATEGORY4005", "존재하지 않는 카테고리입니다."),
+    INVALID_PRODUCT_SORT_TYPE(HttpStatus.BAD_REQUEST, "CATEGORY4006", "정렬 기준이 올바르지 않습니다."),
+    PRODUCTS_NOT_FOUND_IN_CATEGORY(HttpStatus.BAD_REQUEST, "CATEGORY4007", "해당 카테고리에 등록된 상품이 없습니다."),
+
     // PRODUCT 관련 에러
     PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PRODUCT4001", "상품이 없습니다."),
     
