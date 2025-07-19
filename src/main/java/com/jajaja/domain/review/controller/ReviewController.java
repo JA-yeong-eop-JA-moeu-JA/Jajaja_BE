@@ -6,6 +6,7 @@ import com.jajaja.domain.review.service.ReviewQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.config.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -33,8 +34,19 @@ public class ReviewController {
             description = "리뷰 상세 조회의 하단(최신순|추천순 필터링)을 조회하는 기능입니다."
     )
     @GetMapping("/{productId}")
-    public ApiResponse<PagingReviewListResponseDto> getReviewList(@Auth Long userId, @RequestParam String sortType, @PathVariable Long productId, Pageable pageable) {
-        PagingReviewListResponseDto responseDto = reviewQueryService.getReviewList(userId, productId, sortType, pageable);
+    public ApiResponse<PagingReviewListResponseDto> getReviewList(
+            @Auth Long userId,
+            @PathVariable Long productId,
+            @Parameter(description = "정렬 기준 (LATEST | RECOMMEND)", example = "LATEST")
+            @RequestParam(required = false, defaultValue = "NEW") String sort,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기", example = "5")
+            @RequestParam(defaultValue = "5") int size
+            ) {
+        PagingReviewListResponseDto responseDto = reviewQueryService.getReviewList(userId, productId, sort, page, size);
         return ApiResponse.onSuccess(responseDto);
     }
 }

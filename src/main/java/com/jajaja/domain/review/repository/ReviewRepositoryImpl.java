@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -78,7 +79,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
     }
 
     @Override
-    public Page<Review> findPageByProductIdOrderByCreatedAt(Long productId, Pageable pageable) {
+    public Page<Review> findPageByProductIdOrderByCreatedAt(Long productId, int page, int size) {
         QReview review = QReview.review;
 
         List<Review> content = queryFactory
@@ -86,8 +87,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 .where(review.product.id.eq(productId)
                         .and(review.deletedAt.isNull()))
                 .orderBy(review.createdAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .offset((long) page * size)
+                .limit(size)
                 .fetch();
 
         long total = Optional.ofNullable(
@@ -97,14 +98,13 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                         .fetchOne()
         ).orElse(0L);
 
-        return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(content, PageRequest.of(page, size), total);
     }
 
     @Override
-    public Page<Review> findPageByProductIdOrderByLikeCount(Long productId, Pageable pageable) {
+    public Page<Review> findPageByProductIdOrderByLikeCount(Long productId, int page, int size) {
         QReview review = QReview.review;
         QReviewLike like = QReviewLike.reviewLike;
-
 
         List<Review> reviews = queryFactory
                 .select(review)
@@ -113,8 +113,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 .where(review.product.id.eq(productId).and(review.deletedAt.isNull()))
                 .groupBy(review.id)
                 .orderBy(like.id.count().desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .offset((long) page * size)
+                .limit(size)
                 .fetch();
 
         long total = Optional.ofNullable(
@@ -124,7 +124,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                         .fetchOne()
         ).orElse(0L);
 
-        return new PageImpl<>(reviews, pageable, total);
+        return new PageImpl<>(reviews, PageRequest.of(page, size), total);
     }
 
 }

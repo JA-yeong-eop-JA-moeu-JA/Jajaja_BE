@@ -11,6 +11,6 @@ public interface ReviewRepositoryCustom {
     Long countByProductId(Long productId);
     Double findAvgRatingByProductId(Long productId);
     List<String> findTop6ReviewImageUrlsByProductId(Long productId);
-    Page<Review> findPageByProductIdOrderByCreatedAt(Long productId, Pageable pageable);
-    Page<Review> findPageByProductIdOrderByLikeCount(Long productId, Pageable pageable);
+    Page<Review> findPageByProductIdOrderByCreatedAt(Long productId, int page, int size);
+    Page<Review> findPageByProductIdOrderByLikeCount(Long productId, int page, int size);
 }

@@ -1,11 +1,13 @@
 package com.jajaja.domain.product.service;
 
 import com.jajaja.domain.product.converter.ProductConverter;
+import com.jajaja.domain.product.dto.response.CategoryProductListResponseDto;
 import com.jajaja.domain.product.dto.response.HomeProductListResponseDto;
 import com.jajaja.domain.product.dto.response.ProductDetailResponseDto;
 import com.jajaja.domain.product.dto.response.ProductListResponseDto;
 import com.jajaja.domain.product.entity.BusinessCategory;
 import com.jajaja.domain.product.entity.Product;
+import com.jajaja.domain.product.entity.enums.ProductSortType;
 import com.jajaja.domain.product.repository.BusinessCategoryRepository;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
@@ -20,10 +22,14 @@ import com.jajaja.domain.user.entity.User;
 import com.jajaja.domain.user.entity.UserBusinessCategory;
 import com.jajaja.domain.user.repository.UserBusinessCategoryRepository;
 import com.jajaja.domain.user.repository.UserRepository;
+import com.jajaja.global.apiPayload.PageResponse;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -156,4 +162,42 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         throw new BadRequestException(ErrorStatus.BUSINESS_CATEGORY_REQUIRED);
     }
 
+    @Override
+    public CategoryProductListResponseDto getProductsBySubCategory(Long subcategoryId, String sort, Pageable pageable) {
+        ProductSortType sortType = ProductSortType.from(sort);
+
+        List<Product> products = switch (sortType) {
+            case POPULAR -> productSalesRepository.findProductsBySubCategoryOrderBySalesDesc(subcategoryId, pageable);
+            case NEW -> productRepository.findBySubCategoryOrderByCreatedAtDesc(subcategoryId, pageable);
+            case PRICE_ASC -> productRepository.findBySubCategoryOrderByPriceAsc(subcategoryId, pageable);
+            case REVIEW -> productRepository.findBySubCategoryOrderByReviewCountDesc(subcategoryId, pageable);
+        };
+
+        boolean hasNext = products.size() > pageable.getPageSize();
+        List<Product> trimmedProducts = hasNext ? products.subList(0, pageable.getPageSize()) : products;
+
+        long totalCount = productRepository.countBySubCategoryId(subcategoryId);
+        Page<Product> productPage = new PageImpl<>(trimmedProducts, pageable, totalCount);
+
+        List<CategoryProductListResponseDto.ProductItemDto> productDtos = trimmedProducts.stream()
+                .map(product -> {
+                    int salePrice = ProductPriceCalculator.calculateDiscountedPrice(product.getPrice(), product.getDiscountRate());
+                    double rating = productCommonService.calculateAverageRating(product.getReviews());
+                    int reviewCount = product.getReviews().size();
+
+                    return CategoryProductListResponseDto.ProductItemDto.builder()
+                            .productId(product.getId())
+                            .name(product.getName())
+                            .salePrice(salePrice)
+                            .discountRate(product.getDiscountRate() != null ? product.getDiscountRate() : 0)
+                            .imageUrl(product.getThumbnailUrl())
+                            .store(product.getStore())
+                            .rating(rating)
+                            .reviewCount(reviewCount)
+                            .build();
+                })
+                .toList();
+
+        return new CategoryProductListResponseDto(PageResponse.from(productPage), productDtos);
+    }
 }

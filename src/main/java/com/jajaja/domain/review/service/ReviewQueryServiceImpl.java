@@ -39,19 +39,19 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
     }
 
     @Override
-    public PagingReviewListResponseDto getReviewList(Long userId, Long productId, String sortType, Pageable pageable) {
+    public PagingReviewListResponseDto getReviewList(Long userId, Long productId, String sort, int page, int size) {
         productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
         Page<Review> reviewPage;
 
-        switch (sortType.toLowerCase()) {
+        switch (sort.toLowerCase()) {
             case "recommend":
-                reviewPage = reviewRepository.findPageByProductIdOrderByLikeCount(productId, pageable);
+                reviewPage = reviewRepository.findPageByProductIdOrderByLikeCount(productId, page, size);
                 break;
             case "latest":
             default:
-                reviewPage = reviewRepository.findPageByProductIdOrderByCreatedAt(productId, pageable);
+                reviewPage = reviewRepository.findPageByProductIdOrderByCreatedAt(productId, page, size);
                 break;
         }
 
