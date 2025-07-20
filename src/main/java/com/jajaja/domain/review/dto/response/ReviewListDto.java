@@ -6,16 +6,16 @@ import java.util.List;
 
 @Builder
 public record ReviewListDto(
-        ReviewItemDto reviewPage,
+        ReviewItemDto review,
         boolean isLike,
         List<String> imageUrls
 ) {
     public static ReviewListDto from(
-            ReviewItemDto reviewPage,
+            ReviewItemDto review,
             boolean isLike,
             List<String> imageUrls) {
         return ReviewListDto.builder()
-                .reviewPage(reviewPage)
+                .review(review)
                 .isLike(isLike)
                 .imageUrls(imageUrls)
                 .build();
