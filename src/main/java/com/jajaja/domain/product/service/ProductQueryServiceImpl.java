@@ -12,8 +12,10 @@ import com.jajaja.domain.product.repository.BusinessCategoryRepository;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.domain.review.dto.response.ReviewListDto;
-import com.jajaja.domain.review.entity.Review;
+import com.jajaja.domain.review.dto.response.ReviewItemDto;
 import com.jajaja.domain.review.entity.ReviewImage;
+import com.jajaja.domain.review.repository.ReviewImageRepository;
+import com.jajaja.domain.review.repository.ReviewLikeRepository;
 import com.jajaja.domain.review.repository.ReviewRepository;
 import com.jajaja.domain.team.dto.response.TeamListDto;
 import com.jajaja.domain.team.entity.Team;
@@ -35,6 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +48,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
+    private final ReviewImageRepository reviewImageRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
     private final TeamRepository teamRepository;
     private final BusinessCategoryRepository businessCategoryRepository;
     private final UserBusinessCategoryRepository userBusinessCategoryRepository;
@@ -65,23 +71,30 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 .toList();
 
         // 좋아요 수 상위 3개 리뷰만 조회
-        List<Review> topReviews = reviewRepository.findTop3ByProductIdOrderByLikeCountDesc(productId);
+        List<ReviewItemDto> reviewPageDtos = reviewRepository.findTop3ItemByProductIdOrderByLikeCountDesc(productId);
 
-        // 회원/비회원 경우 나눠서, review 조회
-        List<ReviewListDto> reviewResponseDtoList = topReviews.stream()
-                .map(review -> {
-                    boolean isLike = false;
-                    if (userId != null) {
-                        isLike = review.getReviewLikes().stream()
-                                .anyMatch(like -> like.getMember().getId().equals(userId));
-                    }
-                    List<String> imageUrls = review.getReviewImages().stream()
-                            .limit(6)
-                            .map(ReviewImage::getImageUrl)
-                            .toList();
-                    return ReviewListDto.from(review, isLike, imageUrls);
-                })
+        List<Integer> reviewIds = reviewPageDtos.stream()
+                .map(ReviewItemDto::id)
                 .toList();
+
+        // imageUrls 조회
+        Map<Integer, List<String>> imageUrlsMap = reviewImageRepository
+                .findTop6ImageUrlsGroupedByReviewIds(reviewIds);
+
+        // isLike 조회
+        Set<Integer> likedReviewIds = userId != null
+                ? reviewLikeRepository.findReviewIdsLikedByUser(userId, reviewIds)
+                : Set.of();
+
+        // 병합
+        List<ReviewListDto> reviewResponseDtoList = reviewPageDtos.stream()
+                .map(dto -> new ReviewListDto(
+                        dto,
+                        likedReviewIds.contains(dto.id()),
+                        imageUrlsMap.getOrDefault(dto.id(), List.of())
+                ))
+                .toList();
+
 
         int salePrice = productCommonService.calculateDiscountedPrice(
                 product.getPrice(),
