@@ -4,7 +4,7 @@ import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.coupon.entity.enums.ConditionType;
 import com.jajaja.domain.coupon.entity.enums.DiscountType;
 import com.jajaja.domain.order.entity.Order;
-import com.jajaja.domain.user.entity.UserCoupon;
+import com.jajaja.domain.user.entity.MemberCoupon;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -51,7 +51,7 @@ public class Coupon extends BaseEntity {
     private List<Order> orders = new ArrayList<>();
 
     @OneToMany(mappedBy = "coupon", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserCoupon> userCoupons = new ArrayList<>();
+    private List<MemberCoupon> memberCoupons = new ArrayList<>();
 
     @OneToOne(mappedBy = "coupon", fetch = FetchType.LAZY)
     private Cart cart;

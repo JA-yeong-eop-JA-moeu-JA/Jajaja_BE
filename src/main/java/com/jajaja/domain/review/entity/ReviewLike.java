@@ -1,6 +1,6 @@
 package com.jajaja.domain.review.entity;
 
-import com.jajaja.domain.user.entity.User;
+import com.jajaja.domain.user.entity.Member;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,5 +22,5 @@ public class ReviewLike extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    private User member;
+    private Member member;
 }

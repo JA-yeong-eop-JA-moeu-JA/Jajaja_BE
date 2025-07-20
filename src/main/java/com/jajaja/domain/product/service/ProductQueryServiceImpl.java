@@ -19,10 +19,10 @@ import com.jajaja.domain.review.repository.ReviewRepository;
 import com.jajaja.domain.team.dto.response.TeamResponseDto;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.repository.TeamRepository;
-import com.jajaja.domain.user.entity.User;
-import com.jajaja.domain.user.entity.UserBusinessCategory;
-import com.jajaja.domain.user.repository.UserBusinessCategoryRepository;
-import com.jajaja.domain.user.repository.UserRepository;
+import com.jajaja.domain.user.entity.Member;
+import com.jajaja.domain.user.entity.MemberBusinessCategory;
+import com.jajaja.domain.user.repository.MemberBusinessCategoryRepository;
+import com.jajaja.domain.user.repository.MemberRepository;
 import com.jajaja.global.apiPayload.PageResponse;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
@@ -47,8 +47,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final ReviewRepository reviewRepository;
     private final TeamRepository teamRepository;
     private final BusinessCategoryRepository businessCategoryRepository;
-    private final UserBusinessCategoryRepository userBusinessCategoryRepository;
-    private final UserRepository userRepository;
+    private final MemberBusinessCategoryRepository memberBusinessCategoryRepository;
+    private final MemberRepository memberRepository;
     private final ProductSalesRepository productSalesRepository;
     private final ProductCommonService productCommonService;
     private final ProductConverter productConverter;
@@ -145,11 +145,11 @@ public class ProductQueryServiceImpl implements ProductQueryService {
      */
     private Long resolveCategoryId(Long userId, Long categoryId) {
         if (userId != null) {
-            User user = userRepository.findById(userId)
+            Member member = memberRepository.findById(userId)
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
-            UserBusinessCategory userBusinessCategory = userBusinessCategoryRepository.findByUser(user)
+            MemberBusinessCategory memberBusinessCategory = memberBusinessCategoryRepository.findByMember(member)
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.USER_BUSINESS_CATEGORY_NOT_FOUND));
-            return userBusinessCategory.getBusinessCategory().getId();
+            return memberBusinessCategory.getBusinessCategory().getId();
         }
         if (categoryId != null) {
             BusinessCategory category = businessCategoryRepository.findById(categoryId)

@@ -20,7 +20,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class User extends BaseEntity {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,11 +45,11 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String email;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-    private UserBusinessCategory userBusinessCategory;
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
+    private MemberBusinessCategory memberBusinessCategory;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserCoupon> userCoupons = new ArrayList <>();
+    private List<MemberCoupon> memberCoupons = new ArrayList <>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamMember> teamMembers = new ArrayList<>();
