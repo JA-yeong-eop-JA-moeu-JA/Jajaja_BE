@@ -7,4 +7,8 @@ public class UnauthorizedException extends GeneralException {
     public UnauthorizedException(final ErrorStatus errorStatus) {
         super(errorStatus);
     }
+
+    public ErrorStatus getErrorStatus() {
+        return (ErrorStatus) super.getCode();
+    }
 }
