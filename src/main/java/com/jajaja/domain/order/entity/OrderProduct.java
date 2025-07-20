@@ -29,6 +29,9 @@ public class OrderProduct extends BaseEntity {
     @Column(nullable = false)
     private OrderStatus status;
 
+    @Column(length = 12)
+    private String invoiceNumber;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
