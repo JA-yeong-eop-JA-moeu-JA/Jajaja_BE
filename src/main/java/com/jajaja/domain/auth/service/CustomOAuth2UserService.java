@@ -2,15 +2,15 @@ package com.jajaja.domain.auth.service;
 
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.cart.repository.CartRepository;
-import com.jajaja.domain.user.converter.UserConverter;
+import com.jajaja.domain.member.converter.MemberConverter;
 import com.jajaja.domain.auth.dto.UserDto;
 import com.jajaja.domain.auth.dto.CustomOAuth2User;
 import com.jajaja.domain.auth.dto.GoogleResponseDto;
 import com.jajaja.domain.auth.dto.KakaoResponseDto;
 import com.jajaja.domain.auth.dto.OAuth2ResponseDto;
-import com.jajaja.domain.user.entity.User;
-import com.jajaja.domain.user.entity.enums.OauthType;
-import com.jajaja.domain.user.repository.UserRepository;
+import com.jajaja.domain.member.entity.Member;
+import com.jajaja.domain.member.entity.enums.OauthType;
+import com.jajaja.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     private final CartRepository cartRepository;
 
     @Override
@@ -41,20 +41,20 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
         String oauthId = oAuth2Response.getProviderId();
         OauthType oauthType = oAuth2Response.getProvider();
-        User existingUser = userRepository.findByOauthIdAndOauthType(oauthId, oauthType);
-        User user = null;
-        if (existingUser == null) {
-            user = UserConverter.toEntity(oAuth2Response);
-            userRepository.save(user);
+        Member existingMember = memberRepository.findByOauthIdAndOauthType(oauthId, oauthType);
+        Member member = null;
+        if (existingMember == null) {
+            member = MemberConverter.toEntity(oAuth2Response);
+            memberRepository.save(member);
             // 장바구니 생성
-            cartRepository.save(Cart.builder().member(user).build());
+            cartRepository.save(Cart.builder().member(member).build());
         } else {
-            existingUser.updateName(oAuth2Response.getName());
-            existingUser.updatePhone(oAuth2Response.getPhone());
-            existingUser.updateEmail(oAuth2Response.getEmail());
-            user = existingUser;
+            existingMember.updateName(oAuth2Response.getName());
+            existingMember.updatePhone(oAuth2Response.getPhone());
+            existingMember.updateEmail(oAuth2Response.getEmail());
+            member = existingMember;
         }
-        UserDto userDto = UserDto.of(user.getId(), oauthType, oauthId, oAuth2Response.getName());
+        UserDto userDto = UserDto.of(member.getId(), oauthType, oauthId, oAuth2Response.getName());
         return new CustomOAuth2User(userDto);
     }
 }

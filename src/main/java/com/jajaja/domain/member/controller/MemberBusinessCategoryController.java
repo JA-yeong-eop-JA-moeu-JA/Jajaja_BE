@@ -1,7 +1,7 @@
-package com.jajaja.domain.user.controller;
+package com.jajaja.domain.member.controller;
 
-import com.jajaja.domain.user.dto.UserBusinessCategoryRequestDto;
-import com.jajaja.domain.user.service.UserBusinessCategoryCommandService;
+import com.jajaja.domain.member.dto.MemberBusinessCategoryRequestDto;
+import com.jajaja.domain.member.service.MemberBusinessCategoryCommandService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.config.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/onboarding")
-public class UserBusinessCategoryController {
+public class MemberBusinessCategoryController {
 
-    private final UserBusinessCategoryCommandService userBusinessCategoryCommandService;
+    private final MemberBusinessCategoryCommandService memberBusinessCategoryCommandService;
 
 
     /**
@@ -30,9 +30,9 @@ public class UserBusinessCategoryController {
     @PostMapping("/")
     public ApiResponse<Void> registerUserBusinessCategory(
             @Auth Long userId,
-            @RequestBody @Valid UserBusinessCategoryRequestDto dto
+            @RequestBody @Valid MemberBusinessCategoryRequestDto dto
     ) {
-        userBusinessCategoryCommandService.registerUserBusinessCategory(userId, dto);
+        memberBusinessCategoryCommandService.registerUserBusinessCategory(userId, dto);
         return ApiResponse.onSuccess(null);
     }
 

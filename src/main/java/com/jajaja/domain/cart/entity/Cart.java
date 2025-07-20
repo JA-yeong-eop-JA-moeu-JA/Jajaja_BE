@@ -1,7 +1,7 @@
 package com.jajaja.domain.cart.entity;
 
 import com.jajaja.domain.coupon.entity.Coupon;
-import com.jajaja.domain.user.entity.User;
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import com.jajaja.global.common.domain.BaseEntity;
@@ -25,7 +25,7 @@ public class Cart extends BaseEntity {
     
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    private User member;
+    private Member member;
     
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_id")

@@ -1,7 +1,7 @@
 package com.jajaja.domain.point.entity;
 
 import com.jajaja.domain.order.entity.Order;
-import com.jajaja.domain.user.entity.User;
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.point.entity.enums.PointType;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
@@ -32,7 +32,7 @@ public class Point extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    private User member;
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")

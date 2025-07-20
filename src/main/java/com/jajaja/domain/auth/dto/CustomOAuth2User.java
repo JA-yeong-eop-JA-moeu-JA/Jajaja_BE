@@ -1,6 +1,6 @@
 package com.jajaja.domain.auth.dto;
 
-import com.jajaja.domain.user.entity.enums.OauthType;
+import com.jajaja.domain.member.entity.enums.OauthType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
