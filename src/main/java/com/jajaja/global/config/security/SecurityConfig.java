@@ -22,11 +22,7 @@ public class SecurityConfig {
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
     private static final String[] WHITELIST = {
-            "/",
-            "/swagger/**",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/api/auth/token",
+            "/api/auth/**",
             "/api/products/**",
             "/api/reviews/**",
             "/api/search/**",
