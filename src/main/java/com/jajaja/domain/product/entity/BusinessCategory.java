@@ -1,6 +1,6 @@
 package com.jajaja.domain.product.entity;
 
-import com.jajaja.domain.user.entity.UserBusinessCategory;
+import com.jajaja.domain.member.entity.MemberBusinessCategory;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,7 +23,7 @@ public class BusinessCategory extends BaseEntity {
     private String name;
 
     @OneToMany(mappedBy = "businessCategory")
-    private List<UserBusinessCategory> userBusinessCategories = new ArrayList<>();
+    private List<MemberBusinessCategory> userBusinessCategories = new ArrayList<>();
 
     @OneToMany(mappedBy = "businessCategory")
     private List<ProductSales> productSalesList = new ArrayList<>();

@@ -5,7 +5,7 @@ import com.jajaja.domain.delivery.entity.Delivery;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.entity.enums.PaymentMethod;
 import com.jajaja.domain.team.entity.Team;
-import com.jajaja.domain.user.entity.User;
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -47,7 +47,7 @@ public class Order extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    private User member;
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_id")
