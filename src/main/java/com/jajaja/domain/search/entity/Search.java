@@ -18,14 +18,11 @@ public class Search extends BaseEntity {
     @Column(nullable = false, length = 100, unique = true)
     private String name;
 
+    @Builder.Default
     @Column(nullable = false)
-    private Integer searchCount;
+    private Integer searchCount = 1;
 
     public void increaseCount() {
-        if (this.searchCount == null) {
-            this.searchCount = 1;
-        } else {
-            this.searchCount += 1;
-        }
+        this.searchCount += 1;
     }
 }
