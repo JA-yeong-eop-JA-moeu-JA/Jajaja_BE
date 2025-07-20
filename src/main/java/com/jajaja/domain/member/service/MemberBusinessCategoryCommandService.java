@@ -1,6 +1,6 @@
-package com.jajaja.domain.user.service;
+package com.jajaja.domain.member.service;
 
-import com.jajaja.domain.user.dto.MemberBusinessCategoryRequestDto;
+import com.jajaja.domain.member.dto.MemberBusinessCategoryRequestDto;
 import jakarta.transaction.Transactional;
 
 public interface MemberBusinessCategoryCommandService {

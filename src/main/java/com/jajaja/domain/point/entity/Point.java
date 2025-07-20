@@ -1,7 +1,7 @@
 package com.jajaja.domain.point.entity;
 
 import com.jajaja.domain.order.entity.Order;
-import com.jajaja.domain.user.entity.Member;
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.point.entity.enums.PointType;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;

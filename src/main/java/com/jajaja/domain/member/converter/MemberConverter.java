@@ -1,7 +1,7 @@
-package com.jajaja.domain.user.converter;
+package com.jajaja.domain.member.converter;
 
 import com.jajaja.domain.auth.dto.OAuth2ResponseDto;
-import com.jajaja.domain.user.entity.Member;
+import com.jajaja.domain.member.entity.Member;
 
 public class MemberConverter {
 

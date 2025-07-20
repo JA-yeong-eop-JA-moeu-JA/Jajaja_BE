@@ -1,4 +1,4 @@
-package com.jajaja.domain.user.entity;
+package com.jajaja.domain.member.entity;
 
 import com.jajaja.domain.product.entity.BusinessCategory;
 import com.jajaja.global.common.domain.BaseEntity;

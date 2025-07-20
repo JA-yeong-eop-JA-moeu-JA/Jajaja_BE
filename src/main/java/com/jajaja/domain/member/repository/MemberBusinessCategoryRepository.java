@@ -1,7 +1,7 @@
-package com.jajaja.domain.user.repository;
+package com.jajaja.domain.member.repository;
 
-import com.jajaja.domain.user.entity.MemberBusinessCategory;
-import com.jajaja.domain.user.entity.Member;
+import com.jajaja.domain.member.entity.MemberBusinessCategory;
+import com.jajaja.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

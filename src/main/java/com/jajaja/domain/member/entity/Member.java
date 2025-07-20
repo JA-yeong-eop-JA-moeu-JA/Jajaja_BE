@@ -1,4 +1,4 @@
-package com.jajaja.domain.user.entity;
+package com.jajaja.domain.member.entity;
 
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.notification.entity.Notification;
@@ -7,7 +7,7 @@ import com.jajaja.domain.review.entity.Review;
 import com.jajaja.domain.review.entity.ReviewLike;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.TeamMember;
-import com.jajaja.domain.user.entity.enums.OauthType;
+import com.jajaja.domain.member.entity.enums.OauthType;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

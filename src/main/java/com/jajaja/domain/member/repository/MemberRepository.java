@@ -1,7 +1,7 @@
-package com.jajaja.domain.user.repository;
+package com.jajaja.domain.member.repository;
 
-import com.jajaja.domain.user.entity.Member;
-import com.jajaja.domain.user.entity.enums.OauthType;
+import com.jajaja.domain.member.entity.Member;
+import com.jajaja.domain.member.entity.enums.OauthType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

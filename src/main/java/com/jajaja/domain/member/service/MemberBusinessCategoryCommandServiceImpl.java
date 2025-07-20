@@ -1,12 +1,12 @@
-package com.jajaja.domain.user.service;
+package com.jajaja.domain.member.service;
 
 import com.jajaja.domain.product.entity.BusinessCategory;
 import com.jajaja.domain.product.repository.BusinessCategoryRepository;
-import com.jajaja.domain.user.dto.MemberBusinessCategoryRequestDto;
-import com.jajaja.domain.user.entity.Member;
-import com.jajaja.domain.user.entity.MemberBusinessCategory;
-import com.jajaja.domain.user.repository.MemberBusinessCategoryRepository;
-import com.jajaja.domain.user.repository.MemberRepository;
+import com.jajaja.domain.member.dto.MemberBusinessCategoryRequestDto;
+import com.jajaja.domain.member.entity.Member;
+import com.jajaja.domain.member.entity.MemberBusinessCategory;
+import com.jajaja.domain.member.repository.MemberBusinessCategoryRepository;
+import com.jajaja.domain.member.repository.MemberRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

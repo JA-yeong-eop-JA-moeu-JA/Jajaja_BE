@@ -1,7 +1,7 @@
-package com.jajaja.domain.user.controller;
+package com.jajaja.domain.member.controller;
 
-import com.jajaja.domain.user.dto.MemberBusinessCategoryRequestDto;
-import com.jajaja.domain.user.service.MemberBusinessCategoryCommandService;
+import com.jajaja.domain.member.dto.MemberBusinessCategoryRequestDto;
+import com.jajaja.domain.member.service.MemberBusinessCategoryCommandService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.config.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;

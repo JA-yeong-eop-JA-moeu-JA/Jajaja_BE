@@ -1,6 +1,6 @@
 package com.jajaja.domain.team.entity;
 
-import com.jajaja.domain.user.entity.Member;
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

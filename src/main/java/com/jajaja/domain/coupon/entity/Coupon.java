@@ -4,7 +4,7 @@ import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.coupon.entity.enums.ConditionType;
 import com.jajaja.domain.coupon.entity.enums.DiscountType;
 import com.jajaja.domain.order.entity.Order;
-import com.jajaja.domain.user.entity.MemberCoupon;
+import com.jajaja.domain.member.entity.MemberCoupon;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

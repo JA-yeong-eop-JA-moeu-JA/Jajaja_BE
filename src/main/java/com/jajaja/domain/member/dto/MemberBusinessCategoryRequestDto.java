@@ -1,4 +1,4 @@
-package com.jajaja.domain.user.dto;
+package com.jajaja.domain.member.dto;
 
 import jakarta.validation.constraints.NotNull;
 

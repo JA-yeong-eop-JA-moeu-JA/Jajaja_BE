@@ -1,6 +1,6 @@
 package com.jajaja.domain.product.entity;
 
-import com.jajaja.domain.user.entity.MemberBusinessCategory;
+import com.jajaja.domain.member.entity.MemberBusinessCategory;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

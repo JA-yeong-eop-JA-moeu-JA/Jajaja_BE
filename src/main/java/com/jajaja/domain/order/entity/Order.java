@@ -5,7 +5,7 @@ import com.jajaja.domain.delivery.entity.Delivery;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.entity.enums.PaymentMethod;
 import com.jajaja.domain.team.entity.Team;
-import com.jajaja.domain.user.entity.Member;
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
