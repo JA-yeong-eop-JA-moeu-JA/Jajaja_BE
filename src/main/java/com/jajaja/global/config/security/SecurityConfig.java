@@ -28,6 +28,7 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/api/auth/token",
             "/api/products/**",
+            "/api/search"
             "/api/categories/**",
     };
 

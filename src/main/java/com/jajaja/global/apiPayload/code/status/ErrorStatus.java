@@ -33,6 +33,9 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // PRODUCT 관련 에러
     PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PRODUCT4001", "상품이 없습니다."),
+
+    // SEARCH 관련 에러
+    INVALID_KEYWORD(HttpStatus.BAD_REQUEST, "SEARCH4001", "유효하지 않은 검색어입니다."),
     
     // OPTION 관련 에러
     OPTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "OPTION4001", "옵션이 없습니다."),
