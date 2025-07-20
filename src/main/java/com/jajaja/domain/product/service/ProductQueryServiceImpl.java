@@ -181,7 +181,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
         List<CategoryProductListResponseDto.ProductItemDto> productDtos = trimmedProducts.stream()
                 .map(product -> {
-                    int salePrice = ProductPriceCalculator.calculateDiscountedPrice(product.getPrice(), product.getDiscountRate());
+                    int salePrice = productCommonService.calculateDiscountedPrice(product.getPrice(), product.getDiscountRate());
                     double rating = productCommonService.calculateAverageRating(product.getReviews());
                     int reviewCount = product.getReviews().size();
 
