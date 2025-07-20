@@ -53,6 +53,9 @@ public enum ErrorStatus implements BaseErrorCode {
   
     // ORDER 관련 에러
      ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "ORDER4001", "주문이 없습니다."),
+
+    // ORDER PRODUCT 관련 에러
+    ORDER_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "ORDERPRODUCT4001", "주문 상품이 없습니다."),
     ;
 
     private final HttpStatus httpStatus;
