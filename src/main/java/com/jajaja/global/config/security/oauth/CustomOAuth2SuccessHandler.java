@@ -1,7 +1,7 @@
 package com.jajaja.global.config.security.oauth;
 
-import com.jajaja.global.config.security.JwtProperties;
-import com.jajaja.global.config.security.JwtProvider;
+import com.jajaja.global.config.security.jwt.JwtProperties;
+import com.jajaja.global.config.security.jwt.JwtProvider;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

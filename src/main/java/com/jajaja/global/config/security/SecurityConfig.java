@@ -1,6 +1,10 @@
 package com.jajaja.global.config.security;
 
 import com.jajaja.domain.auth.service.CustomOAuth2UserService;
+import com.jajaja.global.config.security.jwt.JwtAuthenticationEntryPoint;
+import com.jajaja.global.config.security.jwt.JwtAuthenticationFilter;
+import com.jajaja.global.config.security.jwt.JwtExceptionFilter;
+import com.jajaja.global.config.security.jwt.JwtProvider;
 import com.jajaja.global.config.security.oauth.CustomOAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

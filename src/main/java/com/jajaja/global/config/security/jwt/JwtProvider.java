@@ -1,4 +1,4 @@
-package com.jajaja.global.config.security;
+package com.jajaja.global.config.security.jwt;
 
 import com.jajaja.domain.auth.dto.CustomOAuth2User;
 import com.jajaja.domain.auth.dto.UserDto;

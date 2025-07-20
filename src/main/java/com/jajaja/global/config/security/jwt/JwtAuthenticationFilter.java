@@ -1,4 +1,4 @@
-package com.jajaja.global.config.security;
+package com.jajaja.global.config.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
