@@ -36,7 +36,9 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
         Integer reviewCount = Math.toIntExact(reviewRepository.countByProductId(productId));
-        double avgRating = Optional.ofNullable(reviewRepository.findAvgRatingByProductId(productId)).orElse(0.0);
+        double avgRating = Optional.ofNullable(reviewRepository.findAvgRatingByProductId(productId))
+                .map(rating -> Math.round(rating * 10.0) / 10.0)
+                .orElse(0.0);
         List<String> imageUrls = reviewRepository.findTop6ReviewImageUrlsByProductId(productId);
 
         return ReviewBriefResponseDto.of(reviewCount, avgRating, imageUrls);

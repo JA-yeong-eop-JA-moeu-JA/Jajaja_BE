@@ -13,10 +13,12 @@ public class ProductCommonServiceImpl implements ProductCommonService {
         if (reviews == null || reviews.isEmpty()) {
             return 0.0;
         }
-        return reviews.stream()
-                .mapToDouble(Review::getRating)
-                .average()
-                .orElse(0.0);
+        return Math.round(
+                reviews.stream()
+                        .mapToDouble(Review::getRating)
+                        .average()
+                        .orElse(0.0) * 10.0
+        ) / 10.0;
     }
 
     @Override
