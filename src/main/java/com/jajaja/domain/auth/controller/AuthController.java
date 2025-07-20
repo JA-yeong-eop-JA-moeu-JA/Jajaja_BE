@@ -4,6 +4,7 @@ import com.jajaja.domain.auth.dto.TokenResponseDto;
 import com.jajaja.domain.auth.service.AuthService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +30,9 @@ public class AuthController {
             description = "리프레쉬 토큰을 사용하여 새로운 액세스 토큰과 리프레쉬 토큰을 쿠키로 발급합니다."
     )
     @PostMapping("/reissue")
-    public ApiResponse<TokenResponseDto> reissueToken(@CookieValue(required = false) String refreshToken,
-                                                      HttpServletResponse response) {
+    public ApiResponse<?> reissueToken(
+            @Parameter(hidden = true)
+            @CookieValue(required = false) String refreshToken, HttpServletResponse response) {
         authService.reissueToken(refreshToken, response);
         return ApiResponse.onSuccess(null);
     }
