@@ -6,7 +6,9 @@ import com.jajaja.domain.search.entity.enums.SearchSort;
 import com.jajaja.domain.search.service.SearchService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/search")
 @RequiredArgsConstructor
+@Validated
 public class SearchController {
 
     private final SearchService searchService;
@@ -23,7 +26,8 @@ public class SearchController {
     )
     @GetMapping
     public ApiResponse<List<ProductListResponseDto>> searchProducts(
-            @RequestParam String keyword,
+            @RequestParam
+            @NotBlank(message = "검색어를 입력해주세요.") String keyword,
             @RequestParam(defaultValue = "POPULAR") SearchSort sort) {
 
         List<ProductListResponseDto> result = searchService.searchProductsByKeyword(keyword, sort);
