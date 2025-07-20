@@ -25,36 +25,16 @@ import java.util.Optional;
 public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
+    private final QReview review = QReview.review;
+    private final QMember member = QMember.member;
+    private final QProductOption option = QProductOption.productOption;
+    private final QReviewLike reviewLike = QReviewLike.reviewLike;
+    private final QReviewImage reviewImage = QReviewImage.reviewImage;
 
     @Override
     public List<ReviewItemDto> findTop3ItemByProductIdOrderByLikeCountDesc(Long productId) {
-        QReview review = QReview.review;
-        QMember member = QMember.member;
-        QProductOption option = QProductOption.productOption;
-        QReviewLike reviewLike = QReviewLike.reviewLike;
-        QReviewImage reviewImage = QReviewImage.reviewImage;
-
-        Expression<Long> likeCountSubquery = JPAExpressions
-                .select(reviewLike.count())
-                .from(reviewLike)
-                .where(reviewLike.review.id.eq(review.id));
-
-        Expression<Long> imageCountSubquery = JPAExpressions
-                .select(reviewImage.count())
-                .from(reviewImage)
-                .where(reviewImage.review.id.eq(review.id));
-
         return queryFactory
-                .select(Projections.constructor(ReviewItemDto.class,
-                        review.id.intValue(),
-                        member.name,
-                        review.createdAt,
-                        review.rating.doubleValue(),
-                        option.name,
-                        review.content,
-                        likeCountSubquery,
-                        imageCountSubquery
-                ))
+                .select(reviewItemDtoProjection())
                 .from(review)
                 .leftJoin(review.member, member)
                 .leftJoin(review.productOption, option)
@@ -68,8 +48,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
 
     @Override
     public Long countByProductId(Long productId) {
-        QReview review = QReview.review;
-
         return queryFactory
                 .select(review.count())
                 .from(review)
@@ -80,8 +58,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
 
     @Override
     public Double findAvgRatingByProductId(Long productId) {
-        QReview review = QReview.review;
-
         return queryFactory
                 .select(review.rating.avg())
                 .from(review)
@@ -92,9 +68,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
 
     @Override
     public List<String> findTop6ReviewImageUrlsByProductId(Long productId) {
-        QReview review = QReview.review;
-        QReviewImage reviewImage = QReviewImage.reviewImage;
-
         return queryFactory
                 .select(reviewImage.imageUrl)
                 .from(reviewImage)
@@ -107,36 +80,11 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
 
     @Override
     public Page<ReviewItemDto> findPageByProductIdOrderByCreatedAt(Long productId, int page, int size) {
-        QReview review = QReview.review;
-        QReviewLike reviewLike = QReviewLike.reviewLike;
-        QReviewImage reviewImage = QReviewImage.reviewImage;
-        QMember member = QMember.member;
-        QProductOption productOption = QProductOption.productOption;
-
-        Expression<Long> likeCountSubquery = JPAExpressions
-                .select(reviewLike.count())
-                .from(reviewLike)
-                .where(reviewLike.review.id.eq(review.id));
-
-        Expression<Long> imageCountSubquery = JPAExpressions
-                .select(reviewImage.count())
-                .from(reviewImage)
-                .where(reviewImage.review.id.eq(review.id));
-
         List<ReviewItemDto> content = queryFactory
-                .select(Projections.constructor(ReviewItemDto.class,
-                        review.id.intValue(),
-                        member.name,
-                        review.createdAt,
-                        review.rating.doubleValue(),
-                        productOption.name,
-                        review.content,
-                        likeCountSubquery,
-                        imageCountSubquery
-                ))
+                .select(reviewItemDtoProjection())
                 .from(review)
                 .join(review.member, member)
-                .join(review.productOption, productOption)
+                .join(review.productOption, option)
                 .where(review.product.id.eq(productId)
                         .and(review.deletedAt.isNull()))
                 .orderBy(review.createdAt.desc())
@@ -157,40 +105,15 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
 
     @Override
     public Page<ReviewItemDto> findPageByProductIdOrderByLikeCount(Long productId, int page, int size) {
-        QReview review = QReview.review;
-        QReviewLike reviewLike = QReviewLike.reviewLike;
-        QReviewImage reviewImage = QReviewImage.reviewImage;
-        QMember member = QMember.member;
-        QProductOption productOption = QProductOption.productOption;
-
-        Expression<Long> likeCountSubquery = JPAExpressions
-                .select(reviewLike.count())
-                .from(reviewLike)
-                .where(reviewLike.review.id.eq(review.id));
-
-        Expression<Long> imageCountSubquery = JPAExpressions
-                .select(reviewImage.count())
-                .from(reviewImage)
-                .where(reviewImage.review.id.eq(review.id));
-
         List<ReviewItemDto> content = queryFactory
-                .select(Projections.constructor(ReviewItemDto.class,
-                        review.id.intValue(),
-                        member.name,
-                        review.createdAt,
-                        review.rating.doubleValue(),
-                        productOption.name,
-                        review.content,
-                        likeCountSubquery,
-                        imageCountSubquery
-                ))
+                .select(reviewItemDtoProjection())
                 .from(review)
                 .join(review.member, member)
-                .join(review.productOption, productOption)
+                .join(review.productOption, option)
                 .leftJoin(review.reviewLikes, reviewLike)
                 .where(review.product.id.eq(productId)
                         .and(review.deletedAt.isNull()))
-                .groupBy(review.id, member.name, productOption.name,
+                .groupBy(review.id, member.name, option.name,
                         review.createdAt, review.rating, review.content)
                 .orderBy(reviewLike.id.count().desc())
                 .offset((long) page * size)
@@ -208,4 +131,28 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
         return new PageImpl<>(content, PageRequest.of(page, size), total);
     }
 
+    private Expression<Long> likeCountExpression(QReview review) {
+        return JPAExpressions.select(reviewLike.count())
+                .from(reviewLike)
+                .where(reviewLike.review.id.eq(review.id));
+    }
+
+    private Expression<Long> imageCountExpression(QReview review) {
+        return JPAExpressions.select(reviewImage.count())
+                .from(reviewImage)
+                .where(reviewImage.review.id.eq(review.id));
+    }
+
+    private Expression<ReviewItemDto> reviewItemDtoProjection() {
+        return Projections.constructor(ReviewItemDto.class,
+                review.id.intValue(),
+                member.name,
+                review.createdAt,
+                review.rating.doubleValue(),
+                option.name,
+                review.content,
+                likeCountExpression(review),
+                imageCountExpression(review)
+        );
+    }
 }
