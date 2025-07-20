@@ -29,6 +29,7 @@ public class SecurityConfig {
             "/api/auth/token",
             "/api/products/**",
             "/api/search"
+            "/api/categories/**",
     };
 
     @Bean
