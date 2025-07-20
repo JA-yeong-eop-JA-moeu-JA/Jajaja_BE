@@ -131,18 +131,35 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
         return new PageImpl<>(content, PageRequest.of(page, size), total);
     }
 
+    /**
+     * 리뷰에 대한 좋아요 수를 계산하는 서브쿼리 Expression 생성
+     *
+     * @param review 대상 리뷰
+     * @return 해당 리뷰에 대한 좋아요 수 Expression
+     */
     private Expression<Long> likeCountExpression(QReview review) {
         return JPAExpressions.select(reviewLike.count())
                 .from(reviewLike)
                 .where(reviewLike.review.id.eq(review.id));
     }
 
+    /**
+     * 리뷰에 포함된 이미지 수를 계산하는 서브쿼리 Expression 생성
+     *
+     * @param review 대상 리뷰
+     * @return 해당 리뷰에 포함된 이미지 수 Expression
+     */
     private Expression<Long> imageCountExpression(QReview review) {
         return JPAExpressions.select(reviewImage.count())
                 .from(reviewImage)
                 .where(reviewImage.review.id.eq(review.id));
     }
 
+    /**
+     * ReviewItemDto 객체로 매핑하기 위한 QueryDSL Projection 생성
+     *
+     * @return ReviewItemDto 생성에 필요한 Projection
+     */
     private Expression<ReviewItemDto> reviewItemDtoProjection() {
         return Projections.constructor(ReviewItemDto.class,
                 review.id.intValue(),
