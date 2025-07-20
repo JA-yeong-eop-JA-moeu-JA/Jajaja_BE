@@ -3,7 +3,6 @@ package com.jajaja.domain.product.service;
 import com.jajaja.domain.product.dto.response.ProductOptionResponseDto;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductRepository;
-import com.jajaja.domain.product.util.ProductPriceCalculator;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +17,7 @@ import java.util.List;
 public class ProductOptionQueryServiceImpl implements ProductOptionQueryService {
 
     private final ProductRepository productRepository;
+    private final ProductCommonService productCommonService;
 
     @Override
     public List<ProductOptionResponseDto> getProductOptions(Long productId) {
@@ -27,7 +27,7 @@ public class ProductOptionQueryServiceImpl implements ProductOptionQueryService 
         return product.getProductOptions().stream()
                 .map(option -> ProductOptionResponseDto.of(
                         option,
-                        ProductPriceCalculator.calculateDiscountedPrice(
+                        productCommonService.calculateDiscountedPrice(
                                 option.getPrice(),
                                 product.getDiscountRate()
                         )

@@ -11,12 +11,13 @@ import com.jajaja.domain.product.entity.enums.ProductSortType;
 import com.jajaja.domain.product.repository.BusinessCategoryRepository;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
-import com.jajaja.domain.product.util.ProductPriceCalculator;
-import com.jajaja.domain.review.converter.ReviewConverter;
-import com.jajaja.domain.review.dto.response.ReviewResponseDto;
-import com.jajaja.domain.review.entity.Review;
+import com.jajaja.domain.review.dto.response.ReviewListDto;
+import com.jajaja.domain.review.dto.response.ReviewItemDto;
+import com.jajaja.domain.review.entity.ReviewImage;
+import com.jajaja.domain.review.repository.ReviewImageRepository;
+import com.jajaja.domain.review.repository.ReviewLikeRepository;
 import com.jajaja.domain.review.repository.ReviewRepository;
-import com.jajaja.domain.team.dto.response.TeamResponseDto;
+import com.jajaja.domain.team.dto.response.TeamListDto;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.repository.TeamRepository;
 import com.jajaja.domain.member.entity.Member;
@@ -36,6 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +48,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
+    private final ReviewImageRepository reviewImageRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
     private final TeamRepository teamRepository;
     private final BusinessCategoryRepository businessCategoryRepository;
     private final MemberBusinessCategoryRepository memberBusinessCategoryRepository;
@@ -61,26 +66,37 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         // 모집 중인 팀 조회
         List<Team> matchingTeams = teamRepository.findMatchingTeamsByProductId(productId);
 
-        List<TeamResponseDto> teamResponseDtoList = matchingTeams.stream()
-                .map(TeamResponseDto::from)
+        List<TeamListDto> teamResponseDtoList = matchingTeams.stream()
+                .map(TeamListDto::from)
                 .toList();
 
         // 좋아요 수 상위 3개 리뷰만 조회
-        List<Review> topReviews = reviewRepository.findTop3ByProductIdOrderByLikeCountDesc(productId);
+        List<ReviewItemDto> reviewPageDtos = reviewRepository.findTop3ItemByProductIdOrderByLikeCountDesc(productId);
 
-        // 회원/비회원 경우 나눠서, review 조회
-        List<ReviewResponseDto> reviewResponseDtoList = topReviews.stream()
-                .map(review -> {
-                    boolean isLike = false;
-                    if (userId != null) {
-                        isLike = review.getReviewLikes().stream()
-                                .anyMatch(like -> like.getMember().getId().equals(userId));
-                    }
-                    return ReviewConverter.toReviewResponseDto(review, isLike);
-                })
+        List<Integer> reviewIds = reviewPageDtos.stream()
+                .map(ReviewItemDto::id)
                 .toList();
 
-        int salePrice = ProductPriceCalculator.calculateDiscountedPrice(
+        // imageUrls 조회
+        Map<Integer, List<String>> imageUrlsMap = reviewImageRepository
+                .findTop6ImageUrlsGroupedByReviewIds(reviewIds);
+
+        // isLike 조회
+        Set<Integer> likedReviewIds = userId != null
+                ? reviewLikeRepository.findReviewIdsLikedByUser(userId, reviewIds)
+                : Set.of();
+
+        // 병합
+        List<ReviewListDto> reviewResponseDtoList = reviewPageDtos.stream()
+                .map(dto -> new ReviewListDto(
+                        dto,
+                        likedReviewIds.contains(dto.id()),
+                        imageUrlsMap.getOrDefault(dto.id(), List.of())
+                ))
+                .toList();
+
+
+        int salePrice = productCommonService.calculateDiscountedPrice(
                 product.getPrice(),
                 product.getDiscountRate()
         );
@@ -178,7 +194,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
         List<CategoryProductListResponseDto.ProductItemDto> productDtos = trimmedProducts.stream()
                 .map(product -> {
-                    int salePrice = ProductPriceCalculator.calculateDiscountedPrice(product.getPrice(), product.getDiscountRate());
+                    int salePrice = productCommonService.calculateDiscountedPrice(product.getPrice(), product.getDiscountRate());
                     double rating = productCommonService.calculateAverageRating(product.getReviews());
                     int reviewCount = product.getReviews().size();
 

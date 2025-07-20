@@ -6,14 +6,14 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record TeamResponseDto(
+public record TeamListDto(
         int id,
         String nickname,
         LocalDateTime createdAt
 ) {
 
-    public static TeamResponseDto from(Team team) {
-        return TeamResponseDto.builder()
+    public static TeamListDto from(Team team) {
+        return TeamListDto.builder()
                 .id(team.getId().intValue())
                 .nickname(team.getLeader().getName())
                 .createdAt(team.getCreatedAt())
