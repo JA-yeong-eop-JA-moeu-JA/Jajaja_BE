@@ -1,12 +1,12 @@
-package com.jajaja.domain.user.converter;
+package com.jajaja.domain.member.converter;
 
 import com.jajaja.domain.auth.dto.OAuth2ResponseDto;
-import com.jajaja.domain.user.entity.User;
+import com.jajaja.domain.member.entity.Member;
 
-public class UserConverter {
+public class MemberConverter {
 
-    public static User toEntity(OAuth2ResponseDto oAuth2Response) {
-        return User.builder()
+    public static Member toEntity(OAuth2ResponseDto oAuth2Response) {
+        return Member.builder()
                 .oauthId(oAuth2Response.getProviderId())
                 .oauthType(oAuth2Response.getProvider())
                 .name(oAuth2Response.getName())

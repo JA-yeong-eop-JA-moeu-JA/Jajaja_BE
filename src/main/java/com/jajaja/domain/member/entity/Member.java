@@ -1,4 +1,4 @@
-package com.jajaja.domain.user.entity;
+package com.jajaja.domain.member.entity;
 
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.notification.entity.Notification;
@@ -7,7 +7,7 @@ import com.jajaja.domain.review.entity.Review;
 import com.jajaja.domain.review.entity.ReviewLike;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.TeamMember;
-import com.jajaja.domain.user.entity.enums.OauthType;
+import com.jajaja.domain.member.entity.enums.OauthType;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,7 +20,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class User extends BaseEntity {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,11 +45,11 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String email;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-    private UserBusinessCategory userBusinessCategory;
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
+    private MemberBusinessCategory memberBusinessCategory;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserCoupon> userCoupons = new ArrayList <>();
+    private List<MemberCoupon> memberCoupons = new ArrayList <>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamMember> teamMembers = new ArrayList<>();

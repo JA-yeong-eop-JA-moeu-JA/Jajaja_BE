@@ -3,7 +3,7 @@ package com.jajaja.domain.team.entity;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
-import com.jajaja.domain.user.entity.User;
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -30,7 +30,7 @@ public class Team extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id")
-    private User leader;
+    private Member leader;
 
     @Column(nullable = false)
     private LocalDateTime expireAt;

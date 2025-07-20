@@ -1,6 +1,6 @@
 package com.jajaja.domain.auth.dto;
 
-import com.jajaja.domain.user.entity.enums.OauthType;
+import com.jajaja.domain.member.entity.enums.OauthType;
 import lombok.Builder;
 
 @Builder
