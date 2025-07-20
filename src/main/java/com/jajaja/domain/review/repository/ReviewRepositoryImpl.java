@@ -6,7 +6,7 @@ import com.jajaja.domain.review.dto.response.ReviewItemDto;
 import com.jajaja.domain.review.entity.QReview;
 import com.jajaja.domain.review.entity.QReviewImage;
 import com.jajaja.domain.review.entity.QReviewLike;
-import com.jajaja.domain.user.entity.QUser;
+import com.jajaja.domain.member.entity.QMember;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
@@ -29,7 +29,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
     @Override
     public List<ReviewItemDto> findTop3ItemByProductIdOrderByLikeCountDesc(Long productId) {
         QReview review = QReview.review;
-        QUser member = QUser.user;
+        QMember member = QMember.member;
         QProductOption option = QProductOption.productOption;
         QReviewLike reviewLike = QReviewLike.reviewLike;
         QReviewImage reviewImage = QReviewImage.reviewImage;
@@ -110,7 +110,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
         QReview review = QReview.review;
         QReviewLike reviewLike = QReviewLike.reviewLike;
         QReviewImage reviewImage = QReviewImage.reviewImage;
-        QUser member = QUser.user;
+        QMember member = QMember.member;
         QProductOption productOption = QProductOption.productOption;
 
         Expression<Long> likeCountSubquery = JPAExpressions
@@ -160,7 +160,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
         QReview review = QReview.review;
         QReviewLike reviewLike = QReviewLike.reviewLike;
         QReviewImage reviewImage = QReviewImage.reviewImage;
-        QUser member = QUser.user;
+        QMember member = QMember.member;
         QProductOption productOption = QProductOption.productOption;
 
         Expression<Long> likeCountSubquery = JPAExpressions
