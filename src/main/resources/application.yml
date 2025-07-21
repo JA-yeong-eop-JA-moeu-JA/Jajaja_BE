@@ -56,8 +56,5 @@ jwt:
     expiration:
       access: ${JWT_EXPIRATION_ACCESS}
       refresh: ${JWT_EXPIRATION_REFRESH}
-
-auth:
-  redirect-url: ${AUTH_REDIRECT_URL}
-  cookie:
-    domain: ${COOKIE_DOMAIN}
+    redirect-url: ${AUTH_REDIRECT_URL}
+    cookie-domain: ${COOKIE_DOMAIN}
