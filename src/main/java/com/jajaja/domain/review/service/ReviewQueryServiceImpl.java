@@ -1,10 +1,7 @@
 package com.jajaja.domain.review.service;
 
 import com.jajaja.domain.product.repository.ProductRepository;
-import com.jajaja.domain.review.dto.response.PagingReviewListResponseDto;
-import com.jajaja.domain.review.dto.response.ReviewBriefResponseDto;
-import com.jajaja.domain.review.dto.response.ReviewListDto;
-import com.jajaja.domain.review.dto.response.ReviewItemDto;
+import com.jajaja.domain.review.dto.response.*;
 import com.jajaja.domain.review.repository.ReviewImageRepository;
 import com.jajaja.domain.review.repository.ReviewLikeRepository;
 import com.jajaja.domain.review.repository.ReviewRepository;
@@ -84,6 +81,28 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
                 .toList();
 
         return PagingReviewListResponseDto.of(reviewItemPage, reviewDtos);
+    }
+
+    @Override
+    public PagingReviewImageListResponseDto getReviewImageList(Long productId, String sort, int page, int size) {
+        productRepository.findById(productId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
+
+        Page<ReviewImageListDto> reviewImageListPage;
+
+        switch (sort.toLowerCase()) {
+            case "recommend":
+                reviewImageListPage = reviewImageRepository.findPagedPhotoListByProductIdOrderByLikeCount(productId, page, size);
+                break;
+            case "latest":
+            default:
+                reviewImageListPage = reviewImageRepository.findPagedPhotoListByProductIdOrderByCreatedAt(productId, page, size);
+                break;
+        }
+
+        List<ReviewImageListDto> reviewImageListDtos = reviewImageListPage.getContent();
+
+        return PagingReviewImageListResponseDto.of(reviewImageListPage, reviewImageListDtos);
     }
 
 }
