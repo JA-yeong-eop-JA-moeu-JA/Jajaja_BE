@@ -32,7 +32,7 @@ public class TeamCommandServiceImpl implements TeamCommandService {
 
     @Override
     public TeamCreateResponseDto createTeam(Long userId, Long productId) {
-        Member member = memberRepository.findById(userId).orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
+        Member member = memberRepository.findById(userId).orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
         Product product = productRepository.findById(productId).orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
@@ -51,7 +51,7 @@ public class TeamCommandServiceImpl implements TeamCommandService {
     @Override
     public void joinTeam(Long userId, Long teamId) {
         Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
@@ -61,7 +61,7 @@ public class TeamCommandServiceImpl implements TeamCommandService {
 
     @Override
     public void joinTeamInCarts(Long userId, Long productId) {
-        Member member = memberRepository.findById(userId).orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
+        Member member = memberRepository.findById(userId).orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
         List<Team> matchingTeams = teamRepository.findMatchingTeamsByProductId(productId);
 

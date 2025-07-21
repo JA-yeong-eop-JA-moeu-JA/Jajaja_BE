@@ -162,9 +162,9 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private Long resolveCategoryId(Long userId, Long categoryId) {
         if (userId != null) {
             Member member = memberRepository.findById(userId)
-                    .orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
+                    .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
             MemberBusinessCategory memberBusinessCategory = memberBusinessCategoryRepository.findByMember(member)
-                    .orElseThrow(() -> new BadRequestException(ErrorStatus.USER_BUSINESS_CATEGORY_NOT_FOUND));
+                    .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_BUSINESS_CATEGORY_NOT_FOUND));
             return memberBusinessCategory.getBusinessCategory().getId();
         }
         if (categoryId != null) {

@@ -29,7 +29,7 @@ public class MemberBusinessCategoryCommandServiceImpl implements MemberBusinessC
     @Transactional
     public void registerUserBusinessCategory(Long userId, MemberBusinessCategoryRequestDto dto) {
         Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         if (memberBusinessCategoryRepository.findByMember(member).isPresent()) {
             throw new GeneralException(ErrorStatus.BUSINESS_CATEGORY_ALREADY_REGISTERED);
