@@ -59,7 +59,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final ProductConverter productConverter;
 
     @Override
-    public ProductDetailResponseDto getProductDetail(Long userId, Long productId) {
+    public ProductDetailResponseDto getProductDetail(Long memberId, Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
@@ -82,8 +82,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 .findTop6ImageUrlsGroupedByReviewIds(reviewIds);
 
         // isLike 조회
-        Set<Integer> likedReviewIds = userId != null
-                ? reviewLikeRepository.findReviewIdsLikedByUser(userId, reviewIds)
+        Set<Integer> likedReviewIds = memberId != null
+                ? reviewLikeRepository.findReviewIdsLikedByUser(memberId, reviewIds)
                 : Set.of();
 
         // 병합

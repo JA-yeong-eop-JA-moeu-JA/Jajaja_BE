@@ -37,7 +37,7 @@ public class ReviewController {
     )
     @GetMapping("/{productId}")
     public ApiResponse<PagingReviewListResponseDto> getReviewList(
-            @Auth Long userId,
+            @Auth Long memberId,
             @PathVariable Long productId,
             @Parameter(description = "정렬 기준 (LATEST | RECOMMEND)", example = "LATEST")
             @RequestParam(required = false, defaultValue = "NEW") String sort,
@@ -48,7 +48,7 @@ public class ReviewController {
             @Parameter(description = "페이지 크기", example = "5")
             @RequestParam(defaultValue = "5") int size
             ) {
-        PagingReviewListResponseDto responseDto = reviewQueryService.getReviewList(userId, productId, sort, page, size);
+        PagingReviewListResponseDto responseDto = reviewQueryService.getReviewList(memberId, productId, sort, page, size);
         return ApiResponse.onSuccess(responseDto);
     }
 
