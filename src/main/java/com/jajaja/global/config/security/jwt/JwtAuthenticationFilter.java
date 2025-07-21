@@ -1,4 +1,4 @@
-package com.jajaja.global.config.security;
+package com.jajaja.global.config.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,7 +25,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
-        if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
+        if (token != null) {
+            jwtProvider.validateAccessToken(token);
             Authentication authentication = jwtProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

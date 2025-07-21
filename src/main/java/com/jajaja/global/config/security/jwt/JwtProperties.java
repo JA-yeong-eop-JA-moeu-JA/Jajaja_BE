@@ -1,4 +1,4 @@
-package com.jajaja.global.config.security;
+package com.jajaja.global.config.security.jwt;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +13,8 @@ public class JwtProperties {
 
     private String secretKey = "";
     private Expiration expiration;
+    private String redirectUrl = "";
+    private String cookieDomain = "";
 
     @Getter
     @Setter

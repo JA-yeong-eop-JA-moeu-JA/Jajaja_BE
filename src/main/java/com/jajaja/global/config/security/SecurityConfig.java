@@ -1,6 +1,10 @@
 package com.jajaja.global.config.security;
 
 import com.jajaja.domain.auth.service.CustomOAuth2UserService;
+import com.jajaja.global.config.security.jwt.JwtAuthenticationEntryPoint;
+import com.jajaja.global.config.security.jwt.JwtAuthenticationFilter;
+import com.jajaja.global.config.security.jwt.JwtExceptionFilter;
+import com.jajaja.global.config.security.jwt.JwtProvider;
 import com.jajaja.global.config.security.oauth.CustomOAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -21,13 +25,14 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     private static final String[] WHITELIST = {
             "/",
             "/swagger/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/api/auth/token",
+            "/api/auth/**",
             "/api/products/**",
             "/api/search/**",
             "/api/categories/**",
@@ -45,6 +50,8 @@ public class SecurityConfig {
                         .successHandler(customOAuth2SuccessHandler))
                 .sessionManagement(sessionManagementConfigurer ->
                         sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptionHandlingConfigurer ->
+                        exceptionHandlingConfigurer.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
                                 .requestMatchers(WHITELIST).permitAll()
@@ -54,6 +61,7 @@ public class SecurityConfig {
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtExceptionFilter(), JwtAuthenticationFilter.class)
                 .build();
     }
 }
