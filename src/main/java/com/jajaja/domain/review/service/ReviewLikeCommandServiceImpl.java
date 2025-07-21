@@ -26,10 +26,6 @@ public class ReviewLikeCommandServiceImpl implements ReviewLikeCommandService {
 
     @Override
     public ReviewLikeResponseDto patchReviewLike(Long memberId, Long reviewId) {
-        if (memberId == null) {
-            throw new BadRequestException(ErrorStatus.MEMBER_REQUIRED);
-        }
-
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 

@@ -5,6 +5,7 @@ import com.jajaja.global.config.security.oauth.CustomOAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -28,7 +29,6 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/api/auth/token",
             "/api/products/**",
-            "/api/reviews/**",
             "/api/search/**",
             "/api/categories/**",
     };
@@ -48,6 +48,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
                                 .requestMatchers(WHITELIST).permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
+                                .requestMatchers(HttpMethod.PATCH, "/api/reviews/**").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
