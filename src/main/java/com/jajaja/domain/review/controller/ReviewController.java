@@ -1,5 +1,6 @@
 package com.jajaja.domain.review.controller;
 
+import com.jajaja.domain.review.dto.response.PagingReviewImageListResponseDto;
 import com.jajaja.domain.review.dto.response.PagingReviewListResponseDto;
 import com.jajaja.domain.review.dto.response.ReviewBriefResponseDto;
 import com.jajaja.domain.review.service.ReviewQueryService;
@@ -47,6 +48,26 @@ public class ReviewController {
             @RequestParam(defaultValue = "5") int size
             ) {
         PagingReviewListResponseDto responseDto = reviewQueryService.getReviewList(userId, productId, sort, page, size);
+        return ApiResponse.onSuccess(responseDto);
+    }
+
+    @Operation(
+            summary = "사진 리뷰 상세 조회 API | by 지지/이지희",
+            description = "필터링(최신순|추천순 필터링)을 통해 사진 리뷰 상세 조회하는 기능입니다."
+    )
+    @GetMapping("/photo/{productId}")
+    public ApiResponse<PagingReviewImageListResponseDto> getReviewImageList(
+            @PathVariable Long productId,
+            @Parameter(description = "정렬 기준 (LATEST | RECOMMEND)", example = "LATEST")
+            @RequestParam(required = false, defaultValue = "NEW") String sort,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기", example = "15")
+            @RequestParam(defaultValue = "15") int size
+    ) {
+        PagingReviewImageListResponseDto responseDto = reviewQueryService.getReviewImageList(productId, sort, page, size);
         return ApiResponse.onSuccess(responseDto);
     }
 }
