@@ -7,6 +7,7 @@ import lombok.Builder;
 
 @Builder
 public record OrderItemDto(
+        long orderProductId,
         OrderStatus status,
         TeamStatus teamStatus,
         OrderItemProductDto product,
@@ -14,6 +15,7 @@ public record OrderItemDto(
 ) {
     public static OrderItemDto of(OrderProduct orderProduct, TeamStatus teamStatus) {
         return OrderItemDto.builder()
+                .orderProductId(orderProduct.getId())
                 .status(orderProduct.getStatus())
                 .teamStatus(teamStatus)
                 .product(OrderItemProductDto.from(orderProduct))

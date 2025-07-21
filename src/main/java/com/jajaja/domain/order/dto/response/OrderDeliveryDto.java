@@ -13,7 +13,7 @@ public record OrderDeliveryDto(
         return OrderDeliveryDto.builder()
                 .name(delivery.getName())
                 .phone(delivery.getPhone())
-                .address(delivery.getAddress())
+                .address(String.join(" ", delivery.getAddress(), delivery.getAddressDetail()).trim())
                 .build();
     }
 }
