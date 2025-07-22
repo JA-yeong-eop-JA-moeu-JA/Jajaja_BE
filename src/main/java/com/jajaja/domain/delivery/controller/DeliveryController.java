@@ -9,10 +9,7 @@ import com.jajaja.global.config.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -40,5 +37,15 @@ public class DeliveryController {
 	public ApiResponse<String> addDeliveryAddress(@Auth Long memberId, @Valid DeliveryAddRequestDto request) {
 		deliveryCommandService.addDeliveryAddress(memberId, request);
 		return ApiResponse.onSuccess("성공적으로 배송지를 추가하였습니다.");
+	}
+	
+	@Operation(
+			summary = "배송지 삭제 API | by 엠마/신윤지",
+			description = "기존에 저장되어 있던 배송지를 삭제합니다."
+	)
+	@DeleteMapping("/")
+	public ApiResponse<String> deleteDeliveryAddress(@Auth Long memberId, @RequestParam Long deliveryId) {
+		deliveryCommandService.deleteDeliveryAddress(memberId, deliveryId);
+		return ApiResponse.onSuccess("성공적으로 배송지를 삭제하였습니다.");
 	}
 }

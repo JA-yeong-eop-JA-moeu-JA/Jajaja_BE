@@ -6,6 +6,7 @@ import com.jajaja.domain.delivery.repository.DeliveryRepository;
 import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.member.repository.MemberRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
+import com.jajaja.global.apiPayload.exception.handler.CartHandler;
 import com.jajaja.global.apiPayload.exception.handler.DeliveryHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,5 +42,19 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService{
 				.isDefault(request.isDefault())
 				.member(member)
 				.build());
+	}
+	
+	@Override
+	public void deleteDeliveryAddress(Long memberId, Long deliveryId) {
+		Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
+				() -> new DeliveryHandler(ErrorStatus.DELIVERY_NOT_FOUND)
+		);
+		
+		Member member = memberRepository.findById(memberId).orElseThrow( () -> new CartHandler(ErrorStatus.MEMBER_NOT_FOUND));
+		//  배송지 데이터베이스에 저장된 멤버와 현재 로그인 된 멤버가 다를 경우
+		if(delivery.getMember() != member) {
+			throw new DeliveryHandler(ErrorStatus.DELIVERY_MEMBER_NOT_MATCH);
+		}
+		deliveryRepository.delete(delivery);
 	}
 }
