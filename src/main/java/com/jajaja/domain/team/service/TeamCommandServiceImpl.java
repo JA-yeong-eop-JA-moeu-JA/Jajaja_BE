@@ -1,7 +1,6 @@
 package com.jajaja.domain.team.service;
 
 import com.jajaja.domain.cart.entity.Cart;
-import com.jajaja.domain.cart.repository.CartRepository;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.team.dto.response.TeamCreateResponseDto;
@@ -27,12 +26,11 @@ public class TeamCommandServiceImpl implements TeamCommandService {
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
     private final TeamRepository teamRepository;
-    private final CartRepository cartRepository;
     private final TeamCommonService teamCommonService;
 
     @Override
-    public TeamCreateResponseDto createTeam(Long userId, Long productId) {
-        Member member = memberRepository.findById(userId).orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
+    public TeamCreateResponseDto createTeam(Long memberId, Long productId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
         Product product = productRepository.findById(productId).orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
@@ -49,9 +47,9 @@ public class TeamCommandServiceImpl implements TeamCommandService {
     }
 
     @Override
-    public void joinTeam(Long userId, Long teamId) {
-        Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
+    public void joinTeam(Long memberId, Long teamId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
@@ -60,8 +58,8 @@ public class TeamCommandServiceImpl implements TeamCommandService {
     }
 
     @Override
-    public void joinTeamInCarts(Long userId, Long productId) {
-        Member member = memberRepository.findById(userId).orElseThrow(() -> new BadRequestException(ErrorStatus.USER_NOT_FOUND));
+    public void joinTeamInCarts(Long memberId, Long productId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
         List<Team> matchingTeams = teamRepository.findMatchingTeamsByProductId(productId);
 

@@ -67,8 +67,8 @@ public class ProductController {
             description = "상품의 상세 페이지를 조회합니다."
     )
     @GetMapping("/{productId}")
-    public ApiResponse<ProductDetailResponseDto> getProductDetails(@Auth Long userId, @PathVariable Long productId) {
-        ProductDetailResponseDto responseDto = productQueryService.getProductDetail(userId, productId);
+    public ApiResponse<ProductDetailResponseDto> getProductDetails(@Auth Long memberId, @PathVariable Long productId) {
+        ProductDetailResponseDto responseDto = productQueryService.getProductDetail(memberId, productId);
         return ApiResponse.onSuccess(responseDto);
     }
 

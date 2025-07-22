@@ -42,7 +42,7 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
     }
 
     @Override
-    public PagingReviewListResponseDto getReviewList(Long userId, Long productId, String sort, int page, int size) {
+    public PagingReviewListResponseDto getReviewList(Long memberId, Long productId, String sort, int page, int size) {
         productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
@@ -67,8 +67,8 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
                 .findTop6ImageUrlsGroupedByReviewIds(reviewIds);
 
         // isLike 조회
-        Set<Integer> likedReviewIds = userId != null
-                ? reviewLikeRepository.findReviewIdsLikedByUser(userId, reviewIds)
+        Set<Integer> likedReviewIds = memberId != null
+                ? reviewLikeRepository.findReviewIdsLikedByUser(memberId, reviewIds)
                 : Set.of();
 
         // ReviewListDto로 병합

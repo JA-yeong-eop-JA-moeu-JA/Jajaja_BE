@@ -20,8 +20,8 @@ public class TeamController {
             description = "‘팀 생성하기 버튼’을 통해 해당 상품의 팀을 생성합니다. 해당 유저는 만들어진 팀의 리더가 됩니다."
     )
     @PostMapping("/{productId}")
-    public ApiResponse<TeamCreateResponseDto> createTeam(@Auth Long userId, @PathVariable Long productId) {
-        TeamCreateResponseDto responseDto = teamCommandService.createTeam(userId, productId);
+    public ApiResponse<TeamCreateResponseDto> createTeam(@Auth Long memberId, @PathVariable Long productId) {
+        TeamCreateResponseDto responseDto = teamCommandService.createTeam(memberId, productId);
         return ApiResponse.onSuccess(responseDto);
     }
 
@@ -30,8 +30,8 @@ public class TeamController {
             description = "‘참여 버튼’을 통해 해당 팀에 참여하는 기능입니다."
     )
     @PostMapping("/join/{teamId}")
-    public ApiResponse<String> joinTeam(@Auth Long userId, @PathVariable Long teamId) {
-        teamCommandService.joinTeam(userId, teamId);
+    public ApiResponse<String> joinTeam(@Auth Long memberId, @PathVariable Long teamId) {
+        teamCommandService.joinTeam(memberId, teamId);
         return ApiResponse.onSuccess("팀 참여가 완료되었습니다.");
     }
 
@@ -39,8 +39,8 @@ public class TeamController {
             summary = "장바구니 상품 팀 참여 API | by 지지/이지희",
             description = "장바구니 상품의 '팀 참여하기' 버튼을 누를 시, 팀 참여가 진행됩니다.")
     @PostMapping("/carts/join/{productId}")
-    public ApiResponse<String> joinTeamInCarts(@Auth Long userId, @PathVariable Long productId) {
-        teamCommandService.joinTeamInCarts(userId, productId);
+    public ApiResponse<String> joinTeamInCarts(@Auth Long memberId, @PathVariable Long productId) {
+        teamCommandService.joinTeamInCarts(memberId, productId);
         return ApiResponse.onSuccess("장바구니 내 상품의 팀 참여가 완료되었습니다.");
     }
 }
