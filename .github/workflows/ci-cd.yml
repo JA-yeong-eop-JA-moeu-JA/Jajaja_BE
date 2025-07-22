@@ -1,0 +1,135 @@
+name: Deploy Jajaja to AWS EC2 using Docker
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOCKER_IMAGE_NAME: munjji/jajaja-dev
+  EC2_HOST: ${{ secrets.EC2_URL }}
+  EC2_SSH_USER: ubuntu
+  PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+  CONTAINER_NAME: jajaja_dev_container
+
+jobs:
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Create resources directory
+        run: mkdir -p ./src/main/resources
+
+      - name: Add application.yml from Secrets
+        run: echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application.yml
+
+      - name: Grant permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle (skip tests)
+        run: ./gradlew build -x test
+
+      - name: Build Docker image
+        run: docker build . -t ${{ env.DOCKER_IMAGE_NAME }}:latest
+
+      - name: Docker login
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      - name: Push Docker image
+        run: docker push ${{ env.DOCKER_IMAGE_NAME }}:latest
+
+  deploy-to-ec2:
+    needs: build-and-push-docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ${{ env.EC2_SSH_USER }}
+          port: 22
+          key: ${{ env.PRIVATE_KEY }}
+          script: |
+            TIMESTAMP=$(date +"%Y%m%d%H%M%S")
+            NEW_CONTAINER_NAME="${{ env.CONTAINER_NAME }}-$TIMESTAMP"
+
+            # Docker 네트워크 설정
+            if sudo docker network inspect selenium-net >/dev/null 2>&1; then
+              echo "Network exists."
+            else
+              echo "Creating network 'selenium-net'..."
+              sudo docker network create selenium-net
+            fi
+
+            # 기존 컨테이너 종료
+            CONTAINER_ID=$(sudo docker ps -q --filter "publish=8080")
+            if [ ! -z "$CONTAINER_ID" ]; then
+              echo "Stopping container $CONTAINER_ID"
+              sudo docker stop $CONTAINER_ID
+            fi
+
+            # Selenium 컨테이너가 없다면 실행
+            SELENIUM_CONTAINER=$(sudo docker ps -q --filter "name=selenium_chrome")
+            if [ -z "$SELENIUM_CONTAINER" ]; then
+              echo "Running selenium-chrome"
+              sudo docker run -d \
+                  --name selenium-chrome \
+                  --network selenium-net \
+                  -p 4444:4444 \
+                  --shm-size=2g \
+                  --memory=10g \
+                  --memory-swap=12g \
+                  -e SE_DISABLE_AUTH=true \
+                  -e SE_NODE_MAX_SESSIONS=5 \
+                  -e SE_NODE_OVERRIDE_MAX_SESSIONS=true \
+                  selenium/standalone-chrome:132.0
+            fi
+
+            echo "Pulling image..."
+            sudo docker pull ${{ env.DOCKER_IMAGE_NAME }}
+
+            echo "Running new container $NEW_CONTAINER_NAME"
+            sudo docker run --name $NEW_CONTAINER_NAME --network selenium-net -d -p 8080:8080 -e TZ=Asia/Seoul ${{ env.DOCKER_IMAGE_NAME }}
+
+            echo "Checking health..."
+            HEALTH_CHECK_URL="http://127.0.0.1:8080/health"
+            for i in {1..30}; do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
+              if [ "$STATUS" == "200" ]; then
+                echo "✅ Healthy!"
+                if [ ! -z "$CONTAINER_ID" ]; then
+                  echo "Removing old container: $CONTAINER_ID"
+                  sudo docker rm $CONTAINER_ID
+                fi
+                OLD_IMAGE=$(sudo docker images -q ${{ env.DOCKER_IMAGE_NAME }})
+                if [ ! -z "$OLD_IMAGE" ]; then
+                  sudo docker rmi $OLD_IMAGE
+                fi
+                exit 0
+              fi
+              echo "⏳ Waiting... ($i/30)"
+              sleep 10
+            done
+
+            echo "❌ Health check failed."
+            sudo docker stop $NEW_CONTAINER_NAME
+            sudo docker rm $NEW_CONTAINER_NAME
+            if [ ! -z "$CONTAINER_ID" ]; then
+              echo "Restarting old container..."
+              sudo docker start $CONTAINER_ID
+            fi
+            LATEST_IMAGE_ID=$(sudo docker images ${{ env.DOCKER_IMAGE_NAME }}:latest -q)
+            if [ ! -z "$LATEST_IMAGE_ID" ]; then
+              sudo docker rmi $LATEST_IMAGE_ID
+            fi
+            exit 1
