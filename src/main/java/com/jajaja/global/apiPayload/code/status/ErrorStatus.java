@@ -69,6 +69,10 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // REVIEW 관련 에러
     REVIEW_NOT_FOUND(HttpStatus.BAD_REQUEST, "REVIEW4001", "리뷰가 없습니다."),
+
+    // NOTIFICATION 관련 에러
+    NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "NOTIFICATION4001", "알림이 없습니다."),
+    NOTIFICATION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "NOTIFICATION4031", "해당 알림에 대한 접근 권한이 없습니다."),
     ;
 
     private final HttpStatus httpStatus;
