@@ -63,14 +63,6 @@ jobs:
             TIMESTAMP=$(date +"%Y%m%d%H%M%S")
             NEW_CONTAINER_NAME="${{ env.CONTAINER_NAME }}-$TIMESTAMP"
 
-            # Docker 네트워크 설정
-            if sudo docker network inspect selenium-net >/dev/null 2>&1; then
-              echo "Network exists."
-            else
-              echo "Creating network 'selenium-net'..."
-              sudo docker network create selenium-net
-            fi
-
             # 기존 컨테이너 종료
             CONTAINER_ID=$(sudo docker ps -q --filter "publish=8080")
             if [ ! -z "$CONTAINER_ID" ]; then
@@ -78,28 +70,11 @@ jobs:
               sudo docker stop $CONTAINER_ID
             fi
 
-            # Selenium 컨테이너가 없다면 실행
-            SELENIUM_CONTAINER=$(sudo docker ps -q --filter "name=selenium_chrome")
-            if [ -z "$SELENIUM_CONTAINER" ]; then
-              echo "Running selenium-chrome"
-              sudo docker run -d \
-                  --name selenium-chrome \
-                  --network selenium-net \
-                  -p 4444:4444 \
-                  --shm-size=2g \
-                  --memory=10g \
-                  --memory-swap=12g \
-                  -e SE_DISABLE_AUTH=true \
-                  -e SE_NODE_MAX_SESSIONS=5 \
-                  -e SE_NODE_OVERRIDE_MAX_SESSIONS=true \
-                  selenium/standalone-chrome:132.0
-            fi
-
             echo "Pulling image..."
             sudo docker pull ${{ env.DOCKER_IMAGE_NAME }}
 
             echo "Running new container $NEW_CONTAINER_NAME"
-            sudo docker run --name $NEW_CONTAINER_NAME --network selenium-net -d -p 8080:8080 -e TZ=Asia/Seoul ${{ env.DOCKER_IMAGE_NAME }}
+            sudo docker run --name $NEW_CONTAINER_NAME -d -p 8080:8080 -e TZ=Asia/Seoul ${{ env.DOCKER_IMAGE_NAME }}
 
             echo "Checking health..."
             HEALTH_CHECK_URL="http://127.0.0.1:8080/health"
