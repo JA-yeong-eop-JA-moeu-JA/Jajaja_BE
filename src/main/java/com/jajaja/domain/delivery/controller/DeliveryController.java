@@ -1,6 +1,6 @@
 package com.jajaja.domain.delivery.controller;
 
-import com.jajaja.domain.delivery.dto.DeliveryAddRequestDto;
+import com.jajaja.domain.delivery.dto.DeliveryRequestDto;
 import com.jajaja.domain.delivery.dto.DeliveryResponseDto;
 import com.jajaja.domain.delivery.service.DeliveryCommandService;
 import com.jajaja.domain.delivery.service.DeliveryQueryService;
@@ -34,7 +34,7 @@ public class DeliveryController {
 			description = "배송지를 새로 추가합니다."
 	)
 	@PostMapping("/")
-	public ApiResponse<String> addDeliveryAddress(@Auth Long memberId, @Valid DeliveryAddRequestDto request) {
+	public ApiResponse<String> addDeliveryAddress(@Auth Long memberId, @Valid DeliveryRequestDto request) {
 		deliveryCommandService.addDeliveryAddress(memberId, request);
 		return ApiResponse.onSuccess("성공적으로 배송지를 추가하였습니다.");
 	}

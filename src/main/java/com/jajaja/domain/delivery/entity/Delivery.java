@@ -47,4 +47,21 @@ public class Delivery extends BaseEntity {
 
     @OneToMany(mappedBy = "delivery")
     private List<Order> orders = new ArrayList<>();
+    
+    public static Delivery create(String name, String phone, String address, String addressDetail, String zipcode, String buildingPassword, Boolean isDefault, Member member) {
+        return Delivery.builder()
+                .name(name)
+                .phone(phone)
+                .address(address)
+                .addressDetail(addressDetail)
+                .zipcode(zipcode)
+                .buildingPassword(buildingPassword)
+                .isDefault(isDefault)
+                .member(member)
+                .build();
+    }
+    
+    public void removeDefault() {
+        this.isDefault = false;
+    }
 }
