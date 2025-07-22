@@ -43,7 +43,7 @@ public class DeliveryController {
 			summary = "배송지 수정 API | by 엠마/신윤지",
 			description = "기존에 저장되어 있던 배송지를 수정합니다."
 	)
-	@PostMapping("/{deliveryId}")
+	@PatchMapping("/{deliveryId}")
 	public ApiResponse<String> updateDeliveryAddress(@Auth Long memberId, @RequestParam Long deliveryId, @Valid DeliveryRequestDto request) {
 		deliveryCommandService.updateDeliveryAddress(memberId, deliveryId, request);
 		return ApiResponse.onSuccess("성공적으로 배송지를 수정하였습니다.");
