@@ -11,7 +11,7 @@ public record DeliveryResponseDto(
 		String address,
 		String addressDetail,
 		String zipcode,
-		String doorPassword,
+		String buildingPassword,
 		Boolean isDefault
 ) {
 	public static DeliveryResponseDto of(Delivery delivery) {
@@ -22,7 +22,7 @@ public record DeliveryResponseDto(
 				.address(delivery.getAddress())
 				.addressDetail(delivery.getAddressDetail())
 				.zipcode(delivery.getZipcode())
-				.doorPassword(delivery.getDoorPassword())
+				.buildingPassword(delivery.getBuildingPassword())
 				.isDefault(delivery.getIsDefault())
 				.build();
 	}

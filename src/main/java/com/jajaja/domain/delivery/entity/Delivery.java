@@ -36,7 +36,7 @@ public class Delivery extends BaseEntity {
     private String zipcode;
 
     @Column(length = 255)
-    private String doorPassword;
+    private String buildingPassword;
 
     @Column(nullable = false)
     private Boolean isDefault;
