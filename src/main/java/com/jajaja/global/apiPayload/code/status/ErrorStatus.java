@@ -32,8 +32,7 @@ public enum ErrorStatus implements BaseErrorCode {
     
     // DELIVERY 관련 에러
     DELIVERY_NOT_FOUND(HttpStatus.BAD_REQUEST, "DELIVERY4001", "배송지가 없습니다."),
-    DELIVERY_ALREADY_DEFAULT(HttpStatus.BAD_REQUEST, "DELIVERY4002", "이미 기본 배송지가 존재합니다."),
-    DELIVERY_MEMBER_NOT_MATCH(HttpStatus.BAD_REQUEST, "DELIVERY4003", "배송지의 주인과 현재 로그인한 사용자가 다릅니다."),
+    DELIVERY_MEMBER_NOT_MATCH(HttpStatus.BAD_REQUEST, "DELIVERY4002", "배송지의 주인과 현재 로그인한 사용자가 다릅니다."),
 
     // BUSINESS CATEGORY 관련 에러
     BUSINESS_CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATEGORY4001", "업종이 존재하지 않습니다."),
