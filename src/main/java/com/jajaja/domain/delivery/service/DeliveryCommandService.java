@@ -5,4 +5,5 @@ import com.jajaja.domain.delivery.dto.DeliveryRequestDto;
 public interface DeliveryCommandService {
 	void addDeliveryAddress(Long memberId, DeliveryRequestDto request);
 	void deleteDeliveryAddress(Long memberId,  Long deliveryId);
+	void updateDeliveryAddress(Long memberId, Long deliveryId, DeliveryRequestDto request);
 }

@@ -47,6 +47,25 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService{
 		deliveryRepository.delete(getOwnDelivery(member, deliveryId));
 	}
 	
+	@Override
+	public void updateDeliveryAddress(Long memberId, Long deliveryId, DeliveryRequestDto request) {
+		Member member = memberRepository.findById(memberId).orElseThrow( () -> new DeliveryHandler(ErrorStatus.MEMBER_NOT_FOUND));
+		Delivery delivery = getOwnDelivery(member, deliveryId);
+		
+		if(request.isDefault()) {
+			updateDefaultAddress(member);
+		}
+		delivery.update(
+				request.name(),
+				request.phone(),
+				request.address(),
+				request.addressDetail(),
+				request.zipcode(),
+				request.buildingPassword(),
+				request.isDefault()
+		);
+	}
+	
 	private void updateDefaultAddress(Member  member) {
 		deliveryRepository.findByMemberAndIsDefaultIsTrue(member)
 				.ifPresent(Delivery::removeDefault);

@@ -61,6 +61,16 @@ public class Delivery extends BaseEntity {
                 .build();
     }
     
+    public void update(String name, String phone, String address, String addressDetail, String zipcode, String buildingPassword, Boolean isDefault) {
+        this.name = name;
+        this.phone = phone;
+        this.address = address;
+        this.addressDetail = addressDetail;
+        this.zipcode = zipcode;
+        this.buildingPassword = buildingPassword;
+        this.isDefault = isDefault;
+    }
+    
     public void removeDefault() {
         this.isDefault = false;
     }
