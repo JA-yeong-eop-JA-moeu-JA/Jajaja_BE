@@ -28,14 +28,19 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     private static final String[] WHITELIST = {
-            "/",
-            "/swagger/**",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/api/auth/**",
-            "/api/products/**",
-            "/api/search/**",
-            "/api/categories/**",
+            "/", "/swagger/**", "/swagger-ui/**", "/v3/api-docs/**", "/api/auth/**"
+    };
+
+    private static final String[] GET_WHITELIST = {
+            "/api/products/**", "/api/search/**", "/api/categories/**", "/api/reviews/**"
+    };
+
+    private static final String[] POST_WHITELIST = {
+            // 인증 필요 없이 허용할 POST 요청 URI가 있다면 여기에 추가
+    };
+
+    private static final String[] PATCH_WHITELIST = {
+            // 인증 필요 없이 허용할 PATCH 요청 URI가 있다면 여기에 추가
     };
 
     @Bean
@@ -55,9 +60,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
                                 .requestMatchers(WHITELIST).permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
-                                .requestMatchers(HttpMethod.PATCH, "/api/reviews/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, GET_WHITELIST).permitAll()
+                                .requestMatchers(HttpMethod.POST, POST_WHITELIST).permitAll()
+                                .requestMatchers(HttpMethod.PATCH, PATCH_WHITELIST).permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
