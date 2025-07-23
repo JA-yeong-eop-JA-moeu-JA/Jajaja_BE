@@ -36,7 +36,6 @@ public class NotificationController {
     )
     @GetMapping
     public ApiResponse<List<NotificationResponseDto>> getNotifications(@Auth Long memberId) {
-        List<NotificationResponseDto> notifications = notificationService.getNotifications(memberId);
         return ApiResponse.onSuccess(notificationService.getNotifications(memberId));
     }
 
