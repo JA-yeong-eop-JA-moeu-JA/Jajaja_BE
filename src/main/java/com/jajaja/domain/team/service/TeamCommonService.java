@@ -7,6 +7,7 @@ import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.TeamMember;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.domain.member.entity.Member;
+import com.jajaja.domain.team.repository.TeamRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TeamCommonService {
 
+    private final TeamRepository teamRepository;
     private final NotificationService notificationService;
 
     public void joinTeam(Member member, Member leader, Team team) {

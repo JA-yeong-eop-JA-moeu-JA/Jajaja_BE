@@ -2,6 +2,7 @@ package com.jajaja.domain.team.repository;
 
 import com.jajaja.domain.member.entity.QMember;
 import com.jajaja.domain.team.entity.QTeam;
+import com.jajaja.domain.team.entity.QTeamMember;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -36,17 +37,19 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
     }
 
     @Override
-    public Optional<Team> findByIdWithLeader(Long teamId) {
+    public Optional<Team> findByIdWithLeaderAndMembers(Long teamId) {
         QTeam team = QTeam.team;
-        QMember member = QMember.member;
+        QMember leader = QMember.member;
+        QTeamMember teamMember = QTeamMember.teamMember;
 
-        Team resultTeam = queryFactory
+        List<Team> result = queryFactory
                 .selectFrom(team)
-                .join(team.leader, member).fetchJoin()
+                .join(team.leader, leader).fetchJoin()
+                .leftJoin(team.teamMembers, teamMember).fetchJoin()
                 .where(team.id.eq(teamId))
-                .fetchOne();
+                .fetch();
 
-        return Optional.ofNullable(resultTeam);
+        return result.stream().findFirst();
     }
 
     @Override

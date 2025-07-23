@@ -53,7 +53,7 @@ public class TeamCommandServiceImpl implements TeamCommandService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Team team = teamRepository.findByIdWithLeader(teamId)
+        Team team = teamRepository.findByIdWithLeaderAndMembers(teamId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
 
         Member leader = team.getLeader();
