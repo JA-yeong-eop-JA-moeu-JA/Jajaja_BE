@@ -36,7 +36,7 @@ public class Delivery extends BaseEntity {
     private String zipcode;
 
     @Column(length = 255)
-    private String doorPassword;
+    private String buildingPassword;
 
     @Column(nullable = false)
     private Boolean isDefault;
@@ -47,4 +47,31 @@ public class Delivery extends BaseEntity {
 
     @OneToMany(mappedBy = "delivery")
     private List<Order> orders = new ArrayList<>();
+    
+    public static Delivery create(String name, String phone, String address, String addressDetail, String zipcode, String buildingPassword, Boolean isDefault, Member member) {
+        return Delivery.builder()
+                .name(name)
+                .phone(phone)
+                .address(address)
+                .addressDetail(addressDetail)
+                .zipcode(zipcode)
+                .buildingPassword(buildingPassword)
+                .isDefault(isDefault)
+                .member(member)
+                .build();
+    }
+    
+    public void update(String name, String phone, String address, String addressDetail, String zipcode, String buildingPassword, Boolean isDefault) {
+        this.name = name;
+        this.phone = phone;
+        this.address = address;
+        this.addressDetail = addressDetail;
+        this.zipcode = zipcode;
+        this.buildingPassword = buildingPassword;
+        this.isDefault = isDefault;
+    }
+    
+    public void removeDefault() {
+        this.isDefault = false;
+    }
 }
