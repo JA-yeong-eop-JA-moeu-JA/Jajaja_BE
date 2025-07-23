@@ -24,7 +24,7 @@ public class DeliveryController {
 	@Operation(
 			summary = "배송지 목록 조회 API | by 엠마/신윤지",
 			description = "배송지 목록을 조회합니다.")
-	@GetMapping("/")
+	@GetMapping
 	public ApiResponse<List<DeliveryResponseDto>> getDeliveriesByMemberId(@Auth Long memberId) {
 		return ApiResponse.onSuccess(deliveryQueryService.getDeliveriesByMemberId(memberId));
 	}
@@ -33,7 +33,7 @@ public class DeliveryController {
 			summary = "배송지 추가 API | by 엠마/신윤지",
 			description = "배송지를 새로 추가합니다."
 	)
-	@PostMapping("/")
+	@PostMapping
 	public ApiResponse<String> addDeliveryAddress(@Auth Long memberId, @Valid DeliveryRequestDto request) {
 		deliveryCommandService.addDeliveryAddress(memberId, request);
 		return ApiResponse.onSuccess("성공적으로 배송지를 추가하였습니다.");
