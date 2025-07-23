@@ -8,5 +8,5 @@ public interface NotificationService {
     Long createNotification(NotificationCreateRequestDto requestDto);
     List<NotificationResponseDto> getNotifications(Long memberId);
     void markAsRead(Long notificationId, Long memberId);
-    int markAllAsRead(Long memberId);
+    void markAllAsRead(Long memberId);
 }
