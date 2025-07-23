@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Schema(description = "단일 Presigned URL을 요청하는 request")
-public class PresignedUploadRequest {
+public class PresignedUploadRequestDtp {
 
     @Schema(description = "업로드할 파일 이름 (예: profile.jpg)")
     private String fileName;

@@ -1,7 +1,7 @@
 package com.jajaja.global.S3.service;
 
-import com.jajaja.global.S3.dto.request.PresignedUploadRequest;
-import com.jajaja.global.S3.dto.response.PresignedUrlUploadResponse;
+import com.jajaja.global.S3.dto.request.PresignedUploadRequestDtp;
+import com.jajaja.global.S3.dto.response.PresignedUrlUploadResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public PresignedUrlUploadResponse getPresignedUrlToUpload(PresignedUploadRequest presignedUploadRequest) {
+    public PresignedUrlUploadResponseDto getPresignedUrlToUpload(PresignedUploadRequestDtp presignedUploadRequest) {
 
         Date expiration = new Date();
         long expTime = expiration.getTime();
@@ -40,7 +40,7 @@ public class S3Service {
 
         String key = generatePresignedUrlRequest.getKey();
 
-        return PresignedUrlUploadResponse.builder()
+        return PresignedUrlUploadResponseDto.builder()
                 .url(amazonS3.generatePresignedUrl(generatePresignedUrlRequest).toString())
                 .keyName(key)
                 .build();
