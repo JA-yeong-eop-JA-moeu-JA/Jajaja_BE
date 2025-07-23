@@ -62,7 +62,7 @@ jwt:
 cloud:
   aws:
     s3:
-      bucket: ${JWT_EXPIRATION_ACCESS}
+      bucket: ${S3_NAME}
     credentials:
       accessKey: ${S3_ACCESSKEY}
       secretKey: ${S3_SECRETKEY}
