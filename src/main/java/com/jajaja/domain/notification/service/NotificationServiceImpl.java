@@ -3,7 +3,6 @@ package com.jajaja.domain.notification.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.jajaja.domain.notification.converter.NotificationConverter;
 import com.jajaja.domain.notification.repository.NotificationSseEmitterRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
@@ -26,7 +25,6 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
     private final NotificationSseEmitterRepository emitterRepository;
-    private final NotificationConverter converter;
 
     @Override
     @Transactional
@@ -42,8 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         Notification saved = notificationRepository.save(notification);
-
-        emitterRepository.send(member.getId(), converter.toResponseDto(saved));
+        emitterRepository.send(member.getId(), NotificationResponseDto.from(saved));
 
         return saved.getId();
     }
@@ -51,7 +48,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<NotificationResponseDto> getNotifications(Long memberId) {
         return notificationRepository.findNotificationsByMemberId(memberId).stream()
-                .map(converter::toResponseDto)
+                .map(NotificationResponseDto::from)
                 .collect(Collectors.toList());
     }
 
