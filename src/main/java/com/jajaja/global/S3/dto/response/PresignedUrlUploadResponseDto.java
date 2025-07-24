@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Schema(description = "Presigned URL에 대한 응답")
+@Schema(description = "단일 Presigned URL에 대한 응답")
 public class PresignedUrlUploadResponseDto {
 
     @Schema(description = "S3에 PUT 요청할 수 있는 Presigned URL")
