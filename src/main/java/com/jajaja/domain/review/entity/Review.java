@@ -48,4 +48,8 @@ public class Review extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_option_id")
     private ProductOption productOption;
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }
