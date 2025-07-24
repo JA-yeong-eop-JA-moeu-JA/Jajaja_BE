@@ -29,6 +29,10 @@ public enum ErrorStatus implements BaseErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "사용자가 없습니다."),
     MEMBER_BUSINESS_CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBERBUSINESS4002", "사용자의 업종 정보가 없습니다."),
     MEMBER_REQUIRED(HttpStatus.BAD_REQUEST, "MEMBER4003", "회원만 사용할 수 있는 기능입니다."),
+    
+    // DELIVERY 관련 에러
+    DELIVERY_NOT_FOUND(HttpStatus.BAD_REQUEST, "DELIVERY4001", "배송지가 없습니다."),
+    DELIVERY_MEMBER_NOT_MATCH(HttpStatus.BAD_REQUEST, "DELIVERY4002", "배송지의 주인과 현재 로그인한 사용자가 다릅니다."),
 
     // BUSINESS CATEGORY 관련 에러
     BUSINESS_CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATEGORY4001", "업종이 존재하지 않습니다."),
