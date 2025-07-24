@@ -93,7 +93,7 @@ public class ReviewController {
             description = """
                           구매한 상품에 대해 리뷰를 추가합니다.
 
-                          - 별점, 내용, 사진(최대 6장)을 포함할 수 있습니다.
+                          - 별점, 내용, 사진(최대 5장)을 포함할 수 있습니다.
                           - 이미지는 S3 Presigned URL을 통해 업로드한 후,
                             해당 key 값을 imageKeys로 전달해주세요.
                           """

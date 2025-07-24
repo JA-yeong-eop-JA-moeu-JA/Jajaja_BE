@@ -55,7 +55,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         // 이미지 처리
         List<String> imageKeys = dto.imageKeys();
         if (imageKeys != null && !imageKeys.isEmpty()) {
-            if (imageKeys.size() > 6) {
+            if (imageKeys.size() > 5) {
                 throw new BadRequestException(ErrorStatus.REVIEW_TOO_MANY_IMAGES);
             }
 
