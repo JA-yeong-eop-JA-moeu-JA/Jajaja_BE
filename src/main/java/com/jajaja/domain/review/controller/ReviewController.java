@@ -109,6 +109,19 @@ public class ReviewController {
     }
 
     @Operation(
+            summary = "리뷰 삭제 API | by 루비/이송미",
+            description = "본인이 작성한 리뷰를 삭제합니다."
+    )
+    @DeleteMapping("/{reviewId}")
+    public ApiResponse<Void> deleteReview(
+            @Auth Long memberId,
+            @PathVariable Long reviewId
+    ) {
+        reviewCommandService.deleteReview(memberId, reviewId);
+        return ApiResponse.onSuccess(null);
+    }
+
+    @Operation(
             summary = "내가 작성한 리뷰 목록 조회 API | by 루비/이송미",
             description = "로그인한 사용자가 작성한 리뷰 목록을 작성일 내림차순으로 조회합니다."
     )
