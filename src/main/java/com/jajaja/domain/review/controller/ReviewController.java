@@ -1,15 +1,15 @@
 package com.jajaja.domain.review.controller;
 
-import com.jajaja.domain.review.dto.response.PagingReviewImageListResponseDto;
-import com.jajaja.domain.review.dto.response.PagingReviewListResponseDto;
-import com.jajaja.domain.review.dto.response.ReviewBriefResponseDto;
-import com.jajaja.domain.review.dto.response.ReviewLikeResponseDto;
+import com.jajaja.domain.review.dto.request.ReviewCreateRequestDto;
+import com.jajaja.domain.review.dto.response.*;
+import com.jajaja.domain.review.service.ReviewCommandService;
 import com.jajaja.domain.review.service.ReviewLikeCommandService;
 import com.jajaja.domain.review.service.ReviewQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.config.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +21,7 @@ public class ReviewController {
 
     private final ReviewQueryService reviewQueryService;
     private final ReviewLikeCommandService reviewLikeCommandService;
+    private final ReviewCommandService reviewCommandService;
 
     @Operation(
             summary = "리뷰 상세 조회 - 상단 API | by 지지/이지희",
@@ -86,4 +87,25 @@ public class ReviewController {
         ReviewLikeResponseDto responseDto = reviewLikeCommandService.patchReviewLike(memberId, reviewId);
         return ApiResponse.onSuccess(responseDto);
     }
+
+    @Operation(
+            summary = "리뷰 추가 API | by 루비/이송미",
+            description = """
+                          구매한 상품에 대해 리뷰를 추가합니다.
+
+                          - 별점, 내용, 사진(최대 6장)을 포함할 수 있습니다.
+                          - 이미지는 S3 Presigned URL을 통해 업로드한 후,
+                            해당 key 값을 imageKeys로 전달해주세요.
+                          """
+    )
+    @PostMapping("/{productId}")
+    public ApiResponse<ReviewCreateResponseDto> createReview(
+            @Auth Long memberId,
+            @PathVariable Long productId,
+            @Valid @RequestBody ReviewCreateRequestDto requestDto
+    ) {
+        Long reviewId = reviewCommandService.createReview(memberId, productId, requestDto);
+        return ApiResponse.onSuccess(new ReviewCreateResponseDto(reviewId));
+    }
+
 }

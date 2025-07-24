@@ -4,4 +4,5 @@ import com.jajaja.domain.order.entity.OrderProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OrderProductRepository extends JpaRepository<OrderProduct, Long> {
+    boolean existsByOrder_Member_IdAndProduct_Id(Long memberId, Long productId);
 }
