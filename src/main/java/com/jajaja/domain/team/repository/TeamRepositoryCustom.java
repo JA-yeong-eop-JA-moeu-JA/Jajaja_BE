@@ -5,8 +5,10 @@ import com.jajaja.domain.team.entity.enums.TeamStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface TeamRepositoryCustom {
     List<Team> findMatchingTeamsByProductId(Long productId);
-    List<Team> findExpiredTeams(TeamStatus status, LocalDateTime now);
+    Optional<Team> findByIdWithLeaderAndMembers(Long teamId);
+    List<Team> findExpiredTeamsWithLeader(TeamStatus status, LocalDateTime now);
 }

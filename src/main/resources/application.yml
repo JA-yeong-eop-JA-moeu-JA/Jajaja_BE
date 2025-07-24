@@ -58,3 +58,15 @@ jwt:
       refresh: ${JWT_EXPIRATION_REFRESH}
     redirect-url: ${AUTH_REDIRECT_URL}
     cookie-domain: ${COOKIE_DOMAIN}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_NAME}
+    credentials:
+      accessKey: ${S3_ACCESSKEY}
+      secretKey: ${S3_SECRETKEY}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
