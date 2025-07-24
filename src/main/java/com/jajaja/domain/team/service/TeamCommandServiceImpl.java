@@ -30,9 +30,11 @@ public class TeamCommandServiceImpl implements TeamCommandService {
 
     @Override
     public TeamCreateResponseDto createTeam(Long memberId, Long productId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Product product = productRepository.findById(productId).orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
         Team team = Team.builder()
                 .leader(member)
@@ -51,15 +53,18 @@ public class TeamCommandServiceImpl implements TeamCommandService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Team team = teamRepository.findById(teamId)
+        Team team = teamRepository.findByIdWithLeaderAndMembers(teamId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
 
-        teamCommonService.joinTeam(member, team);
+        Member leader = team.getLeader();
+
+        teamCommonService.joinTeam(member, leader, team);
     }
 
     @Override
     public void joinTeamInCarts(Long memberId, Long productId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
         List<Team> matchingTeams = teamRepository.findMatchingTeamsByProductId(productId);
 
@@ -70,13 +75,13 @@ public class TeamCommandServiceImpl implements TeamCommandService {
         // 가장 유효 시간에 임박한 팀 선택
         Team team = matchingTeams.get(0);
 
-        teamCommonService.joinTeam(member, team);
+        Member leader = team.getLeader();
+
+        teamCommonService.joinTeam(member, leader, team);
 
         // 장바구니에서 해당 product 삭제
         Cart cart = member.getCart();
         cart.deleteAllCartProductsByProductId(productId);
-
-        // TODO: 주문 생성으로 넘어가는 로직 작성 필요
     }
 
 }
