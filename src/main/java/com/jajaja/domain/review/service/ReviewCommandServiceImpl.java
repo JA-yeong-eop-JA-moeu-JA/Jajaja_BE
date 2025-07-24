@@ -39,7 +39,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
-        boolean isPurchased = orderProductRepository.existsByOrder_Member_IdAndProduct_Id(memberId, productId);
+        boolean isPurchased = orderProductRepository.existsByOrderMemberIdAndProductId(memberId, productId);
         if (!isPurchased) {
             throw new BadRequestException(ErrorStatus.REVIEW_NOT_ALLOWED);
         }
