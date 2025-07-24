@@ -108,4 +108,18 @@ public class ReviewController {
         return ApiResponse.onSuccess(new ReviewCreateResponseDto(reviewId));
     }
 
+    @Operation(
+            summary = "내가 작성한 리뷰 목록 조회 API | by 루비/이송미",
+            description = "로그인한 사용자가 작성한 리뷰 목록을 작성일 내림차순으로 조회합니다."
+    )
+    @GetMapping("/me")
+    public ApiResponse<PagingReviewListResponseDto> getMyReviews(
+            @Auth Long memberId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        PagingReviewListResponseDto responseDto = reviewQueryService.getMyReviewList(memberId, page, size);
+        return ApiResponse.onSuccess(responseDto);
+    }
+
 }

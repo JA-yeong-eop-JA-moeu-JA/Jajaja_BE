@@ -9,4 +9,5 @@ public interface ReviewQueryService {
     ReviewBriefResponseDto getReviewBriefInfo(Long productId);
     PagingReviewListResponseDto getReviewList(Long userId, Long productId, String sort, int page, int size);
     PagingReviewImageListResponseDto getReviewImageList(Long productId, String sort, int page, int size);
+    PagingReviewListResponseDto getMyReviewList(Long memberId, int page, int size);
 }
