@@ -75,11 +75,13 @@ public enum ErrorStatus implements BaseErrorCode {
     REVIEW_NOT_FOUND(HttpStatus.BAD_REQUEST, "REVIEW4001", "리뷰가 없습니다."),
     REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REVIEW4002", "해당 상품에 대한 리뷰를 작성할 수 없습니다."),
     REVIEW_TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "REVIEW4003", "이미지는 최대 6장까지 등록할 수 있습니다."),
-    INVALID_IMAGE_KEY(HttpStatus.BAD_REQUEST, "REVIEW4004", "유효하지 않은 이미지 키입니다."),
 
     // NOTIFICATION 관련 에러
     NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "NOTIFICATION4001", "알림이 없습니다."),
     NOTIFICATION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "NOTIFICATION4031", "해당 알림에 대한 접근 권한이 없습니다."),
+
+    // S3 관련 에러
+    INVALID_IMAGE_KEY(HttpStatus.BAD_REQUEST, "IMAGE4001", "유효하지 않은 이미지 키입니다."),
     ;
 
     private final HttpStatus httpStatus;
