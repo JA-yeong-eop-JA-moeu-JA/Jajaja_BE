@@ -83,6 +83,12 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // S3 관련 에러
     INVALID_IMAGE_KEY(HttpStatus.BAD_REQUEST, "IMAGE4001", "유효하지 않은 이미지 키입니다."),
+
+    // 포인트 관련 에러
+    POINT_NOT_FOUND(HttpStatus.BAD_REQUEST, "POINT4001", "포인트가 없습니다."),
+    INSUFFICIENT_POINT(HttpStatus.BAD_REQUEST, "POINT4002", "포인트가 부족합니다."),
+    ALREADY_CANCELLED_POINT(HttpStatus.BAD_REQUEST, "POINT4003", "이미 취소된 포인트입니다."),
+    ALREADY_REFUNDED_POINT(HttpStatus.BAD_REQUEST, "POINT4004", "이미 환불된 포인트입니다."),
     ;
 
     private final HttpStatus httpStatus;
