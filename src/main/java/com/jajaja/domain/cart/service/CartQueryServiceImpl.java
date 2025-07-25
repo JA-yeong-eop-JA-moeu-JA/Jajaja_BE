@@ -38,7 +38,7 @@ public class CartQueryServiceImpl implements CartQueryService {
 		
 		// 장바구니 내 아이템에 대해 팀 참여 가능 여부 확인, 매핑
 		List<CartProductResponseDto> itemInfos = cart.getCartProducts().stream()
-				.map(cartProduct -> {
+				.map(	cartProduct -> {
 					boolean isTeamAvailable = teamRepository.existsByProductIdAndStatus(cartProduct.getProduct().getId(), TeamStatus.MATCHING);
 					return CartProductResponseDto.of(cartProduct, isTeamAvailable);
 				})

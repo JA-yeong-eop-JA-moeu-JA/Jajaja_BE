@@ -1,6 +1,6 @@
 package com.jajaja.domain.cart.dto;
 
-import com.jajaja.domain.coupon.dto.AppliedCouponResponseDto;
+import com.jajaja.domain.coupon.dto.CouponResponseDto;
 import lombok.Builder;
 
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 @Builder
 public record CartResponseDto(
 		List<CartProductResponseDto> data,
-		AppliedCouponResponseDto appliedCoupon,
+		CouponResponseDto appliedCoupon,
 		SummaryInfoDto summary,
 		int totalCount
 ) {
