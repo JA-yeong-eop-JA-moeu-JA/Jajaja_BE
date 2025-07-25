@@ -7,8 +7,11 @@ import com.jajaja.domain.review.entity.QReview;
 import com.jajaja.domain.review.entity.QReviewImage;
 import com.jajaja.domain.review.entity.QReviewLike;
 import com.jajaja.domain.member.entity.QMember;
+import com.jajaja.global.apiPayload.code.status.ErrorStatus;
+import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -171,5 +174,35 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 likeCountExpression(review),
                 imageCountExpression(review)
         );
+    }
+
+    @Override
+    public Page<ReviewItemDto> findPageByMemberIdOrderByCreatedAt(Long memberId, int page, int size) {
+        if (memberId == null) {
+            throw new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND);
+        }
+
+        BooleanExpression condition = review.member.id.eq(memberId)
+                .and(review.deletedAt.isNull());
+
+        List<ReviewItemDto> content = queryFactory
+                .select(reviewItemDtoProjection())
+                .from(review)
+                .join(review.member, member)
+                .leftJoin(review.productOption, option)
+                .where(condition)
+                .orderBy(review.createdAt.desc())
+                .offset((long) page * size)
+                .limit(size)
+                .fetch();
+
+        long total = Optional.ofNullable(
+                queryFactory.select(review.count())
+                        .from(review)
+                        .where(condition)
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(content, PageRequest.of(page, size), total);
     }
 }

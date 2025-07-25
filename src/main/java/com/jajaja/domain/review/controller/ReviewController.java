@@ -93,7 +93,7 @@ public class ReviewController {
             description = """
                           구매한 상품에 대해 리뷰를 추가합니다.
 
-                          - 별점, 내용, 사진(최대 6장)을 포함할 수 있습니다.
+                          - 별점, 내용, 사진(최대 5장)을 포함할 수 있습니다.
                           - 이미지는 S3 Presigned URL을 통해 업로드한 후,
                             해당 key 값을 imageKeys로 전달해주세요.
                           """
@@ -106,6 +106,33 @@ public class ReviewController {
     ) {
         Long reviewId = reviewCommandService.createReview(memberId, productId, requestDto);
         return ApiResponse.onSuccess(new ReviewCreateResponseDto(reviewId));
+    }
+
+    @Operation(
+            summary = "리뷰 삭제 API | by 루비/이송미",
+            description = "본인이 작성한 리뷰를 삭제합니다."
+    )
+    @DeleteMapping("/{reviewId}")
+    public ApiResponse<Void> deleteReview(
+            @Auth Long memberId,
+            @PathVariable Long reviewId
+    ) {
+        reviewCommandService.deleteReview(memberId, reviewId);
+        return ApiResponse.onSuccess(null);
+    }
+
+    @Operation(
+            summary = "내가 작성한 리뷰 목록 조회 API | by 루비/이송미",
+            description = "로그인한 사용자가 작성한 리뷰 목록을 작성일 내림차순으로 조회합니다."
+    )
+    @GetMapping("/me")
+    public ApiResponse<PagingReviewListResponseDto> getMyReviews(
+            @Auth Long memberId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        PagingReviewListResponseDto responseDto = reviewQueryService.getMyReviewList(memberId, page, size);
+        return ApiResponse.onSuccess(responseDto);
     }
 
 }
