@@ -4,6 +4,8 @@ import com.jajaja.domain.cart.converter.CartConverter;
 import com.jajaja.domain.cart.dto.CartProductResponseDto;
 import com.jajaja.domain.cart.dto.CartResponseDto;
 import com.jajaja.domain.cart.entity.Cart;
+import com.jajaja.domain.coupon.dto.DiscountResultDto;
+import com.jajaja.domain.coupon.service.CouponCommonService;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.domain.team.repository.TeamCommandRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class CartQueryServiceImpl implements CartQueryService {
 	
 	private final CartCommonService cartCommonService;
 	private final TeamCommandRepository teamRepository;
+	private final CouponCommonService couponCommonService;
 	
 	@Override
 	public CartResponseDto getCart(Long memberId) {
@@ -44,7 +47,12 @@ public class CartQueryServiceImpl implements CartQueryService {
 				})
 				.collect(Collectors.toList());
 		
+		// 할인 계산
+		DiscountResultDto discountResult = cart.getCoupon() != null ?
+				couponCommonService.calculateDiscount(cart, cart.getCoupon()) :
+				DiscountResultDto.noDiscount(cart.calculateTotalAmount());
+		
 		log.info("[CartQueryService] 사용자 {}의 장바구니 {}, 아이템 개수 {}개 조회 완료", memberId, cart.getId(), itemInfos.size());
-		return CartConverter.toCartResponseDto(cart, itemInfos);
+		return CartConverter.toCartResponseDto(cart, itemInfos, discountResult);
 	}
 }

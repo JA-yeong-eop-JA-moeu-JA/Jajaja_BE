@@ -67,4 +67,27 @@ public class Cart extends BaseEntity {
 
         this.cartProducts.removeAll(toRemove);
     }
+
+    /**
+     * Cart에 쿠폰을 적용합니다.
+     */
+    public void applyCoupon(Coupon coupon) {
+        this.coupon = coupon;
+    }
+
+    /**
+     * Cart에서 쿠폰을 제거합니다.
+     */
+    public void removeCoupon() {
+        this.coupon = null;
+    }
+
+    /**
+     * 장바구니의 총 금액을 계산합니다.
+     */
+    public int calculateTotalAmount() {
+        return this.cartProducts.stream()
+                .mapToInt(CartProduct::getTotalPrice)
+                .sum();
+    }
 }

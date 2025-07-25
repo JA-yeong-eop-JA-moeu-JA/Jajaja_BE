@@ -14,6 +14,9 @@ public record CartResponseDto(
 ) {
 	
 	public record SummaryInfoDto(
-			int shippingFee
+			int originalAmount, // 원래 금액 (할인 전)
+			int discountAmount, // 할인 금액
+			int finalAmount, // 최종 금액 (할인 후)
+			int shippingFee // 배송비
 	) {}
 }

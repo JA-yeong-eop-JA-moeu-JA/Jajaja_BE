@@ -56,9 +56,20 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // CART 관련 에러
     CART_NOT_FOUND(HttpStatus.BAD_REQUEST,  "CART4001", "장바구니가 없습니다."),
+    CART_EMPTY(HttpStatus.BAD_REQUEST, "CART4002", "장바구니가 비어있습니다."),
     
     // CART PRODUCT 관련 에러
     CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CARTPRODUCT4001", "장바구니에 해당 상품이 없습니다."),
+    
+    // COUPON 관련 에러
+    COUPON_NOT_FOUND(HttpStatus.BAD_REQUEST, "COUPON4001", "쿠폰이 존재하지 않습니다."),
+    COUPON_NOT_OWNED(HttpStatus.BAD_REQUEST, "COUPON4002", "보유하지 않은 쿠폰입니다."),
+    COUPON_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "COUPON4003", "사용할 수 없는 쿠폰입니다."),
+    COUPON_EXPIRED(HttpStatus.BAD_REQUEST, "COUPON4004", "만료된 쿠폰입니다."),
+    COUPON_MIN_ORDER_AMOUNT_NOT_MET(HttpStatus.BAD_REQUEST, "COUPON4005", "최소 주문 금액을 충족하지 않습니다."),
+    COUPON_BRAND_CONDITION_NOT_MET(HttpStatus.BAD_REQUEST, "COUPON4006", "해당 브랜드 상품이 장바구니에 없습니다."),
+    COUPON_CATEGORY_CONDITION_NOT_MET(HttpStatus.BAD_REQUEST, "COUPON4007", "해당 카테고리 상품이 장바구니에 없습니다."),
+    INVALID_COUPON_TYPE(HttpStatus.BAD_REQUEST, "COUPON4009", "유효하지 않은 쿠폰 타입입니다."),
   
     // TEAM 관련 에러
     TEAM_NOT_FOUND(HttpStatus.BAD_REQUEST, "TEAM4001", "팀이 없습니다."),

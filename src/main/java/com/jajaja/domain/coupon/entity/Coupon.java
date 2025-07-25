@@ -44,7 +44,7 @@ public class Coupon extends BaseEntity {
     @Column
     private Integer minOrderAmount;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime expiresAt;
 
     @OneToMany(mappedBy = "coupon")
