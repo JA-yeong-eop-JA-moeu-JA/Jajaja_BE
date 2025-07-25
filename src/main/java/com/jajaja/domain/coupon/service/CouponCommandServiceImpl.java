@@ -48,6 +48,19 @@ public class CouponCommandServiceImpl implements CouponCommandService{
 		return CouponApplyResponseDto.withDiscount(cart.getId(), coupon.getId(), coupon.getName(), discountResult);
 	}
 	
+	@Override
+	public void unapplyCoupon(Long memberId) {
+		memberRepository.findById(memberId)
+				.orElseThrow(() -> new CouponHandler(ErrorStatus.MEMBER_NOT_FOUND));
+		
+		Cart cart = cartRepository.findByMemberId(memberId);
+		if (cart == null) {
+			throw new CouponHandler(ErrorStatus.CART_NOT_FOUND);
+		}
+		
+		cart.removeCoupon();
+	}
+	
 	/**
 	 * 쿠폰 존재 여부를 검증하고 반환합니다.
 	 */
