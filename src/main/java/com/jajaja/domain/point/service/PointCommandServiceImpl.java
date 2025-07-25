@@ -25,6 +25,12 @@ public class PointCommandServiceImpl implements PointCommandService {
     private final MemberRepository memberRepository;
     private final OrderProductRepository orderProductRepository;
 
+    /**
+     * 포인트를 사용합니다. 사용 가능한 리뷰 포인트를 찾아서 순차적으로 사용합니다.
+     * @param memberId 회원 ID
+     * @param amountToUse 사용하려는 포인트 양
+     * @param orderProductId 주문 상품 ID
+     */
     @Override
     public void usePoints(Long memberId, int amountToUse, long orderProductId) {
         List<Point> points = pointRepository.findValidReviewPointsOrderedByOldest(memberId, LocalDate.now());
@@ -54,6 +60,12 @@ public class PointCommandServiceImpl implements PointCommandService {
         pointRepository.save(usedPoint);
     }
 
+    /**
+     * 리뷰 작성 후 포인트를 추가합니다.
+     * @param memberId 회원 ID
+     * @param amount 포인트 양
+     * @param orderProductId 주문 상품 ID
+     */
     @Override
     public void addReviewPoints(Long memberId, int amount, long orderProductId) {
         Member member = memberRepository.findById(memberId)
@@ -72,6 +84,10 @@ public class PointCommandServiceImpl implements PointCommandService {
         pointRepository.save(point);
     }
 
+    /**
+     * 포인트 획득을 취소합니다.
+     * @param orderProductId 주문 상품 ID
+     */
     @Override
     public void cancelReviewPoint(Long orderProductId) {
         Point reviewPoint = pointRepository.findReviewPointByOrderProductId(orderProductId)
@@ -89,6 +105,10 @@ public class PointCommandServiceImpl implements PointCommandService {
         pointRepository.save(cancelPoint);
     }
 
+    /**
+     * 사용된 포인트를 환불합니다.
+     * @param orderProductId 주문 상품 ID
+     */
     @Override
     public void refundUsedPoints(Long orderProductId) {
         Point usePoint = pointRepository.findUsePointByOrderProductId(orderProductId)
