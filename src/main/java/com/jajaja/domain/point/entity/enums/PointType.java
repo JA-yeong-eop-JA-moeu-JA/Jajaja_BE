@@ -4,5 +4,6 @@ public enum PointType {
     REVIEW,
     USE,
     EXPIRED,
-    CANCEL
+    CANCEL,
+    REFUND
 }
