@@ -13,15 +13,12 @@ public record CouponResponseDto(
 		CouponConditionDto applicableConditions
 ) {
 	public static CouponResponseDto from (Coupon coupon) {
-		
-		CouponConditionDto applicableConditions = CouponConditionDto.from(coupon);
-		
 		return CouponResponseDto.builder()
 				.couponId(coupon.getId())
 				.couponName(coupon.getName())
 				.discountType(coupon.getDiscountType())
 				.discountValue(coupon.getDiscountValue())
-				.applicableConditions(applicableConditions)
+				.applicableConditions(CouponConditionDto.from(coupon))
 				.build();
 	}
 }
