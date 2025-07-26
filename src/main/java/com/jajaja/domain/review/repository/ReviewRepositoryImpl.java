@@ -205,4 +205,53 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
 
         return new PageImpl<>(content, PageRequest.of(page, size), total);
     }
+
+    @Override
+    public Page<ReviewItemDto> findPageAllOrderByCreatedAt(int page, int size) {
+        List<ReviewItemDto> content = queryFactory
+                .select(reviewItemDtoProjection())
+                .from(review)
+                .join(review.member, member)
+                .leftJoin(review.productOption, option)
+                .where(review.deletedAt.isNull())
+                .orderBy(review.createdAt.desc())
+                .offset((long) page * size)
+                .limit(size)
+                .fetch();
+
+        long total = Optional.ofNullable(
+                queryFactory.select(review.count())
+                        .from(review)
+                        .where(review.deletedAt.isNull())
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(content, PageRequest.of(page, size), total);
+    }
+
+    @Override
+    public Page<ReviewItemDto> findPageAllOrderByLikeCount(int page, int size) {
+        List<ReviewItemDto> content = queryFactory
+                .select(reviewItemDtoProjection())
+                .from(review)
+                .join(review.member, member)
+                .leftJoin(review.productOption, option)
+                .leftJoin(review.reviewLikes, reviewLike)
+                .where(review.deletedAt.isNull())
+                .groupBy(review.id, member.name, option.name,
+                        review.createdAt, review.rating, review.content)
+                .orderBy(reviewLike.id.count().desc())
+                .offset((long) page * size)
+                .limit(size)
+                .fetch();
+
+        long total = Optional.ofNullable(
+                queryFactory.select(review.count())
+                        .from(review)
+                        .where(review.deletedAt.isNull())
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(content, PageRequest.of(page, size), total);
+    }
 }

@@ -127,4 +127,41 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
         return PagingReviewListResponseDto.of(reviewItemPage, reviewDtos);
     }
 
+    @Override
+    public PagingReviewListResponseDto getAllReviewList(Long memberId, String sort, int page, int size) {
+        Page<ReviewItemDto> reviewItemPage;
+
+        switch (sort.toLowerCase()) {
+            case "recommend":
+                reviewItemPage = reviewRepository.findPageAllOrderByLikeCount(page, size);
+                break;
+            case "latest":
+            default:
+                reviewItemPage = reviewRepository.findPageAllOrderByCreatedAt(page, size);
+                break;
+        }
+
+        List<Integer> reviewIds = reviewItemPage.stream()
+                .map(ReviewItemDto::id)
+                .toList();
+
+        Map<Integer, List<String>> imageUrlsMap = reviewImageRepository
+                .findTop6ImageUrlsGroupedByReviewIds(reviewIds);
+
+        Set<Integer> likedReviewIds = memberId != null
+                ? reviewLikeRepository.findReviewIdsLikedByUser(memberId, reviewIds)
+                : Set.of();
+
+        List<ReviewListDto> reviewDtos = reviewItemPage.stream()
+                .map(dto -> new ReviewListDto(
+                        dto,
+                        likedReviewIds.contains(dto.id()),
+                        imageUrlsMap.getOrDefault(dto.id(), List.of())
+                ))
+                .toList();
+
+        return PagingReviewListResponseDto.of(reviewItemPage, reviewDtos);
+    }
+
+
 }
