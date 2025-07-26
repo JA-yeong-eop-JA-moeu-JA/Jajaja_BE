@@ -2,6 +2,8 @@ package com.jajaja.domain.team.repository;
 
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,4 +13,5 @@ public interface TeamRepositoryCustom {
     List<Team> findMatchingTeamsByProductId(Long productId);
     Optional<Team> findByIdWithLeaderAndMembers(Long teamId);
     List<Team> findExpiredTeamsWithLeader(TeamStatus status, LocalDateTime now);
+    Page<Team> findAllMatchingTeams(Pageable pageable);
 }

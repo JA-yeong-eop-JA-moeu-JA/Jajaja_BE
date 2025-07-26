@@ -128,10 +128,34 @@ public class ReviewController {
     @GetMapping("/me")
     public ApiResponse<PagingReviewListResponseDto> getMyReviews(
             @Auth Long memberId,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
             @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기", example = "5")
             @RequestParam(defaultValue = "5") int size
     ) {
         PagingReviewListResponseDto responseDto = reviewQueryService.getMyReviewList(memberId, page, size);
+        return ApiResponse.onSuccess(responseDto);
+    }
+
+    @Operation(
+            summary = "전체 리뷰 목록 조회 API | by 루비/이송미",
+            description = "전체 리뷰를 정렬 기준(최신순|추천순)에 따라 조회합니다."
+    )
+    @GetMapping
+    public ApiResponse<PagingReviewListResponseDto> getAllReviews(
+            @Auth Long memberId,
+            @Parameter(description = "정렬 기준 (LATEST | RECOMMEND)", example = "LATEST")
+            @RequestParam(required = false, defaultValue = "LATEST") String sort,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기", example = "5")
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        PagingReviewListResponseDto responseDto = reviewQueryService.getAllReviewList(memberId, sort, page, size);
         return ApiResponse.onSuccess(responseDto);
     }
 
