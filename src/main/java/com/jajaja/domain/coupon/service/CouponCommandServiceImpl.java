@@ -3,7 +3,6 @@ package com.jajaja.domain.coupon.service;
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.cart.repository.CartRepository;
 import com.jajaja.domain.coupon.dto.CouponApplyResponseDto;
-import com.jajaja.domain.coupon.dto.DiscountResultDto;
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.coupon.entity.enums.CouponStatus;
 import com.jajaja.domain.coupon.repository.CouponRepository;
@@ -44,8 +43,7 @@ public class CouponCommandServiceImpl implements CouponCommandService{
 		couponCommonService.validateCouponEligibility(cart, coupon);
 		cart.applyCoupon(coupon);
 		
-		DiscountResultDto discountResult = couponCommonService.calculateDiscount(cart, coupon);
-		return CouponApplyResponseDto.withDiscount(cart.getId(), coupon.getId(), coupon.getName(), discountResult);
+		return CouponApplyResponseDto.withDiscount(cart.getId(), coupon.getId(), coupon.getName(), couponCommonService.calculateDiscount(cart, coupon));
 	}
 	
 	@Override

@@ -25,7 +25,6 @@ public class MemberCouponRepositoryImpl implements MemberCouponRepositoryCustom 
         QMemberCoupon memberCoupon = QMemberCoupon.memberCoupon;
         QCoupon coupon = QCoupon.coupon;
 
-        // 1단계: 페이징된 MemberCoupon ID들만 조회
         List<Long> memberCouponIds = queryFactory
                 .select(memberCoupon.id)
                 .from(memberCoupon)
@@ -36,12 +35,10 @@ public class MemberCouponRepositoryImpl implements MemberCouponRepositoryCustom 
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 빈 결과 처리
         if (memberCouponIds.isEmpty()) {
             return PageableExecutionUtils.getPage(List.of(), pageable, () -> 0L);
         }
 
-        // 2단계: 조회된 ID들로 fetchJoin을 통해 엔티티 조회
         List<MemberCoupon> content = queryFactory
                 .selectFrom(memberCoupon)
                 .join(memberCoupon.coupon, coupon).fetchJoin()
@@ -49,7 +46,6 @@ public class MemberCouponRepositoryImpl implements MemberCouponRepositoryCustom 
                 .orderBy(memberCoupon.createdAt.desc())
                 .fetch();
 
-        // 카운트 쿼리
         JPAQuery<Long> countQuery = queryFactory
                 .select(memberCoupon.count())
                 .from(memberCoupon)

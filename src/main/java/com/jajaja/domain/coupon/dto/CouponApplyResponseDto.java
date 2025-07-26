@@ -1,5 +1,6 @@
 package com.jajaja.domain.coupon.dto;
 
+import com.jajaja.global.common.dto.PriceInfoDto;
 import lombok.Builder;
 
 @Builder
@@ -19,14 +20,14 @@ public record CouponApplyResponseDto(
                 .build();
     }
 
-    public static CouponApplyResponseDto withDiscount(Long cartId, Long couponId, String couponName, DiscountResultDto discountResult) {
+    public static CouponApplyResponseDto withDiscount(Long cartId, Long couponId, String couponName, PriceInfoDto priceInfo) {
         return CouponApplyResponseDto.builder()
                 .cartId(cartId)
                 .couponId(couponId)
                 .couponName(couponName)
-                .originalAmount(discountResult.originalAmount())
-                .discountAmount(discountResult.discountAmount())
-                .finalAmount(discountResult.finalAmount())
+                .originalAmount(priceInfo.originalAmount())
+                .discountAmount(priceInfo.discountAmount())
+                .finalAmount(priceInfo.finalAmount())
                 .build();
     }
 }

@@ -2,7 +2,7 @@ package com.jajaja.domain.coupon.service;
 
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.cart.entity.CartProduct;
-import com.jajaja.domain.coupon.dto.DiscountResultDto;
+import com.jajaja.global.common.dto.PriceInfoDto;
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.coupon.entity.enums.ConditionType;
 import com.jajaja.domain.coupon.entity.enums.DiscountType;
@@ -38,14 +38,14 @@ public class CouponCommonService {
     /**
      * 쿠폰 할인 금액을 계산합니다.
      */
-    public DiscountResultDto calculateDiscount(Cart cart, Coupon coupon) {
+    public PriceInfoDto calculateDiscount(Cart cart, Coupon coupon) {
         if (cart.getCoupon() == null) {
-            return DiscountResultDto.noDiscount(cart.calculateTotalAmount());
+            return PriceInfoDto.noDiscount(cart.calculateTotalAmount());
         }
 
         int targetAmount = calculateTargetAmount(cart, coupon);
         if (targetAmount <= 0) {
-            return DiscountResultDto.noDiscount(cart.calculateTotalAmount());
+            return PriceInfoDto.noDiscount(cart.calculateTotalAmount());
         }
 
         int discountAmount = calculateDiscountAmount(targetAmount, coupon);
@@ -53,7 +53,7 @@ public class CouponCommonService {
         log.info("[CouponCommonService] 할인 계산 완료 - 대상금액: {}, 할인금액: {}, 쿠폰: {}", 
                 targetAmount, discountAmount, coupon.getName());
 
-        return DiscountResultDto.withDiscount(cart.calculateTotalAmount(), discountAmount);
+        return PriceInfoDto.withDiscount(cart.calculateTotalAmount(), discountAmount);
     }
 
     private void validateCouponStatus(Coupon coupon) {
