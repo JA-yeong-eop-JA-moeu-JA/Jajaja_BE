@@ -20,7 +20,7 @@ public class CouponController {
 	private final CouponCommandService couponCommandService;
 	
 	@Operation(
-			summary = "내 쿠폰 목록 조회 AP",
+			summary = "내 쿠폰 목록 조회 API | by 엠마/신윤지",
 			description = "로그인한 사용자가 사용할 수 있는 쿠폰 목록을 페이징으로 조회합니다. 최신순으로 정렬됩니다."
 	)
 	@GetMapping
@@ -35,7 +35,7 @@ public class CouponController {
 	}
 	
 	@Operation(
-			summary = "쿠폰 적용/수정 API",
+			summary = "쿠폰 적용/수정 API | by 엠마/신윤지",
 			description = "선택한 쿠폰을 장바구니에 적용합니다."
 	)
 	@PostMapping("/{couponId}/apply")
@@ -47,7 +47,7 @@ public class CouponController {
 	}
 	
 	@Operation(
-			summary = "쿠폰 취소 API",
+			summary = "쿠폰 취소 API | by 엠마/신윤지",
 			description = "선택한 쿠폰을 장바구니에서 취소합니다."
 	)
 	@DeleteMapping("/unapply")
