@@ -1,12 +1,16 @@
 package com.jajaja.domain.team.repository;
 
 import com.jajaja.domain.member.entity.QMember;
+import com.jajaja.domain.product.entity.QProduct;
 import com.jajaja.domain.team.entity.QTeam;
 import com.jajaja.domain.team.entity.QTeamMember;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -63,5 +67,30 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
                 .where(team.status.eq(status)
                         .and(team.expireAt.loe(now)))
                 .fetch();
+    }
+
+    @Override
+    public Page<Team> findAllMatchingTeams(Pageable pageable) {
+        QTeam team = QTeam.team;
+        QProduct product = QProduct.product;
+        QMember leader = QMember.member;
+
+        List<Team> teams = queryFactory
+                .selectFrom(team)
+                .join(team.product, product).fetchJoin()
+                .join(team.leader, leader).fetchJoin()
+                .where(team.status.eq(TeamStatus.MATCHING))
+                .orderBy(team.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        boolean hasNext = teams.size() > pageable.getPageSize();
+
+        if (hasNext) {
+            teams.remove(teams.size() - 1);
+        }
+
+        return new PageImpl<>(teams, pageable, hasNext ? pageable.getOffset() + pageable.getPageSize() + 1 : pageable.getOffset() + teams.size());
     }
 }
