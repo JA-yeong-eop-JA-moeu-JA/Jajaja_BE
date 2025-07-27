@@ -7,6 +7,7 @@ import com.jajaja.domain.member.service.MemberQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.config.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public class MemberController {
 
     @PatchMapping("/{memberId}")
     public ApiResponse<MemberInfoResponseDto> updateMemberInfo(@PathVariable Long memberId,
-                                                               @RequestBody MemberProfileUpdateRequest request) {
+                                                               @RequestBody @Valid MemberProfileUpdateRequest request) {
         MemberInfoResponseDto updatedMemberInfo = memberCommandService.updateMemberInfo(memberId, request);
         return ApiResponse.onSuccess(updatedMemberInfo);
     }
