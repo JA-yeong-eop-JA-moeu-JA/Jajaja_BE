@@ -28,7 +28,7 @@ public record KakaoResponseDto(
 
     @Override
     public String getPhone() {
-        return getKakaoAccount().get("phone_number").toString();
+        return getKakaoAccount().get("phone_number").toString().replaceFirst("^\\+82\\s*", "0").replaceAll("-", "");
     }
 
     @Override
