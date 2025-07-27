@@ -17,7 +17,6 @@ public class OrderDataDto {
     private Integer totalAmount;
     private PaymentInfoDto paymentInfo;
     private DeliveryInfoDto deliveryInfo;
-    private DiscountInfoDto discountInfo;
     private LocalDateTime createdAt;
 
     public static OrderDataDto of(Order order) {
@@ -28,7 +27,6 @@ public class OrderDataDto {
                 .totalAmount(order.getPaidAmount())
                 .paymentInfo(PaymentInfoDto.of(order))
                 .deliveryInfo(DeliveryInfoDto.of(order))
-                .discountInfo(DiscountInfoDto.of(order))
                 .createdAt(order.getCreatedAt())
                 .build();
     }

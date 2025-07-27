@@ -77,7 +77,12 @@ public enum ErrorStatus implements BaseErrorCode {
     CANNOT_JOIN_OWN_TEAM(HttpStatus.BAD_REQUEST, "TEAM4003", "자신이 생성한 팀에는 참여할 수 없습니다."),
   
     // ORDER 관련 에러
-     ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "ORDER4001", "주문이 없습니다."),
+    ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "ORDER4001", "주문이 없습니다."),
+    ORDER_NOT_REFUNDABLE(HttpStatus.BAD_REQUEST, "ORDER4002", "환불할 수 없는 주문 상태입니다."),
+    ORDER_ALREADY_REFUNDED(HttpStatus.BAD_REQUEST, "ORDER4003", "이미 환불된 주문입니다."),
+    
+    // 환불 관련 에러
+    REFUND_FAILED(HttpStatus.BAD_REQUEST, "REFUND4001", "환불 처리에 실패했습니다."),
 
     // ORDER PRODUCT 관련 에러
     ORDER_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "ORDERPRODUCT4001", "주문 상품이 없습니다."),
@@ -105,7 +110,8 @@ public enum ErrorStatus implements BaseErrorCode {
     PAYMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PAYMENT4001", "결제 정보를 찾을 수 없습니다."),
     PAYMENT_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "PAYMENT4002", "결제가 완료되지 않았습니다."),
     PAYMENT_VERIFICATION_FAILED(HttpStatus.BAD_REQUEST, "PAYMENT4003", "결제 검증에 실패했습니다."),
-    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "PAYMENT4004", "결제 금액이 일치하지 않습니다."),;
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "PAYMENT4004", "결제 금액이 일치하지 않습니다."),
+    PAYMENT_MERCHANT_UID_MISMATCH(HttpStatus.BAD_REQUEST, "PAYMENT4005", "결제 고유번호가 일치하지 않습니다."),;
 
     private final HttpStatus httpStatus;
     private final String code;

@@ -20,7 +20,7 @@ public interface PointRepositoryCustom {
 
     Optional<Point> findUsePointByOrderProductId(Long orderProductId);
 
-    int findAvailablePointsByMemberId(Long memberId);
-
     List<Point> findAvailablePointsByMemberIdOrderByCreatedAtAsc(Long memberId);
+
+    int findUsedPointsByOrderId(Long orderId);
 }

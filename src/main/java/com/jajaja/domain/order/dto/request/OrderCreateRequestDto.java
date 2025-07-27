@@ -30,4 +30,7 @@ public class OrderCreateRequestDto {
 
     @NotNull(message = "아임포트 UID는 필수입니다.")
     private String impUid;
+
+    @NotNull(message = "결제 고유번호는 필수입니다.")
+    private String merchantUid;
 }

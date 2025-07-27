@@ -2,9 +2,11 @@ package com.jajaja.domain.order.controller;
 
 import com.jajaja.domain.order.dto.request.OrderCreateRequestDto;
 import com.jajaja.domain.order.dto.request.OrderPrepareRequestDto;
+import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
 import com.jajaja.domain.order.dto.response.OrderCreateResponseDto;
 import com.jajaja.domain.order.dto.response.OrderDetailResponseDto;
 import com.jajaja.domain.order.dto.response.OrderPrepareResponseDto;
+import com.jajaja.domain.order.dto.response.OrderRefundResponseDto;
 import com.jajaja.domain.order.dto.response.PagingOrderListResponseDto;
 import com.jajaja.domain.order.service.OrderCommandService;
 import com.jajaja.domain.order.service.OrderQueryService;
@@ -40,6 +42,14 @@ public class OrderController {
             @Auth Long memberId,
             @Valid @RequestBody OrderCreateRequestDto request) {
         return ApiResponse.onSuccess(orderCommandService.createOrder(memberId, request));
+    }
+
+    @PostMapping("/refund")
+    @Operation(summary = "주문 환불 API | by 엠마/신윤지", description = "주문을 환불 처리하고 포인트를 반환합니다.")
+    public ApiResponse<OrderRefundResponseDto> refundOrder(
+            @Auth Long memberId,
+            @Valid @RequestBody OrderRefundRequestDto request) {
+        return ApiResponse.onSuccess(orderCommandService.refundOrder(memberId, request));
     }
 
     @Operation(
