@@ -140,4 +140,46 @@ public class PointRepositoryImpl implements PointRepositoryCustom {
                         point.type.eq(PointType.USE)
                 ).fetchOne());
     }
+
+    /**
+     * 사용 가능한 포인트 조회
+     */
+    @Override
+    public int findAvailablePointsByMemberId(Long memberId) {
+        QPoint point = QPoint.point;
+        
+        Integer result = queryFactory
+                .select(
+                        point.amount.subtract(point.usedAmount.coalesce(0)).sum()
+                )
+                .from(point)
+                .where(
+                        point.member.id.eq(memberId),
+                        point.type.in(PointType.REVIEW, PointType.REFUND),
+                        point.expiresAt.isNull().or(point.expiresAt.gt(LocalDate.now())),
+                        point.amount.subtract(point.usedAmount.coalesce(0)).gt(0)
+                )
+                .fetchOne();
+        
+        return result != null ? result : 0;
+    }
+
+    /**
+     * 회원의 사용 가능한 포인트들을 생성일 순으로 조회 (FIFO)
+     */
+    @Override
+    public List<Point> findAvailablePointsByMemberIdOrderByCreatedAtAsc(Long memberId) {
+        QPoint point = QPoint.point;
+        
+        return queryFactory
+                .selectFrom(point)
+                .where(
+                        point.member.id.eq(memberId),
+                        point.type.in(PointType.REVIEW, PointType.REFUND),
+                        point.expiresAt.isNull().or(point.expiresAt.gt(LocalDate.now())),
+                        point.amount.subtract(point.usedAmount.coalesce(0)).gt(0)
+                )
+                .orderBy(point.createdAt.asc())
+                .fetch();
+    }
 }

@@ -73,6 +73,26 @@ public class CartCommandServiceImpl implements CartCommandService {
 		}
 		revalidateAppliedCouponIfExists(cart);
 	}
+
+	@Override
+	public void deleteCartProducts(Long memberId, List<Long> cartProductIds) {
+		log.info("[CartCommandService] 사용자 {}의 장바구니에서 선택된 아이템들 삭제: {}", memberId, cartProductIds);
+		Cart cart = cartCommonService.findCart(memberId);
+		
+		List<CartProduct> cartProductsToDelete = cartProductRepository.findAllById(cartProductIds);
+		
+		// 해당 카트의 상품인지 검증
+		cartProductsToDelete.forEach(cartProduct -> {
+			if (!cartProduct.getCart().getId().equals(cart.getId())) {
+				throw new CartHandler(ErrorStatus.CART_PRODUCT_NOT_FOUND);
+			}
+		});
+		
+		cartProductRepository.deleteAll(cartProductsToDelete);
+		cart.getCartProducts().removeAll(cartProductsToDelete);
+		
+		revalidateAppliedCouponIfExists(cart);
+	}
 	
 	/**
 	*  장바구니 내 아이템 명령 실행에 필요한 도메인 객체를 불러오는 과정입니다.

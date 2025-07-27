@@ -6,6 +6,8 @@ import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Builder
@@ -21,6 +23,9 @@ public class MemberCoupon extends BaseEntity {
     @Column(nullable = false, length = 20)
     private CouponStatus status;
 
+    @Column
+    private LocalDateTime usedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -28,4 +33,9 @@ public class MemberCoupon extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
+
+    public void use() {
+        this.status = CouponStatus.USED;
+        this.usedAt = LocalDateTime.now();
+    }
 }

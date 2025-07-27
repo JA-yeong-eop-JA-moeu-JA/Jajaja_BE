@@ -70,3 +70,7 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
+
+iamport:
+  api-key: ${IAMPORT_API_KEY}
+  api-secret: ${IAMPORT_API_SECRET}

@@ -27,13 +27,13 @@ public class PointQueryServiceImpl implements PointQueryService {
         List<PointHistoryDto> pointHistoryDtos = pointPage.getContent().stream()
                 .map(PointHistoryDto::from)
                 .collect(Collectors.toList());
-        int pointBalance = pointRepository.findPointBalanceByMemberId(memberId);
+        int pointBalance = pointRepository.findAvailablePointsByMemberId(memberId);
         return PagingPointHistoryResponseDto.of(pointPage, pointBalance, pointHistoryDtos);
     }
 
     @Override
     public PointBalanceResponseDto getPointBalance(Long memberId) {
-        int pointBalance = pointRepository.findPointBalanceByMemberId(memberId);
+        int pointBalance = pointRepository.findAvailablePointsByMemberId(memberId);
         return PointBalanceResponseDto.from(pointBalance);
     }
 }

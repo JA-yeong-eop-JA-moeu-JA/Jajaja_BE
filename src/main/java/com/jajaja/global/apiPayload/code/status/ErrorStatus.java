@@ -100,7 +100,12 @@ public enum ErrorStatus implements BaseErrorCode {
     INSUFFICIENT_POINT(HttpStatus.BAD_REQUEST, "POINT4002", "포인트가 부족합니다."),
     ALREADY_CANCELLED_POINT(HttpStatus.BAD_REQUEST, "POINT4003", "이미 취소된 포인트입니다."),
     ALREADY_REFUNDED_POINT(HttpStatus.BAD_REQUEST, "POINT4004", "이미 환불된 포인트입니다."),
-    ;
+
+    // 결제 관련 에러
+    PAYMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PAYMENT4001", "결제 정보를 찾을 수 없습니다."),
+    PAYMENT_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "PAYMENT4002", "결제가 완료되지 않았습니다."),
+    PAYMENT_VERIFICATION_FAILED(HttpStatus.BAD_REQUEST, "PAYMENT4003", "결제 검증에 실패했습니다."),
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "PAYMENT4004", "결제 금액이 일치하지 않습니다."),;
 
     private final HttpStatus httpStatus;
     private final String code;
