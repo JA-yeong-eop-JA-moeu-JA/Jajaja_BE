@@ -3,35 +3,35 @@ package com.jajaja.domain.cart.converter;
 import com.jajaja.domain.cart.dto.CartProductResponseDto;
 import com.jajaja.domain.cart.dto.CartResponseDto;
 import com.jajaja.domain.cart.entity.Cart;
-import com.jajaja.domain.coupon.dto.AppliedCouponResponseDto;
+import com.jajaja.domain.coupon.dto.CouponResponseDto;
+import com.jajaja.global.common.dto.PriceInfoDto;
 
 import java.util.Collections;
 import java.util.List;
 
 public class CartConverter {
 	
-	public static CartResponseDto toCartResponseDto(Cart cart, List<CartProductResponseDto> itemInfos) {
-		AppliedCouponResponseDto couponInfo = cart.getCoupon() == null ? null: AppliedCouponResponseDto.from(cart.getCoupon());
-		CartResponseDto.SummaryInfoDto summaryInfoDto = toSummaryInfoDto(0); // TODO: 배송비 계산 로직 구현 필요
+	public static CartResponseDto toCartResponseDto(Cart cart, List<CartProductResponseDto> itemInfos, PriceInfoDto priceInfo) {
+		CouponResponseDto coupon = cart.getCoupon() == null 
+			? null 
+			: CouponResponseDto.from(cart.getCoupon());
 		
-		return new CartResponseDto(
-				itemInfos,
-				couponInfo,
-				summaryInfoDto,
-				itemInfos.size()
+		return CartResponseDto.of(
+			itemInfos,
+			coupon,
+			priceInfo.originalAmount(),
+			priceInfo.discountAmount(),
+			priceInfo.shippingFee()
 		);
 	}
 	
 	public static CartResponseDto toEmptyCartResponseDto() {
-		return new CartResponseDto(
-				Collections.emptyList(),
-				null,
-				new CartResponseDto.SummaryInfoDto(0),
-				0
+		return CartResponseDto.of(
+			Collections.emptyList(),
+			null,
+			0,
+			0,
+			0
 		);
-	}
-	
-	public static CartResponseDto.SummaryInfoDto toSummaryInfoDto(int deliveryFee) {
-		return new CartResponseDto.SummaryInfoDto(deliveryFee);
 	}
 }

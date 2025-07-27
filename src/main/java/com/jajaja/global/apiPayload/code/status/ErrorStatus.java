@@ -56,9 +56,20 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // CART 관련 에러
     CART_NOT_FOUND(HttpStatus.BAD_REQUEST,  "CART4001", "장바구니가 없습니다."),
+    CART_EMPTY(HttpStatus.BAD_REQUEST, "CART4002", "장바구니가 비어있습니다."),
     
     // CART PRODUCT 관련 에러
     CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CARTPRODUCT4001", "장바구니에 해당 상품이 없습니다."),
+    
+    // COUPON 관련 에러
+    COUPON_NOT_FOUND(HttpStatus.BAD_REQUEST, "COUPON4001", "쿠폰이 존재하지 않습니다."),
+    COUPON_NOT_OWNED(HttpStatus.BAD_REQUEST, "COUPON4002", "보유하지 않은 쿠폰입니다."),
+    COUPON_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "COUPON4003", "사용할 수 없는 쿠폰입니다."),
+    COUPON_EXPIRED(HttpStatus.BAD_REQUEST, "COUPON4004", "만료된 쿠폰입니다."),
+    COUPON_MIN_ORDER_AMOUNT_NOT_MET(HttpStatus.BAD_REQUEST, "COUPON4005", "최소 주문 금액을 충족하지 않습니다."),
+    COUPON_BRAND_CONDITION_NOT_MET(HttpStatus.BAD_REQUEST, "COUPON4006", "해당 브랜드 상품이 장바구니에 없습니다."),
+    COUPON_CATEGORY_CONDITION_NOT_MET(HttpStatus.BAD_REQUEST, "COUPON4007", "해당 카테고리 상품이 장바구니에 없습니다."),
+    INVALID_COUPON_TYPE(HttpStatus.BAD_REQUEST, "COUPON4009", "유효하지 않은 쿠폰 타입입니다."),
   
     // TEAM 관련 에러
     TEAM_NOT_FOUND(HttpStatus.BAD_REQUEST, "TEAM4001", "팀이 없습니다."),
@@ -74,7 +85,8 @@ public enum ErrorStatus implements BaseErrorCode {
     // REVIEW 관련 에러
     REVIEW_NOT_FOUND(HttpStatus.BAD_REQUEST, "REVIEW4001", "리뷰가 없습니다."),
     REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REVIEW4002", "해당 상품에 대한 리뷰를 작성할 수 없습니다."),
-    REVIEW_TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "REVIEW4003", "이미지는 최대 6장까지 등록할 수 있습니다."),
+    REVIEW_TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "REVIEW4003", "이미지는 최대 5장까지 등록할 수 있습니다."),
+    REVIEW_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "REVIEW4004", "본인의 리뷰만 삭제할 수 있습니다."),
 
     // NOTIFICATION 관련 에러
     NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "NOTIFICATION4001", "알림이 없습니다."),
@@ -82,6 +94,12 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // S3 관련 에러
     INVALID_IMAGE_KEY(HttpStatus.BAD_REQUEST, "IMAGE4001", "유효하지 않은 이미지 키입니다."),
+
+    // 포인트 관련 에러
+    POINT_NOT_FOUND(HttpStatus.BAD_REQUEST, "POINT4001", "포인트가 없습니다."),
+    INSUFFICIENT_POINT(HttpStatus.BAD_REQUEST, "POINT4002", "포인트가 부족합니다."),
+    ALREADY_CANCELLED_POINT(HttpStatus.BAD_REQUEST, "POINT4003", "이미 취소된 포인트입니다."),
+    ALREADY_REFUNDED_POINT(HttpStatus.BAD_REQUEST, "POINT4004", "이미 환불된 포인트입니다."),
     ;
 
     private final HttpStatus httpStatus;

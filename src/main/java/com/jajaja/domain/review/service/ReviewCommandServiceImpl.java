@@ -55,7 +55,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         // 이미지 처리
         List<String> imageKeys = dto.imageKeys();
         if (imageKeys != null && !imageKeys.isEmpty()) {
-            if (imageKeys.size() > 6) {
+            if (imageKeys.size() > 5) {
                 throw new BadRequestException(ErrorStatus.REVIEW_TOO_MANY_IMAGES);
             }
 
@@ -76,6 +76,21 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         }
 
         return review.getId();
+    }
+
+    @Override
+    public void deleteReview(Long memberId, Long reviewId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new UnauthorizedException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.REVIEW_NOT_FOUND));
+
+        if (!review.getMember().getId().equals(memberId)) {
+            throw new UnauthorizedException(ErrorStatus.REVIEW_UNAUTHORIZED);
+        }
+
+        review.softDelete();
     }
 
 }
