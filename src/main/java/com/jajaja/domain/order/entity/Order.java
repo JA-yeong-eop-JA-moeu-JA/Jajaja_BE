@@ -36,7 +36,6 @@ public class Order extends BaseEntity {
     private OrderType orderType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private PaymentMethod paymentMethod;
 
     @Column(nullable = false)
@@ -100,5 +99,12 @@ public class Order extends BaseEntity {
 
     public void updateStatus(OrderStatus status) {
         this.orderStatus = status;
+    }
+
+    public void updatePaymentInfo(String impUid, PaymentMethod paymentMethod, OrderStatus orderStatus) {
+        this.impUid = impUid;
+        this.paymentMethod = paymentMethod;
+        this.orderStatus = orderStatus;
+        this.paidAt = LocalDateTime.now();
     }
 }

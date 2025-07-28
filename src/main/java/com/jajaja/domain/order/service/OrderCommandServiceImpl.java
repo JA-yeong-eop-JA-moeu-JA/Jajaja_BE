@@ -23,12 +23,13 @@ import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.domain.point.entity.Point;
-import com.jajaja.domain.point.entity.enums.PointType;
 import com.jajaja.domain.point.repository.PointRepository;
+import com.jajaja.domain.point.service.PointQueryService;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
+import com.siot.IamportRestClient.request.CancelData;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +38,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -57,6 +55,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private final PointRepository pointRepository;
     private final CartCommandService cartCommandService;
     private final CouponCommonService couponCommonService;
+    private final PointQueryService pointQueryService;
     private final IamportClient iamportClient;
 
     @Override
@@ -64,14 +63,13 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         log.info("[OrderCommandService] 결제 준비 시작 - 회원ID: {}", memberId);
 
         Member member = findMember(memberId);
-        findDelivery(request.getAddressId(), memberId); // 배송지 검증
+        Delivery delivery = findDelivery(request.getAddressId(), memberId);
         List<CartProduct> cartProducts = findAndValidateCartProducts(request.getItems(), memberId);
         Coupon coupon = validateCoupon(request.getAppliedCouponId(), memberId, cartProducts);
         if (request.getPoint() != null && request.getPoint() > 0) {
             validatePointUsage(request.getPoint(), memberId);
         }
 
-        // 4. 금액 계산
         int totalAmount = cartProducts.stream()
                 .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
                 .sum();
@@ -80,17 +78,44 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         int shippingFee = calculateShippingFee();
         int finalAmount = totalAmount - couponDiscount - (request.getPoint() != null ? request.getPoint() : 0) + shippingFee;
 
-        // 5. merchant_uid 생성
-        String merchantUid = generateOrderNumber();
+        String merchantUid = "ORD-" + UUID.randomUUID();
+
+        Order order = Order.builder()
+                .orderStatus(OrderStatus.PENDING)
+                .orderType(OrderType.PERSONAL)
+                .discountAmount(couponDiscount)
+                .pointUsedAmount(request.getPoint() != null ? request.getPoint() : 0)
+                .shippingFee(shippingFee)
+                .orderNumber(merchantUid)
+                .totalAmount(totalAmount)
+                .paidAmount(finalAmount)
+                .member(member)
+                .delivery(delivery)
+                .coupon(coupon)
+                .build();
+
+        cartProducts.forEach(cartProduct -> {
+            OrderProduct orderProduct = OrderProduct.builder()
+                    .order(order)
+                    .product(cartProduct.getProduct())
+                    .productOption(cartProduct.getProductOption())
+                    .quantity(cartProduct.getQuantity())
+                    .price(cartProduct.getUnitPrice())
+                    .status(OrderStatus.PENDING)
+                    .build();
+            order.getOrderProducts().add(orderProduct);
+        });
+
+        orderRepository.save(order);
 
         log.info("[OrderCommandService] 결제 준비 완료 - 회원ID: {}, merchant_uid: {}, 최종금액: {}", memberId, merchantUid, finalAmount);
 
         return OrderPrepareResponseDto.of(
-                merchantUid, 
-                totalAmount, 
-                couponDiscount, 
+                merchantUid,
+                totalAmount,
+                couponDiscount,
                 request.getPoint() != null ? request.getPoint() : 0,
-                shippingFee, 
+                shippingFee,
                 finalAmount
         );
     }
@@ -99,82 +124,68 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     public OrderCreateResponseDto createOrder(Long memberId, OrderCreateRequestDto request) {
         log.info("[OrderCommandService] 주문 생성 시작 - 회원ID: {}, 아임포트UID: {}", memberId, request.getImpUid());
 
-        // 결제 검증
-        Payment payment = verifyPayment(request.getImpUid(), request.getMerchantUid());
-        
-        // 회원 및 배송지 조회
-        Member member = findMember(memberId);
-        Delivery delivery = findDelivery(request.getAddressId(), memberId);
-        
-        // 장바구니 상품들 조회 및 검증
-        List<CartProduct> cartProducts = findAndValidateCartProducts(request.getItems(), memberId);
-        
-        // 쿠폰 및 포인트 검증
-        Coupon coupon = validateCoupon(request.getAppliedCouponId(), memberId, cartProducts);
-        if (request.getPoint() != null && request.getPoint() > 0) {
-            validatePointUsage(request.getPoint(), memberId);
-        }
-        
+        Order order = orderRepository.findByMerchantUid(request.getMerchantUid())
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
+
+        verifyPayment(request.getImpUid(), order);
+
         try {
-            // 주문 생성
-            Order order = createOrder(member, delivery, cartProducts, coupon, request, payment);
-            
-            // 포인트 사용 처리
-            if (request.getPoint() != null && request.getPoint() > 0) {
-                usePoints(memberId, request.getPoint());
+            order.updatePaymentInfo(request.getImpUid(), request.getPaymentMethod(), OrderStatus.PAYMENT_COMPLETED);
+
+            if (order.getPointUsedAmount() > 0) {
+                usePoints(memberId, order.getPointUsedAmount());
             }
-            
-            // 쿠폰 사용 처리
-            if (coupon != null) {
-                useCoupon(memberId, coupon);
+
+            if (order.getCoupon() != null) {
+                useCoupon(memberId, order.getCoupon());
             }
-            
-            // 주문 성공 후에만 장바구니에서 상품들 제거
+
             cartCommandService.deleteCartProducts(memberId, request.getItems());
-            
+
             log.info("[OrderCommandService] 주문 생성 완료 - 주문ID: {}", order.getId());
-            
-            return buildOrderResponse(order);
-            
+
+            return OrderCreateResponseDto.of(order);
+
         } catch (Exception e) {
             log.error("[OrderCommandService] 주문 생성 실패 - 회원ID: {}, 에러: {}", memberId, e.getMessage(), e);
-            // 주문 실패 시 카트는 그대로 유지
+            order.updateStatus(OrderStatus.PAYMENT_FAILED);
+            processIamportRefund(order, "주문 생성 실패로 인한 자동 환불");
             throw e;
         }
     }
 
-    private Payment verifyPayment(String impUid, String merchantUid) {
-        // 스웨거 테스트를 위해 검증 생략
-        if (impUid.startsWith("test_")) {
-            log.info("[OrderCommandService] 테스트 모드 - 결제 검증 생략: {}", impUid);
-            return null;
-        }
-        
-        // 실제 아임포트 검증
+    private void verifyPayment(String impUid, Order order) {
         try {
             IamportResponse<Payment> paymentResponse = iamportClient.paymentByImpUid(impUid);
-            
+
             if (paymentResponse.getResponse() == null) {
                 throw new BadRequestException(ErrorStatus.PAYMENT_NOT_FOUND);
             }
-            
+
             Payment payment = paymentResponse.getResponse();
-            
+
             if (!"paid".equals(payment.getStatus())) {
+                order.updateStatus(OrderStatus.PAYMENT_FAILED);
                 throw new BadRequestException(ErrorStatus.PAYMENT_NOT_COMPLETED);
             }
-            
-            // merchantUid 검증
-            if (!payment.getMerchantUid().equals(merchantUid)) {
+
+            if (!payment.getMerchantUid().equals(order.getMerchantUid())) {
+                order.updateStatus(OrderStatus.CANCELLED);
+                processIamportRefund(order, "결제 정보 불일치로 인한 자동 환불");
                 throw new BadRequestException(ErrorStatus.PAYMENT_MERCHANT_UID_MISMATCH);
             }
-            
-            log.info("[OrderCommandService] 결제 검증 완료 - impUid: {}, merchantUid: {}, 금액: {}", 
-                    impUid, merchantUid, payment.getAmount());
-            return payment;
-            
+
+            if (payment.getAmount().intValue() != order.getPaidAmount()) {
+                order.updateStatus(OrderStatus.CANCELLED);
+                processIamportRefund(order, "결제 금액 불일치로 인한 자동 환불");
+                throw new BadRequestException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
+            }
+
+            log.info("[OrderCommandService] 결제 검증 완료 - impUid: {}, merchantUid: {}, 금액: {}",
+                    impUid, order.getMerchantUid(), payment.getAmount());
+
         } catch (IamportResponseException | IOException e) {
-            log.error("[OrderCommandService] 결제 검증 실패 - impUid: {}, merchantUid: {}", impUid, merchantUid, e);
+            log.error("[OrderCommandService] 결제 검증 실패 - impUid: {}, merchantUid: {}", impUid, order.getMerchantUid(), e);
             throw new BadRequestException(ErrorStatus.PAYMENT_VERIFICATION_FAILED);
         }
     }
@@ -192,17 +203,17 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
     private List<CartProduct> findAndValidateCartProducts(List<Long> cartProductIds, Long memberId) {
         List<CartProduct> cartProducts = cartProductRepository.findAllById(cartProductIds);
-        
+
         if (cartProducts.size() != cartProductIds.size()) {
             throw new BadRequestException(ErrorStatus.CART_PRODUCT_NOT_FOUND);
         }
-        
+
         cartProducts.forEach(cartProduct -> {
             if (!cartProduct.getCart().getMember().getId().equals(memberId)) {
                 throw new BadRequestException(ErrorStatus.CART_PRODUCT_NOT_FOUND);
             }
         });
-        
+
         return cartProducts;
     }
 
@@ -210,15 +221,15 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         if (couponId == null) {
             return null;
         }
-        
+
         MemberCoupon memberCoupon = memberCouponRepository.findByMemberIdAndCouponIdAndUsedAtIsNull(memberId, couponId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.COUPON_NOT_AVAILABLE));
-        
+
         Coupon coupon = memberCoupon.getCoupon();
-        
+
         couponCommonService.validateCouponForSelectedItems(cartProducts, coupon);
         log.info("[OrderCommandService] 쿠폰 검증 완료 - 쿠폰ID: {}, 회원ID: {}", couponId, memberId);
-        
+
         return coupon;
     }
 
@@ -226,81 +237,22 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         if (pointToUse == null || pointToUse <= 0) {
             return;
         }
-        
-        List<Point> availablePointsList = pointRepository.findAvailablePointsByMemberIdOrderByCreatedAtAsc(memberId);
-        int availablePoints = availablePointsList.stream().mapToInt(Point::getAvailableAmount).sum();
-        
+        int availablePoints = pointQueryService.getPointBalance(memberId).balance();
         if (availablePoints < pointToUse) {
             throw new BadRequestException(ErrorStatus.INSUFFICIENT_POINT);
         }
-    }
-
-    private Order createOrder(Member member, Delivery delivery, List<CartProduct> cartProducts, 
-                             Coupon coupon, OrderCreateRequestDto request, Payment payment) {
-        
-        String orderNumber = generateOrderNumber();
-        int totalAmount = cartProducts.stream()
-                .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
-                .sum();
-        
-        int couponDiscount = calculateCouponDiscount(coupon, totalAmount);
-        int shippingFee = calculateShippingFee();
-        int finalAmount = totalAmount - couponDiscount - request.getPoint() + shippingFee;
-        
-        // 결제 금액 검증 (테스트 모드가 아닐 때만, merchantUid는 이미 verifyPayment에서 검증됨)
-        if (payment != null && !payment.getAmount().equals(java.math.BigDecimal.valueOf(finalAmount))) {
-            throw new BadRequestException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
-        }
-        
-        Order order = Order.builder()
-                .orderStatus(OrderStatus.PAYMENT_COMPLETED)
-                .orderType(OrderType.PERSONAL)
-                .paymentMethod(request.getPaymentMethod())
-                .discountAmount(couponDiscount)
-                .pointUsedAmount(request.getPoint())
-                .shippingFee(shippingFee)
-                .orderNumber(orderNumber)
-                .totalAmount(totalAmount)
-                .paidAmount(finalAmount)
-                .paidAt(LocalDateTime.now())
-                .impUid(request.getImpUid())
-                .merchantUid(request.getMerchantUid())
-                .deliveryRequest(request.getDeliveryRequest())
-                .member(member)
-                .delivery(delivery)
-                .coupon(coupon)
-                .build();
-        cartProducts.forEach(cartProduct -> {
-            OrderProduct orderProduct = OrderProduct.builder()
-                    .order(order)
-                    .product(cartProduct.getProduct())
-                    .productOption(cartProduct.getProductOption())
-                    .quantity(cartProduct.getQuantity())
-                    .price(cartProduct.getUnitPrice())
-                    .status(OrderStatus.PAYMENT_COMPLETED)
-                    .build();
-            order.getOrderProducts().add(orderProduct);
-        });
-        
-        return orderRepository.save(order);
-    }
-
-    private String generateOrderNumber() {
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int randomSuffix = ThreadLocalRandom.current().nextInt(10000, 99999);
-        return "ORD-" + today + randomSuffix;
     }
 
     private int calculateCouponDiscount(Coupon coupon, int totalAmount) {
         if (coupon == null) {
             return 0;
         }
-        
+
         Integer discountValue = coupon.getDiscountValue();
         if (discountValue == null || discountValue <= 0) {
             return 0;
         }
-        
+
         int discountAmount;
         switch (coupon.getDiscountType()) {
             case PERCENTAGE:
@@ -317,20 +269,20 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
     private int calculateShippingFee() {
         // TODO : 배송비 로직 구현
-        return 0;
+        return 3000;
     }
 
     private void usePoints(Long memberId, int pointToUse) {
         List<Point> availablePoints = pointRepository.findAvailablePointsByMemberIdOrderByCreatedAtAsc(memberId);
-        
+
         int remainingToUse = pointToUse;
-        
+
         for (Point point : availablePoints) {
             if (remainingToUse <= 0) break;
-            
+
             int availableAmount = point.getAvailableAmount();
             int useAmount = Math.min(remainingToUse, availableAmount);
-            
+
             point.use(useAmount);
             remainingToUse -= useAmount;
         }
@@ -339,7 +291,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private void useCoupon(Long memberId, Coupon coupon) {
         MemberCoupon memberCoupon = memberCouponRepository.findByMemberIdAndCouponIdAndUsedAtIsNull(memberId, coupon.getId())
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.COUPON_NOT_AVAILABLE));
-        
+
         memberCoupon.use();
     }
 
@@ -347,29 +299,54 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     public OrderRefundResponseDto refundOrder(Long memberId, OrderRefundRequestDto request) {
         log.info("[OrderCommandService] 환불 처리 시작 - 회원ID: {}, 주문ID: {}", memberId, request.getOrderId());
 
-        //  주문 조회 및 권한 확인
         Order order = findOrderForRefund(request.getOrderId(), memberId);
-        // 환불 가능 상태 검증
         validateRefundable(order);
 
+        order.updateStatus(OrderStatus.REFUND_REQUESTED);
+
         try {
-            // 아임포트 환불 처리
-            processIamportRefund(order);
+            processIamportRefund(order, request.getRefundReason());
 
-            // 포인트 환불 처리
-            int refundedPoints = processPointRefund(order);
+            if (order.getPointUsedAmount() > 0) {
+                refundPoints(order);
+            }
 
-            // 주문 상태 변경
             order.updateStatus(OrderStatus.REFUNDED);
+            log.info("[OrderCommandService] 환불 처리 완료 - 주문ID: {}", order.getId());
 
-            log.info("[OrderCommandService] 환불 처리 완료 - 주문ID: {}, 환불포인트: {}", order.getId(), refundedPoints);
-
-            return OrderRefundResponseDto.of(order, refundedPoints, request.getRefundReason());
+            return OrderRefundResponseDto.of(order, order.getPointUsedAmount(), request.getRefundReason());
 
         } catch (Exception e) {
+            order.updateStatus(OrderStatus.REFUND_FAILED);
             log.error("[OrderCommandService] 환불 처리 실패 - 주문ID: {}, 에러: {}", request.getOrderId(), e.getMessage(), e);
-            throw e;
+            throw new BadRequestException(ErrorStatus.REFUND_FAILED);
         }
+    }
+
+    private void refundPoints(Order order) {
+        int remainingToRefund = order.getPointUsedAmount();
+        if (remainingToRefund <= 0) {
+            return;
+        }
+
+        List<Point> usedPoints = pointRepository.findByMemberIdAndUsedAmountGreaterThanOrderByCreatedAtDesc(order.getMember().getId(), 0);
+
+        for (Point point : usedPoints) {
+            if (remainingToRefund <= 0) break;
+
+            int currentUsed = point.getUsedAmount();
+            int refundAmount = Math.min(remainingToRefund, currentUsed);
+
+            point.decreaseUsedAmount(refundAmount);
+            remainingToRefund -= refundAmount;
+        }
+
+        if (remainingToRefund > 0) {
+            log.warn("[OrderCommandService] 환불해야 할 포인트가 남았지만, 사용된 포인트를 찾을 수 없습니다. 회원ID: {}, 남은 포인트: {}",
+                    order.getMember().getId(), remainingToRefund);
+        }
+        log.info("[OrderCommandService] 포인트 환불 완료 - 회원ID: {}, 환불포인트: {}",
+                order.getMember().getId(), order.getPointUsedAmount());
     }
 
     private Order findOrderForRefund(Long orderId, Long memberId) {
@@ -384,69 +361,25 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     }
 
     private void validateRefundable(Order order) {
-        if (order.getOrderStatus() == OrderStatus.REFUNDED) {
+        if (order.getOrderStatus() == OrderStatus.REFUNDED || order.getOrderStatus() == OrderStatus.REFUND_REQUESTED) {
             throw new BadRequestException(ErrorStatus.ORDER_ALREADY_REFUNDED);
         }
 
-        // 환불 불가능한 상태들
-        if (order.getOrderStatus() == OrderStatus.SHIPPING || 
-            order.getOrderStatus() == OrderStatus.DELIVERED ||
-            order.getOrderStatus() == OrderStatus.CANCELLED ||
-            order.getOrderStatus() == OrderStatus.PAYMENT_FAILED) {
-            throw new BadRequestException(ErrorStatus.ORDER_NOT_REFUNDABLE);
-        }
-
-        // 환불 가능한 상태: PAYMENT_COMPLETED, PREPARING
-        if (order.getOrderStatus() != OrderStatus.PAYMENT_COMPLETED && 
-            order.getOrderStatus() != OrderStatus.PREPARING) {
+        if (order.getOrderStatus() != OrderStatus.PAYMENT_COMPLETED && order.getOrderStatus() != OrderStatus.PREPARING) {
             throw new BadRequestException(ErrorStatus.ORDER_NOT_REFUNDABLE);
         }
     }
 
-    private void processIamportRefund(Order order) {
-        // 포트폴리오용 테스트 모드
-        if (order.getImpUid() != null && order.getImpUid().startsWith("test_")) {
-            log.info("[OrderCommandService] 테스트 모드 - 아임포트 환불 생략: {}", order.getImpUid());
-            return;
-        }
-
-        // 실제 환불
+    private void processIamportRefund(Order order, String refundReason) {
         try {
-            if (order.getImpUid() != null) {
-                // 아임포트 환불 API 호출
-                log.info("[OrderCommandService] 아임포트 환불 처리 - impUid: {}, 금액: {}", 
-                        order.getImpUid(), order.getPaidAmount());
-                // iamportClient.cancelPaymentByImpUid(new CancelData(order.getImpUid(), true));
-            }
+            CancelData cancelData =
+                    new com.siot.IamportRestClient.request.CancelData(order.getImpUid(), true);
+            cancelData.setReason(refundReason);
+            iamportClient.cancelPaymentByImpUid(cancelData);
+
         } catch (Exception e) {
             log.error("[OrderCommandService] 아임포트 환불 실패 - impUid: {}", order.getImpUid(), e);
             throw new BadRequestException(ErrorStatus.REFUND_FAILED);
         }
-    }
-
-    private int processPointRefund(Order order) {
-        // 주문에서 사용된 포인트 총합 조회
-        int usedPoints = pointRepository.findUsedPointsByOrderId(order.getId());
-
-        if (usedPoints > 0) {
-            // 환불 포인트 생성
-            Point refundPoint = Point.builder()
-                    .member(order.getMember())
-                    .type(PointType.REFUND)
-                    .amount(usedPoints)
-                    .usedAmount(0)
-                    .expiresAt(null) // 환불 포인트는 만료 없음
-                    .build();
-
-            pointRepository.save(refundPoint);
-            log.info("[OrderCommandService] 포인트 환불 완료 - 회원ID: {}, 환불포인트: {}", 
-                    order.getMember().getId(), usedPoints);
-        }
-
-        return usedPoints;
-    }
-
-    private OrderCreateResponseDto buildOrderResponse(Order order) {
-        return OrderCreateResponseDto.of(order);
     }
 }
