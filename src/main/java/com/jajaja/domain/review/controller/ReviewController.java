@@ -89,9 +89,9 @@ public class ReviewController {
     }
 
     @Operation(
-            summary = "리뷰 추가 API | by 루비/이송미",
+            summary = "리뷰 작성 API | by 루비/이송미",
             description = """
-                          구매한 상품에 대해 리뷰를 추가합니다.
+                          구매한 상품에 대해 리뷰를 작성합니다.
 
                           - 별점, 내용, 사진(최대 5장)을 포함할 수 있습니다.
                           - 이미지는 S3 Presigned URL을 통해 업로드한 후,
@@ -156,6 +156,24 @@ public class ReviewController {
             @RequestParam(defaultValue = "5") int size
     ) {
         PagingReviewListResponseDto responseDto = reviewQueryService.getAllReviewList(memberId, sort, page, size);
+        return ApiResponse.onSuccess(responseDto);
+    }
+
+    @Operation(
+            summary = "리뷰 작성 상품 목록 조회 API | by 루비/이송미",
+            description = "로그인한 사용자가 주문한 (리뷰 작성이 가능한) 상품 목록을 조회합니다."
+    )
+    @GetMapping("/reviewable")
+    public ApiResponse<PagingReviewableOrderListResponseDto> getReviewableProducts(
+            @Auth Long memberId,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기", example = "5")
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        PagingReviewableOrderListResponseDto responseDto = reviewQueryService.getReviewableProducts(memberId, page, size);
         return ApiResponse.onSuccess(responseDto);
     }
 
