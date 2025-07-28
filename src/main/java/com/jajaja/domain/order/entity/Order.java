@@ -47,7 +47,7 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private Integer shippingFee;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 50, nullable = false)
     private String orderNumber;
 
     @Column(nullable = false)
