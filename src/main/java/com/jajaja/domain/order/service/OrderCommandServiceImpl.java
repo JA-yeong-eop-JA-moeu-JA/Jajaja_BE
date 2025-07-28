@@ -75,7 +75,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .sum();
 
         int couponDiscount = calculateCouponDiscount(coupon, totalAmount);
-        int shippingFee = calculateShippingFee();
+        int shippingFee = calculateShippingFee(delivery);
         int finalAmount = totalAmount - couponDiscount - (request.getPoint() != null ? request.getPoint() : 0) + shippingFee;
 
         String merchantUid = "ORD-" + UUID.randomUUID();
@@ -267,9 +267,24 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         return Math.min(discountAmount, totalAmount);
     }
 
-    private int calculateShippingFee() {
-        // TODO : 배송비 로직 구현
-        return 3000;
+    private int calculateShippingFee(Delivery delivery) {
+        int zipcode = Integer.parseInt(delivery.getZipcode());
+        // 제주 및 도서산간 지역 우편번호 범위
+        if ((zipcode >= 63002 && zipcode <= 63644) ||
+            (zipcode >= 63000 && zipcode <= 63001) ||
+            zipcode == 15654 ||
+            (zipcode >= 23008 && zipcode <= 23010) ||
+            (zipcode >= 23100 && zipcode <= 23116) ||
+            (zipcode >= 23124 && zipcode <= 23136) ||
+            zipcode == 32133 ||
+            zipcode == 33411 ||
+            (zipcode >= 40200 && zipcode <= 40240) ||
+            (zipcode >= 52570 && zipcode <= 52571) ||
+            (zipcode >= 53031 && zipcode <= 53033) ||
+            (zipcode >= 53088 && zipcode <= 53104)) {
+            return 3000;
+        }
+        return 0;
     }
 
     private void usePoints(Long memberId, int pointToUse) {
