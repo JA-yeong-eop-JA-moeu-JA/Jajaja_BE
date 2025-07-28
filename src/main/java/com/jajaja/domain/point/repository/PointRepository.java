@@ -6,7 +6,7 @@ import com.jajaja.domain.point.entity.enums.PointType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
-public interface PointRepository extends JpaRepository<Point, Integer>, PointRepositoryCustom {
+public interface PointRepository extends JpaRepository<Point, Long>, PointRepositoryCustom {
 
     boolean existsByTypeAndOrderProduct(PointType type, OrderProduct orderProduct);
 

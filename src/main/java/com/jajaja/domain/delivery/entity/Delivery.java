@@ -32,7 +32,7 @@ public class Delivery extends BaseEntity {
     @Column(nullable = false, length = 255)
     private String addressDetail;
 
-    @Column(length = 5)
+    @Column(nullable = false, length = 5)
     private String zipcode;
 
     @Column(length = 255)

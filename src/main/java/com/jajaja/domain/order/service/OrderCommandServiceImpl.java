@@ -268,6 +268,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     }
 
     private int calculateShippingFee(Delivery delivery) {
+        if (delivery.getZipcode() == null || delivery.getZipcode().isEmpty()) {
+            throw new BadRequestException(ErrorStatus.DELIVERY_ZIPCODE_NOT_FOUND);
+        }
+
         int zipcode = Integer.parseInt(delivery.getZipcode());
         // 제주 및 도서산간 지역 우편번호 범위
         if ((zipcode >= 63002 && zipcode <= 63644) ||
@@ -388,7 +392,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private void processIamportRefund(Order order, String refundReason) {
         try {
             CancelData cancelData =
-                    new com.siot.IamportRestClient.request.CancelData(order.getImpUid(), true);
+                    new CancelData(order.getImpUid(), true, java.math.BigDecimal.valueOf(Math.max(0, order.getPaidAmount() - 6000)));
             cancelData.setReason(refundReason);
             iamportClient.cancelPaymentByImpUid(cancelData);
 
