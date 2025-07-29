@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PointRepository extends JpaRepository<Point, Integer>, PointRepositoryCustom {
-
+    
     @Query("""
                 SELECT COALESCE(SUM(
                     CASE
@@ -20,8 +20,8 @@ public interface PointRepository extends JpaRepository<Point, Integer>, PointRep
                 WHERE p.member.id = :memberId
             """)
     int findPointBalanceByMemberId(@Param("memberId") Long memberId);
-
+    
     boolean existsByTypeAndOrderProduct(PointType type, OrderProduct orderProduct);
-
-
+    
+    
 }

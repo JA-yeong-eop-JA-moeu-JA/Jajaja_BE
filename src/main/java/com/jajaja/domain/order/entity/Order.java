@@ -2,6 +2,7 @@ package com.jajaja.domain.order.entity;
 
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.delivery.entity.Delivery;
+import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.entity.enums.PaymentMethod;
 import com.jajaja.domain.team.entity.Team;
@@ -10,6 +11,7 @@ import com.jajaja.global.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +29,13 @@ public class Order extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderType orderType;
+    private OrderStatus orderStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private OrderType orderType;
+
+    @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
     @Column(nullable = false)
@@ -42,8 +47,26 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private Integer shippingFee;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 50, nullable = false)
     private String orderNumber;
+
+    @Column(nullable = false)
+    private Integer totalAmount;
+
+    @Column(nullable = false)
+    private Integer paidAmount;
+
+    @Column
+    private LocalDateTime paidAt;
+
+    @Column
+    private String impUid;
+
+    @Column
+    private String merchantUid;
+
+    @Column(length = 500)
+    private String deliveryRequest;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -61,6 +84,7 @@ public class Order extends BaseEntity {
     private Team team;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
     public int calculateAmount() {
@@ -71,5 +95,16 @@ public class Order extends BaseEntity {
 
     public int calculateFinalAmount() {
         return calculateAmount() - discountAmount - pointUsedAmount + shippingFee;
+    }
+
+    public void updateStatus(OrderStatus status) {
+        this.orderStatus = status;
+    }
+
+    public void updatePaymentInfo(String impUid, PaymentMethod paymentMethod, OrderStatus orderStatus) {
+        this.impUid = impUid;
+        this.paymentMethod = paymentMethod;
+        this.orderStatus = orderStatus;
+        this.paidAt = LocalDateTime.now();
     }
 }
