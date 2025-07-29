@@ -86,7 +86,7 @@ public class Member extends BaseEntity {
     public void updateEmail(String email) {
         this.email = email;
     }
-    
+  
     public void updatePoint(int point) { this.point = point; }
     
     public void updateProfileUrl(String profileUrl) { this.profileUrl = profileUrl; }
