@@ -1,6 +1,7 @@
 package com.jajaja.domain.review.repository;
 
 import com.jajaja.domain.review.dto.response.ReviewItemDto;
+import com.jajaja.domain.review.dto.response.ReviewableOrderItemDto;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -15,4 +16,5 @@ public interface ReviewRepositoryCustom {
     Page<ReviewItemDto> findPageByMemberIdOrderByCreatedAt(Long memberId, int page, int size);
     Page<ReviewItemDto> findPageAllOrderByCreatedAt(int page, int size);
     Page<ReviewItemDto> findPageAllOrderByLikeCount(int page, int size);
+    Page<ReviewableOrderItemDto> findPageReviewableByMemberId(Long memberId, int page, int size);
 }
