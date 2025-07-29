@@ -88,4 +88,6 @@ public class Member extends BaseEntity {
     }
     
     public void updatePoint(int point) { this.point = point; }
+    
+    public void updateProfileUrl(String profileUrl) { this.profileUrl = profileUrl; }
 }
