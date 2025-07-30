@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PointRepositoryCustom {
-
+    
     Page<Point> findByMemberId(Long memberId, Pageable pageable);
-
+    
     List<Point> findExpiringPoints();
-
+    
     List<Point> findValidReviewPointsOrderedByOldest(Long memberId, LocalDate today);
-
+    
     Optional<Point> findReviewPointByOrderProductId(Long orderProductId);
-
+    
     Optional<Point> findUsePointByOrderProductId(Long orderProductId);
 }

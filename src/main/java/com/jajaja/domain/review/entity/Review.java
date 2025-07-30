@@ -1,5 +1,6 @@
 package com.jajaja.domain.review.entity;
 
+import com.jajaja.domain.order.entity.OrderProduct;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.entity.ProductOption;
 import com.jajaja.domain.member.entity.Member;
@@ -48,6 +49,10 @@ public class Review extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_option_id")
     private ProductOption productOption;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_product_id")
+    private OrderProduct orderProduct;
 
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();

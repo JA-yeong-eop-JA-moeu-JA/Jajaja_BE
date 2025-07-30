@@ -20,11 +20,11 @@ import java.util.List;
 @Transactional
 @RequiredArgsConstructor
 public class PointCommandServiceImpl implements PointCommandService {
-
+    
     private final PointRepository pointRepository;
     private final MemberRepository memberRepository;
     private final OrderProductRepository orderProductRepository;
-
+    
     /**
      * 포인트를 사용합니다. 사용 가능한 리뷰 포인트를 찾아서 순차적으로 사용합니다.
      * @param memberId 회원 ID
@@ -59,7 +59,7 @@ public class PointCommandServiceImpl implements PointCommandService {
         pointRepository.saveAll(points);
         pointRepository.save(usedPoint);
     }
-
+    
     /**
      * 리뷰 작성 후 포인트를 추가합니다.
      * @param memberId 회원 ID
@@ -83,7 +83,7 @@ public class PointCommandServiceImpl implements PointCommandService {
                 .build();
         pointRepository.save(point);
     }
-
+    
     /**
      * 포인트 획득을 취소합니다.
      * @param orderProductId 주문 상품 ID
@@ -104,7 +104,7 @@ public class PointCommandServiceImpl implements PointCommandService {
                 .build();
         pointRepository.save(cancelPoint);
     }
-
+    
     /**
      * 사용된 포인트를 환불합니다.
      * @param orderProductId 주문 상품 ID

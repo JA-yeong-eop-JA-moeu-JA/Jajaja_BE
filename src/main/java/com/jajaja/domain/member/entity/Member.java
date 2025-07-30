@@ -44,6 +44,9 @@ public class Member extends BaseEntity {
 
     @Column(nullable = false)
     private String email;
+    
+    @Column(nullable = false)
+    private Integer point;
 
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
     private MemberBusinessCategory memberBusinessCategory;
@@ -83,8 +86,8 @@ public class Member extends BaseEntity {
     public void updateEmail(String email) {
         this.email = email;
     }
-
-    public void updateProfileUrl(String profileUrl) {
-        this.profileUrl = profileUrl;
-    }
+  
+    public void updatePoint(int point) { this.point = point; }
+    
+    public void updateProfileUrl(String profileUrl) { this.profileUrl = profileUrl; }
 }

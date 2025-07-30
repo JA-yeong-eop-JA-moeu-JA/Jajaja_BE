@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PointQueryServiceImpl implements PointQueryService {
-
+    
     private final PointRepository pointRepository;
-
+    
     @Override
     public PagingPointHistoryResponseDto getPointHistory(Long memberId, Pageable pageable) {
         Page<Point> pointPage = pointRepository.findByMemberId(memberId, pageable);
@@ -30,7 +30,7 @@ public class PointQueryServiceImpl implements PointQueryService {
         int pointBalance = pointRepository.findPointBalanceByMemberId(memberId);
         return PagingPointHistoryResponseDto.of(pointPage, pointBalance, pointHistoryDtos);
     }
-
+    
     @Override
     public PointBalanceResponseDto getPointBalance(Long memberId) {
         int pointBalance = pointRepository.findPointBalanceByMemberId(memberId);

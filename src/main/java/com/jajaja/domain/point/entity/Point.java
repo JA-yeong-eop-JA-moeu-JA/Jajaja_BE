@@ -53,4 +53,14 @@ public class Point extends BaseEntity {
         }
         this.usedAmount += amountToUse;
     }
+
+    public void decreaseUsedAmount(int amountToDecrease) {
+        if (this.usedAmount == null) {
+            this.usedAmount = 0;
+        }
+        if (this.usedAmount < amountToDecrease) {
+            throw new BadRequestException(ErrorStatus.INVALID_POINT_OPERATION);
+        }
+        this.usedAmount -= amountToDecrease;
+    }
 }

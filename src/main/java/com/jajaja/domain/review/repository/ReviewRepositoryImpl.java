@@ -1,8 +1,12 @@
 package com.jajaja.domain.review.repository;
 
 
+import com.jajaja.domain.order.entity.QOrder;
+import com.jajaja.domain.order.entity.QOrderProduct;
+import com.jajaja.domain.product.entity.QProduct;
 import com.jajaja.domain.product.entity.QProductOption;
 import com.jajaja.domain.review.dto.response.ReviewItemDto;
+import com.jajaja.domain.review.dto.response.ReviewableOrderItemDto;
 import com.jajaja.domain.review.entity.QReview;
 import com.jajaja.domain.review.entity.QReviewImage;
 import com.jajaja.domain.review.entity.QReviewLike;
@@ -249,6 +253,54 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 queryFactory.select(review.count())
                         .from(review)
                         .where(review.deletedAt.isNull())
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(content, PageRequest.of(page, size), total);
+    }
+
+    @Override
+    public Page<ReviewableOrderItemDto> findPageReviewableByMemberId(Long memberId, int page, int size) {
+        if (memberId == null) {
+            return Page.empty();
+        }
+
+        QOrder order = QOrder.order;
+        QOrderProduct op = QOrderProduct.orderProduct;
+        QProduct product = QProduct.product;
+        QReview review = QReview.review;
+
+        List<ReviewableOrderItemDto> content = queryFactory
+                .select(Projections.constructor(ReviewableOrderItemDto.class,
+                        order.id,
+                        order.createdAt,
+                        op.id,
+                        product.id,
+                        product.name,
+                        product.thumbnailUrl,
+                        op.price,
+                        op.quantity,
+                        review.id.isNotNull()
+                ))
+                .from(order)
+                .join(order.orderProducts, op)
+                .join(op.product, product)
+                .leftJoin(review)
+                .on(
+                        review.orderProduct.id.eq(op.id)
+                                .and(review.member.id.eq(memberId))
+                                .and(review.deletedAt.isNull())
+                )
+                .where(order.member.id.eq(memberId))
+                .orderBy(order.createdAt.desc())
+                .offset((long) page * size)
+                .limit(size)
+                .fetch();
+
+        Long total = Optional.ofNullable(
+                queryFactory.select(order.count())
+                        .from(order)
+                        .where(order.member.id.eq(memberId))
                         .fetchOne()
         ).orElse(0L);
 

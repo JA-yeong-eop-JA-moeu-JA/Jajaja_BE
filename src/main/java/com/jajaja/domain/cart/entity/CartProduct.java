@@ -71,6 +71,13 @@ public class CartProduct extends BaseEntity {
     }
     
     /**
+     * 단위가격을 반환합니다.
+     */
+    public int getUnitPrice() {
+        return (this.productOption != null) ? this.productOption.getPrice() : this.product.getPrice();
+    }
+    
+    /**
      *  Cart에서 CartProduct를 추가할 때 부모가 누구인지 알려주기 위해 호출하는 연관관계 편의 메소드입니다.
      */
     protected void setCart(Cart cart) {
