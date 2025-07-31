@@ -76,14 +76,18 @@ public class JwtProvider {
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
                 .path("/")
                 .httpOnly(true)
-                .maxAge(jwtProperties.getExpiration().getAccess())
+                .secure(true)
+                .sameSite("None")
+                .maxAge(jwtProperties.getExpiration().getAccess() / 1000)
                 .domain(jwtProperties.getCookieDomain())
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .path("/")
                 .httpOnly(true)
-                .maxAge(jwtProperties.getExpiration().getRefresh())
+                .secure(true)
+                .sameSite("None")
+                .maxAge(jwtProperties.getExpiration().getRefresh() / 1000)
                 .domain(jwtProperties.getCookieDomain())
                 .build();
 
