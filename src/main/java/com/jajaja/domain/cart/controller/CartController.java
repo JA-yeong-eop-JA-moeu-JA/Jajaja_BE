@@ -39,8 +39,8 @@ public class CartController {
 	}
 	
 	@Operation(
-			summary = "장바구니 아이템 삭제 API | by 엠마/신윤지",
-			description = "장바구니에 아이템을 추가하거나 수량을 수정합니다.")
+			summary = "장바구니 아이템 제거 API | by 엠마/신윤지",
+			description = "장바구니의 아이템을 제거합니다.")
 	@DeleteMapping("/products")
 	public ApiResponse<String> deleteCartProduct(@Auth Long memberId,
 												 @RequestParam("productId") Long productId,

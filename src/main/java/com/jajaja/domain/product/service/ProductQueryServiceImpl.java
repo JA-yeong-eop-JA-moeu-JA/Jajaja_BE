@@ -141,7 +141,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         // 신상품: 전체 상품 중 생성일 최신 순 상위 8개
         List<ProductListResponseDto> newProducts = productRepository.findAll()
                 .stream()
-                .sorted(Comparator.comparing(Product::getCreatedAt).reversed())
+                .sorted(Comparator.comparing(Product::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())).reversed())
                 .limit(8)
                 .map(productConverter::toProductListResponseDto)
                 .toList();
