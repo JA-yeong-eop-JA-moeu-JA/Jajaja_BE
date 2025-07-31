@@ -73,26 +73,28 @@ public class JwtProvider {
     }
 
     public void writeTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
+        ResponseCookie.ResponseCookieBuilder accessBuilder = ResponseCookie.from("accessToken", accessToken)
                 .path("/")
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("None")
-                .maxAge(jwtProperties.getExpiration().getAccess() / 1000)
-                .domain(jwtProperties.getCookieDomain())
-                .build();
+                .maxAge(jwtProperties.getExpiration().getAccess() / 1000);
 
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+        ResponseCookie.ResponseCookieBuilder refreshBuilder = ResponseCookie.from("refreshToken", refreshToken)
                 .path("/")
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("None")
-                .maxAge(jwtProperties.getExpiration().getRefresh() / 1000)
-                .domain(jwtProperties.getCookieDomain())
-                .build();
+                .maxAge(jwtProperties.getExpiration().getRefresh() / 1000);
 
-        response.addHeader("Set-Cookie", accessTokenCookie.toString());
-        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+
+        if (jwtProperties.getCookieDomain() != null && !jwtProperties.getCookieDomain().isBlank()) {
+            accessBuilder.domain(jwtProperties.getCookieDomain()).build();
+            refreshBuilder.domain(jwtProperties.getCookieDomain()).build();
+        }
+
+        response.addHeader("Set-Cookie", accessBuilder.build().toString());
+        response.addHeader("Set-Cookie", refreshBuilder.build().toString());
     }
 
     private JwtParser getJwtParser() {
