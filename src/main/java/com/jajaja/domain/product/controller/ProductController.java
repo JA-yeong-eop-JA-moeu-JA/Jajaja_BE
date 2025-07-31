@@ -41,7 +41,7 @@ public class ProductController {
 
     @Operation(
             summary = "하위 카테고리 상품 목록 조회 API | by 루비/이송미",
-            description = "상품을 정렬 기준(인기순 | 최신상품순 | 낮은 가격 순 | 리뷰 많은 순)에 따라 조회합니다."
+            description = "상품을 정렬 기준(인기 순 | 최신 상품순 | 낮은 가격 순 | 리뷰 많은 순)에 따라 조회합니다."
     )
     @GetMapping("/categories/{subcategoryId}/products")
     public ApiResponse<CategoryProductListResponseDto> getProductsBySubCategory(

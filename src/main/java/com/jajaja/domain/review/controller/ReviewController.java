@@ -35,7 +35,7 @@ public class ReviewController {
 
     @Operation(
             summary = "리뷰 상세 조회 - 하단 API | by 지지/이지희",
-            description = "리뷰 상세 조회의 하단(최신순|추천순 필터링)을 조회하는 기능입니다."
+            description = "리뷰 상세 조회의 하단(최신 순 | 추천 순 필터링)을 조회하는 기능입니다."
     )
     @GetMapping("/{productId}")
     public ApiResponse<PagingReviewListResponseDto> getReviewList(
@@ -57,7 +57,7 @@ public class ReviewController {
 
     @Operation(
             summary = "사진 리뷰 상세 조회 API | by 지지/이지희",
-            description = "필터링(최신순|추천순 필터링)을 통해 사진 리뷰 상세 조회하는 기능입니다."
+            description = "필터링(최신 순 | 추천 순 필터링)을 통해 사진 리뷰 상세 조회하는 기능입니다."
     )
     @GetMapping("/photo/{productId}")
     public ApiResponse<PagingReviewImageListResponseDto> getReviewImageList(
@@ -94,7 +94,7 @@ public class ReviewController {
                           구매한 상품에 대해 리뷰를 작성합니다.
 
                           - 별점, 내용, 사진(최대 5장)을 포함할 수 있습니다.
-                          - 이미지는 S3 Presigned URL을 통해 업로드한 후,
+                          - 이미지는 S3 Presigned URL API를 통해 업로드한 후,
                             해당 key 값을 imageKeys로 전달해주세요.
                           """
     )
@@ -141,7 +141,7 @@ public class ReviewController {
 
     @Operation(
             summary = "전체 리뷰 목록 조회 API | by 루비/이송미",
-            description = "전체 리뷰를 정렬 기준(최신순|추천순)에 따라 조회합니다."
+            description = "전체 리뷰를 정렬 기준(최신 순 | 추천 순)에 따라 조회합니다."
     )
     @GetMapping
     public ApiResponse<PagingReviewListResponseDto> getAllReviews(
