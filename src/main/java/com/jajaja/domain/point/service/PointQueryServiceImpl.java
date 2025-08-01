@@ -1,10 +1,14 @@
 package com.jajaja.domain.point.service;
 
+import com.jajaja.domain.member.entity.Member;
+import com.jajaja.domain.member.repository.MemberRepository;
 import com.jajaja.domain.point.dto.response.PagingPointHistoryResponseDto;
 import com.jajaja.domain.point.dto.response.PointBalanceResponseDto;
 import com.jajaja.domain.point.dto.response.PointHistoryDto;
 import com.jajaja.domain.point.entity.Point;
 import com.jajaja.domain.point.repository.PointRepository;
+import com.jajaja.global.apiPayload.code.status.ErrorStatus;
+import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +24,7 @@ import java.util.stream.Collectors;
 public class PointQueryServiceImpl implements PointQueryService {
     
     private final PointRepository pointRepository;
+    private final MemberRepository memberRepository;
     
     @Override
     public PagingPointHistoryResponseDto getPointHistory(Long memberId, Pageable pageable) {
@@ -33,7 +38,7 @@ public class PointQueryServiceImpl implements PointQueryService {
     
     @Override
     public PointBalanceResponseDto getPointBalance(Long memberId) {
-        int pointBalance = pointRepository.findPointBalanceByMemberId(memberId);
-        return PointBalanceResponseDto.from(pointBalance);
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
+        return PointBalanceResponseDto.from(member.getPoint());
     }
 }
