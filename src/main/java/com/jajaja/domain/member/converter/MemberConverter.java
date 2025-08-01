@@ -12,6 +12,7 @@ public class MemberConverter {
                 .name(oAuth2Response.getName())
                 .phone(oAuth2Response.getPhone())
                 .email(oAuth2Response.getEmail())
+                .point(0)
                 .build();
     }
 }
