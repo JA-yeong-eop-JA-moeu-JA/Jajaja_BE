@@ -58,6 +58,8 @@ jwt:
       refresh: ${JWT_EXPIRATION_REFRESH}
     redirect-url: ${AUTH_REDIRECT_URL}
     cookie-domain: ${COOKIE_DOMAIN}
+    same-site: ${COOKIE_SAME_SITE}
+    secure: ${COOKIE_SECURE}
 
 cloud:
   aws:
