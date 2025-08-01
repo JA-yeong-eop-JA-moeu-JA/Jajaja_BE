@@ -19,8 +19,8 @@ public class AuthService {
 
     private final JwtProvider jwtProvider;
 
-    public TokenResponseDto getToken(Long userId) {
-        Authentication authentication = new UsernamePasswordAuthenticationToken(String.valueOf(userId), null, null);
+    public TokenResponseDto getToken(Long memberId) {
+        Authentication authentication = new UsernamePasswordAuthenticationToken(String.valueOf(memberId), null, null);
         String accessToken = jwtProvider.generateAccessToken(authentication);
         String refreshToken = jwtProvider.generateRefreshToken(authentication);
         return new TokenResponseDto(accessToken, refreshToken);

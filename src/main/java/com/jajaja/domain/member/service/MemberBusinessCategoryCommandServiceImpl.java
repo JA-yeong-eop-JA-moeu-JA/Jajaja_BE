@@ -23,12 +23,12 @@ public class MemberBusinessCategoryCommandServiceImpl implements MemberBusinessC
 
     /**
      * 유저 업종 등록
-     * @param userId 유저 아이디
+     * @param memberId 유저 아이디
      * @param dto 업종 요청 DTO
      */
     @Transactional
-    public void registerUserBusinessCategory(Long userId, MemberBusinessCategoryRequestDto dto) {
-        Member member = memberRepository.findById(userId)
+    public void registerMemberBusinessCategory(Long memberId, MemberBusinessCategoryRequestDto dto) {
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         if (memberBusinessCategoryRepository.findByMember(member).isPresent()) {

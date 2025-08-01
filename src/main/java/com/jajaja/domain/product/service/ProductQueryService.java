@@ -7,6 +7,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface ProductQueryService {
     ProductDetailResponseDto getProductDetail(Long memberId, Long productId);
-    HomeProductListResponseDto getProductList(Long userId, Long categoryId);
+    HomeProductListResponseDto getProductList(Long memberId, Long categoryId);
     CategoryProductListResponseDto getProductsBySubCategory(Long subcategoryId, String sort, Pageable pageable);
 }

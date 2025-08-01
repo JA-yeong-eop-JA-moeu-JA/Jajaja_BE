@@ -16,7 +16,7 @@ public class ReviewLikeRepositoryImpl implements ReviewLikeRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Set<Integer> findReviewIdsLikedByUser(Long memberId, List<Integer> reviewIds) {
+    public Set<Integer> findReviewIdsLikedByMember(Long memberId, List<Integer> reviewIds) {
         QReviewLike rl = QReviewLike.reviewLike;
 
         return new HashSet<>(

@@ -57,8 +57,8 @@ public class OrderController {
             description = "사용자의 모든 주문 목록을 조회합니다."
     )
     @GetMapping("/me")
-    public ApiResponse<PagingOrderListResponseDto> getMyOrders(@Auth Long userId, Pageable pageable) {
-        PagingOrderListResponseDto pagingOrderListResponseDto = orderQueryService.getMyOrders(userId, pageable);
+    public ApiResponse<PagingOrderListResponseDto> getMyOrders(@Auth Long memberId, Pageable pageable) {
+        PagingOrderListResponseDto pagingOrderListResponseDto = orderQueryService.getMyOrders(memberId, pageable);
         return ApiResponse.onSuccess(pagingOrderListResponseDto);
     }
 

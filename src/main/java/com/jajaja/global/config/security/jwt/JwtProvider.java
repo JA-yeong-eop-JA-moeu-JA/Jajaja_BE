@@ -1,7 +1,7 @@
 package com.jajaja.global.config.security.jwt;
 
 import com.jajaja.domain.auth.dto.CustomOAuth2User;
-import com.jajaja.domain.auth.dto.UserDto;
+import com.jajaja.domain.auth.dto.MemberDto;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.UnauthorizedException;
 import io.jsonwebtoken.*;
@@ -35,9 +35,9 @@ public class JwtProvider {
     }
 
     public String generateToken(Authentication authentication, long expirationTime) {
-        String userId = authentication.getName();
+        String memberId = authentication.getName();
         return Jwts.builder()
-                .claim("userId", Long.parseLong(userId))
+                .claim("memberId", Long.parseLong(memberId))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey())
@@ -66,9 +66,9 @@ public class JwtProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = getJwtParser().parseSignedClaims(token).getPayload();
-        Long userId = claims.get("userId", Long.class);
-        UserDto userDto = UserDto.builder().userId(userId).build();
-        CustomOAuth2User principal = new CustomOAuth2User(userDto);
+        Long memberId = claims.get("memberId", Long.class);
+        MemberDto memberDto = MemberDto.builder().memberId(memberId).build();
+        CustomOAuth2User principal = new CustomOAuth2User(memberDto);
         return new UsernamePasswordAuthenticationToken(principal, token, null);
     }
 

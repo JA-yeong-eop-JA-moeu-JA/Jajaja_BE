@@ -28,7 +28,7 @@ public class AuthArgumentResolver implements HandlerMethodArgumentResolver {
         }
         Object principal = authentication.getPrincipal();
         if (principal instanceof CustomOAuth2User customUser) {
-            return customUser.userDto().userId();
+            return customUser.memberDto().memberId();
         }
         return null;
     }
