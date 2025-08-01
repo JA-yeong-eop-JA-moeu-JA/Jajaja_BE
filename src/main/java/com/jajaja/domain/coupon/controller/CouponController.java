@@ -48,7 +48,7 @@ public class CouponController {
 	
 	@Operation(
 			summary = "쿠폰 취소 API | by 엠마/신윤지",
-			description = "선택한 쿠폰을 장바구니에서 취소합니다."
+			description = "선택한 쿠폰을 장바구니에 적용 취소합니다."
 	)
 	@DeleteMapping("/unapply")
 	public ApiResponse<String> unapplyCoupon(@Auth Long memberId) {
