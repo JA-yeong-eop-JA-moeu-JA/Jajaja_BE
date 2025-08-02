@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Map;
 
 public record CustomOAuth2User(
-        UserDto userDto
+        MemberDto memberDto
 ) implements OAuth2User {
     @Override
     public Map<String, Object> getAttributes() {
@@ -22,18 +22,18 @@ public record CustomOAuth2User(
 
     @Override
     public String getName() {
-        return String.valueOf(userDto.userId());
+        return String.valueOf(memberDto.memberId());
     }
 
     public String getOAuthId() {
-        return userDto.oAuthId();
+        return memberDto.oAuthId();
     }
 
     public OauthType getOAuthType() {
-        return userDto.oAuthType();
+        return memberDto.oAuthType();
     }
 
     public String getUserName() {
-        return userDto.name();
+        return memberDto.name();
     }
 }

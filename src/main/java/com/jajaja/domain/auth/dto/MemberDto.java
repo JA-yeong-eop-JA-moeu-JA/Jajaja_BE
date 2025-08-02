@@ -4,15 +4,15 @@ import com.jajaja.domain.member.entity.enums.OauthType;
 import lombok.Builder;
 
 @Builder
-public record UserDto(
-        long userId,
+public record MemberDto(
+        long memberId,
         OauthType oAuthType,
         String oAuthId,
         String name
 ) {
-    public static UserDto of(long userId, OauthType provider, String providerId, String name) {
-        return UserDto.builder()
-                .userId(userId)
+    public static MemberDto of(long memberId, OauthType provider, String providerId, String name) {
+        return MemberDto.builder()
+                .memberId(memberId)
                 .oAuthType(provider)
                 .oAuthId(providerId)
                 .name(name)

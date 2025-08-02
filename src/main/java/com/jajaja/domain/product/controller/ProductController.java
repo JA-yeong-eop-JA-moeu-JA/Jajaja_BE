@@ -32,10 +32,10 @@ public class ProductController {
     )
     @GetMapping("")
     public ApiResponse<HomeProductListResponseDto> getHomeProducts(
-            @Auth Long userId,
+            @Auth Long memberId,
             @RequestParam(required = false) Long categoryId
     ) {
-        HomeProductListResponseDto response = productQueryService.getProductList(userId, categoryId);
+        HomeProductListResponseDto response = productQueryService.getProductList(memberId, categoryId);
         return ApiResponse.onSuccess(response);
     }
 

@@ -18,7 +18,7 @@ public record OrderItemProductDto(
                 .image(orderProduct.getProduct().getImageUrl())
                 .store(orderProduct.getProduct().getStore())
                 .name(orderProduct.getProduct().getName())
-                .option(orderProduct.getProductOption().getName())
+                .option(orderProduct.getProductOption() == null ? null : orderProduct.getProductOption().getName())
                 .quantity(orderProduct.getQuantity())
                 .build();
     }

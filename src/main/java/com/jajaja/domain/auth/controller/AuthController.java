@@ -21,8 +21,8 @@ public class AuthController {
             description = "사용자 ID를 기반으로 액세스 토큰과 리프레쉬 토큰을 발급합니다."
     )
     @PostMapping("/token")
-    public ApiResponse<TokenResponseDto> getToken(@RequestParam Long userId) {
-        return ApiResponse.onSuccess(authService.getToken(userId));
+    public ApiResponse<TokenResponseDto> getToken(@RequestParam Long memberId) {
+        return ApiResponse.onSuccess(authService.getToken(memberId));
     }
 
     @Operation(

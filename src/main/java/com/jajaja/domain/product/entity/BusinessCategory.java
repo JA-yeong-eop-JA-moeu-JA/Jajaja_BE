@@ -23,7 +23,7 @@ public class BusinessCategory extends BaseEntity {
     private String name;
 
     @OneToMany(mappedBy = "businessCategory")
-    private List<MemberBusinessCategory> userBusinessCategories = new ArrayList<>();
+    private List<MemberBusinessCategory> memberBusinessCategories = new ArrayList<>();
 
     @OneToMany(mappedBy = "businessCategory")
     private List<ProductSales> productSalesList = new ArrayList<>();

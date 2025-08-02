@@ -13,7 +13,6 @@ import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.domain.review.dto.response.ReviewListDto;
 import com.jajaja.domain.review.dto.response.ReviewItemDto;
-import com.jajaja.domain.review.entity.ReviewImage;
 import com.jajaja.domain.review.repository.ReviewImageRepository;
 import com.jajaja.domain.review.repository.ReviewLikeRepository;
 import com.jajaja.domain.review.repository.ReviewRepository;
@@ -83,7 +82,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
         // isLike 조회
         Set<Integer> likedReviewIds = memberId != null
-                ? reviewLikeRepository.findReviewIdsLikedByUser(memberId, reviewIds)
+                ? reviewLikeRepository.findReviewIdsLikedByMember(memberId, reviewIds)
                 : Set.of();
 
         // 병합
@@ -115,13 +114,13 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     /**
      * 홈 화면에 표시할 상품 리스트 조회
      *
-     * @param userId     회원 ID (비회원이면 null)
+     * @param memberId     회원 ID (비회원이면 null)
      * @param categoryId 비회원 업종 ID (회원이면 null)
      * @return 홈 화면 상품 리스트 DTO
      */
     @Override
-    public HomeProductListResponseDto getProductList(Long userId, Long categoryId) {
-        Long targetCategoryId = resolveCategoryId(userId, categoryId);
+    public HomeProductListResponseDto getProductList(Long memberId, Long categoryId) {
+        Long targetCategoryId = resolveCategoryId(memberId, categoryId);
 
         // 추천 상품: 해당 업종 내 판매량 많은 순 상위 8개
         List<ProductListResponseDto> recommendProducts = productSalesRepository
@@ -150,18 +149,18 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     }
 
     /**
-     * 회원인 경우 userId로 User 엔티티 조회 후 업종 ID 찾기,
+     * 회원인 경우 memberId로 Member 엔티티 조회 후 업종 ID 찾기,
      * 비회원인 경우 categoryId로 업종 조회,
      * 둘 다 없으면 예외 발생
      *
-     * @param userId     회원 ID
+     * @param memberId     회원 ID
      * @param categoryId 비회원 업종 ID
      * @return 업종 ID
      * @throws BadRequestException 업종 정보가 없으면 발생
      */
-    private Long resolveCategoryId(Long userId, Long categoryId) {
-        if (userId != null) {
-            Member member = memberRepository.findById(userId)
+    private Long resolveCategoryId(Long memberId, Long categoryId) {
+        if (memberId != null) {
+            Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
             MemberBusinessCategory memberBusinessCategory = memberBusinessCategoryRepository.findByMember(member)
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_BUSINESS_CATEGORY_NOT_FOUND));

@@ -19,7 +19,7 @@ public class MemberBusinessCategoryController {
 
     /**
      * 유저 업종 등록 API
-     * @param userId 유저 ID
+     * @param memberId 유저 ID
      * @param dto 업종 등록 요청 DTO
      * @return 200 OK
      */
@@ -28,11 +28,11 @@ public class MemberBusinessCategoryController {
             description = "온보딩 단계에서 유저가 선택한 업종을 등록합니다."
     )
     @PostMapping("/")
-    public ApiResponse<Void> registerUserBusinessCategory(
-            @Auth Long userId,
+    public ApiResponse<Void> registerMemberBusinessCategory(
+            @Auth Long memberId,
             @RequestBody @Valid MemberBusinessCategoryRequestDto dto
     ) {
-        memberBusinessCategoryCommandService.registerUserBusinessCategory(userId, dto);
+        memberBusinessCategoryCommandService.registerMemberBusinessCategory(memberId, dto);
         return ApiResponse.onSuccess(null);
     }
 
