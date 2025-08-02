@@ -1,9 +1,7 @@
 package com.jajaja.domain.product.repository;
 
 import com.jajaja.domain.product.dto.projection.ProductTotalSalesDto;
-import com.jajaja.domain.product.entity.Product;
-import com.jajaja.domain.product.entity.QProduct;
-import com.jajaja.domain.product.entity.QProductSales;
+import com.jajaja.domain.product.entity.*;
 import com.querydsl.core.Tuple;
 import com.jajaja.domain.product.entity.category.QProductSubCategory;
 import com.querydsl.core.types.Projections;
@@ -80,5 +78,16 @@ public class ProductSalesRepositoryImpl implements ProductSalesRepositoryCustom 
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
+    }
+    
+    @Override
+    public long updateSalesByProductIdAndBusinessCategory(Product product, BusinessCategory businessCategory, int count) {
+        QProductSales ps = QProductSales.productSales;
+        
+       return queryFactory
+                .update(ps)
+                .set(ps.salesCount, ps.salesCount.add(count))
+                .where(ps.product.id.eq(product.getId()).and(ps.businessCategory.eq(businessCategory)))
+                .execute();
     }
 }

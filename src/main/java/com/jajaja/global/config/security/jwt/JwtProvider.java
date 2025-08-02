@@ -8,6 +8,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,12 @@ import java.util.Date;
 public class JwtProvider {
 
     private final JwtProperties jwtProperties;
+
+    @Value("${jwt.token.same-site}")
+    private String sameSite;
+
+    @Value("${jwt.token.secure}")
+    private Boolean secure;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes());
@@ -76,15 +83,15 @@ public class JwtProvider {
         ResponseCookie.ResponseCookieBuilder accessBuilder = ResponseCookie.from("accessToken", accessToken)
                 .path("/")
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
+                .secure(secure)
+                .sameSite(sameSite)
                 .maxAge(jwtProperties.getExpiration().getAccess() / 1000);
 
         ResponseCookie.ResponseCookieBuilder refreshBuilder = ResponseCookie.from("refreshToken", refreshToken)
                 .path("/")
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
+                .secure(secure)
+                .sameSite(sameSite)
                 .maxAge(jwtProperties.getExpiration().getRefresh() / 1000);
 
 
