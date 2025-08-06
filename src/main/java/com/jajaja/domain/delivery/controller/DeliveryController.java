@@ -5,7 +5,7 @@ import com.jajaja.domain.delivery.dto.DeliveryResponseDto;
 import com.jajaja.domain.delivery.service.DeliveryCommandService;
 import com.jajaja.domain.delivery.service.DeliveryQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -5,7 +5,7 @@ import com.jajaja.domain.point.dto.response.PointBalanceResponseDto;
 import com.jajaja.domain.point.service.PointCommandService;
 import com.jajaja.domain.point.service.PointQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

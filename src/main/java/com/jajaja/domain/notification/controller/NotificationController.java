@@ -3,7 +3,7 @@ package com.jajaja.domain.notification.controller;
 import java.util.List;
 
 import com.jajaja.domain.notification.repository.NotificationSseEmitterRepository;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

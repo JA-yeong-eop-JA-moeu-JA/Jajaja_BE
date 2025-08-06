@@ -7,7 +7,7 @@ import com.jajaja.domain.product.dto.response.ProductOptionResponseDto;
 import com.jajaja.domain.product.service.ProductOptionQueryService;
 import com.jajaja.domain.product.service.ProductQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;

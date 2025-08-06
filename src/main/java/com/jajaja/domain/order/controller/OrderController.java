@@ -11,7 +11,7 @@ import com.jajaja.domain.order.dto.response.PagingOrderListResponseDto;
 import com.jajaja.domain.order.service.OrderCommandService;
 import com.jajaja.domain.order.service.OrderQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
