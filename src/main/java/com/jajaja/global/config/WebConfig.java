@@ -1,6 +1,6 @@
 package com.jajaja.global.config;
 
-import com.jajaja.global.config.security.resolver.AuthArgumentResolver;
+import com.jajaja.global.security.resolver.AuthArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

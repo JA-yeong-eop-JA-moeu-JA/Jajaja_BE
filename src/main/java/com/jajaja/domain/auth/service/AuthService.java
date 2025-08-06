@@ -3,7 +3,7 @@ package com.jajaja.domain.auth.service;
 import com.jajaja.domain.auth.dto.TokenResponseDto;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.UnauthorizedException;
-import com.jajaja.global.config.security.jwt.JwtProvider;
+import com.jajaja.global.security.jwt.JwtProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

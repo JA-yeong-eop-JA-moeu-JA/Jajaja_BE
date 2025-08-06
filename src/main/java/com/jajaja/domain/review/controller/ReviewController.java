@@ -6,7 +6,7 @@ import com.jajaja.domain.review.service.ReviewCommandService;
 import com.jajaja.domain.review.service.ReviewLikeCommandService;
 import com.jajaja.domain.review.service.ReviewQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
