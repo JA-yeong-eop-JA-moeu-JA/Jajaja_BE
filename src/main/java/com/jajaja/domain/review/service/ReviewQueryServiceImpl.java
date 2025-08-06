@@ -70,7 +70,7 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
 
         // isLike 조회
         Set<Integer> likedReviewIds = memberId != null
-                ? reviewLikeRepository.findReviewIdsLikedByUser(memberId, reviewIds)
+                ? reviewLikeRepository.findReviewIdsLikedByMember(memberId, reviewIds)
                 : Set.of();
 
         // ReviewListDto로 병합
@@ -151,7 +151,7 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
                 .findTop6ImageUrlsGroupedByReviewIds(reviewIds);
 
         Set<Integer> likedReviewIds = memberId != null
-                ? reviewLikeRepository.findReviewIdsLikedByUser(memberId, reviewIds)
+                ? reviewLikeRepository.findReviewIdsLikedByMember(memberId, reviewIds)
                 : Set.of();
 
         List<ReviewListDto> reviewDtos = reviewItemPage.stream()
