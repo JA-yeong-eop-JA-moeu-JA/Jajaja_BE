@@ -1,5 +1,6 @@
 package com.jajaja.global.S3.service;
 
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.jajaja.global.S3.dto.request.PresignedUploadListRequestDto;
 import com.jajaja.global.S3.dto.request.PresignedUploadRequestDto;
 import com.jajaja.global.S3.dto.response.PresignedUrlUploadListResponseDto;
@@ -42,6 +43,8 @@ public class S3Service {
                 .withMethod(HttpMethod.PUT)
                 .withExpiration(expiration);
 
+        generatePresignedUrlRequest.addRequestParameter("x-amz-acl", "public-read");
+
         String key = generatePresignedUrlRequest.getKey();
 
         return PresignedUrlUploadResponseDto.builder()
@@ -64,6 +67,8 @@ public class S3Service {
                     GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, keyName)
                             .withMethod(HttpMethod.PUT)
                             .withExpiration(expiration);
+
+                    generatePresignedUrlRequest.addRequestParameter("x-amz-acl", "public-read");
 
                     String key = generatePresignedUrlRequest.getKey();
 
