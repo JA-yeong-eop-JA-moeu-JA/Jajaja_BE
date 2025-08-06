@@ -11,11 +11,11 @@ public record MemberInfoResponseDto(
         String phone,
         String email
 ) {
-    public static MemberInfoResponseDto from(Member member) {
+    public static MemberInfoResponseDto of(Member member, String profileUrl) {
         return MemberInfoResponseDto.builder()
                 .id(member.getId())
                 .name(member.getName())
-                .profileUrl(member.getProfileUrl())
+                .profileUrl(profileUrl)
                 .phone(member.getPhone())
                 .email(member.getEmail())
                 .build();
