@@ -33,7 +33,7 @@ public class S3Service {
 
         Date expiration = new Date();
         long expTime = expiration.getTime();
-        expTime += TimeUnit.MINUTES.toMillis(3); // 3분
+        expTime += TimeUnit.MINUTES.toMillis(10); // 10분
         expiration.setTime(expTime);
 
         String keyName = UUID.randomUUID() + "_" + presignedUploadRequest.getFileName();
@@ -54,7 +54,7 @@ public class S3Service {
 
         Date expiration = new Date();
         long expTime = expiration.getTime();
-        expTime += TimeUnit.MINUTES.toMillis(3); // 3분
+        expTime += TimeUnit.MINUTES.toMillis(10); // 10분
         expiration.setTime(expTime);
 
         List<PresignedUrlUploadResponseDto> responses = presignedUploadListRequest.getFileNameList().stream()
