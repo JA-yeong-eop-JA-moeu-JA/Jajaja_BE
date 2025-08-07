@@ -3,6 +3,7 @@ package com.jajaja.domain.auth.controller;
 import com.jajaja.domain.auth.dto.TokenResponseDto;
 import com.jajaja.domain.auth.service.AuthService;
 import com.jajaja.global.apiPayload.ApiResponse;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,6 +35,12 @@ public class AuthController {
             @Parameter(hidden = true)
             @CookieValue(required = false) String refreshToken, HttpServletResponse response) {
         authService.reissueToken(refreshToken, response);
+        return ApiResponse.onSuccess(null);
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<?> logout(@Auth Long memberId, HttpServletResponse response) {
+        authService.logout(memberId, response);
         return ApiResponse.onSuccess(null);
     }
 }

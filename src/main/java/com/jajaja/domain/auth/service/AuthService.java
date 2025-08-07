@@ -1,6 +1,8 @@
 package com.jajaja.domain.auth.service;
 
 import com.jajaja.domain.auth.dto.TokenResponseDto;
+import com.jajaja.domain.redis.entity.RefreshToken;
+import com.jajaja.domain.redis.repository.RefreshTokenRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.UnauthorizedException;
 import com.jajaja.global.security.jwt.JwtProvider;
@@ -18,6 +20,7 @@ import org.springframework.util.StringUtils;
 public class AuthService {
 
     private final JwtProvider jwtProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public TokenResponseDto getToken(Long memberId) {
         Authentication authentication = new UsernamePasswordAuthenticationToken(String.valueOf(memberId), null, null);
@@ -32,10 +35,30 @@ public class AuthService {
         }
         jwtProvider.validateRefreshToken(refreshToken);
         Authentication authentication = jwtProvider.getAuthentication(refreshToken);
-        // TODO: Redis에 저장된 refreshToken과 비교하여 일치하는지 확인
+
+        // Redis에 저장된 refreshToken과 비교하여 일치하는지 확인
+        String memberId = authentication.getName();
+        RefreshToken refreshTokenEntity = refreshTokenRepository.findById(memberId)
+                .orElseThrow(() -> new UnauthorizedException(ErrorStatus.NOT_MATCH_REFRESH_TOKEN));
+        if (!refreshTokenEntity.getRefreshToken().equals(refreshToken)) {
+            throw new UnauthorizedException(ErrorStatus.NOT_MATCH_REFRESH_TOKEN);
+        }
+
+        // 새로 accessToken과 refreshToken 발급
         String newAccessToken = jwtProvider.generateAccessToken(authentication);
         String newRefreshToken = jwtProvider.generateRefreshToken(authentication);
-        // TODO: Redis에 새로 발급한 refreshToken 저장
+
+        // Redis에 새로 발급한 refreshToken 저장
+        RefreshToken newRefreshTokenEntity = new RefreshToken(memberId, newRefreshToken);
+        refreshTokenRepository.save(newRefreshTokenEntity);
+
         jwtProvider.writeTokenCookies(response, newAccessToken, newRefreshToken);
+    }
+
+    public void logout(Long memberId, HttpServletResponse response) {
+        refreshTokenRepository.deleteById(memberId.toString());
+        String accessToken = "";
+        String refreshToken = "";
+        jwtProvider.writeTokenCookies(response, accessToken, refreshToken);
     }
 }
