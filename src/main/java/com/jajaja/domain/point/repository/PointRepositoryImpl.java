@@ -73,23 +73,14 @@ public class PointRepositoryImpl implements PointRepositoryCustom {
     @Override
     public List<Point> findExpiringPoints() {
         QPoint point = QPoint.point;
-        QPoint subPoint = new QPoint("subPoint");
         
         return queryFactory
                 .selectFrom(point)
                 .where(
-                        point.type.eq(PointType.REVIEW),
+                        point.type.in(PointType.REVIEW, PointType.INVITE, PointType.FIRST_PURCHASE),
                         point.usedAmount.lt(point.amount),
                         point.expiresAt.lt(LocalDate.now()),
-                        point.orderProduct.isNotNull(),
-                        JPAExpressions
-                                .selectOne()
-                                .from(subPoint)
-                                .where(
-                                        subPoint.type.eq(PointType.EXPIRED),
-                                        subPoint.orderProduct.eq(point.orderProduct)
-                                )
-                                .notExists()
+                        point.isExpired.isFalse()
                 )
                 .fetch();
     }
