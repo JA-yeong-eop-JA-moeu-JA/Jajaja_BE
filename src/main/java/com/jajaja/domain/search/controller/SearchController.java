@@ -8,6 +8,7 @@ import com.jajaja.domain.search.service.SearchService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequestMapping("/api/search")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Search API", description = "검색 관련 API")
 public class SearchController {
 
     private final SearchService searchService;

@@ -7,6 +7,7 @@ import com.jajaja.domain.delivery.service.DeliveryQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/addresses")
+@Tag(name = "Delivery API", description = "배송지 관련 API")
 public class DeliveryController {
 	
 	private final DeliveryQueryService deliveryQueryService;

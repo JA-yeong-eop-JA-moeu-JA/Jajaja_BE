@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/points")
-@Tag(name = "Point", description = "포인트 API")
+@Tag(name = "Point", description = "포인트 관련 API")
 public class PointController {
 
     private final PointQueryService pointQueryService;

@@ -5,6 +5,7 @@ import com.jajaja.domain.member.service.MemberBusinessCategoryCommandService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,14 +13,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/onboarding")
+@Tag(name = "Member API", description = "회원 업종 관련 API")
 public class MemberBusinessCategoryController {
 
     private final MemberBusinessCategoryCommandService memberBusinessCategoryCommandService;
 
 
     /**
-     * 유저 업종 등록 API
-     * @param memberId 유저 ID
+     * 멤버 업종 등록 API
+     * @param memberId 멤버 ID
      * @param dto 업종 등록 요청 DTO
      * @return 200 OK
      */
