@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface NotificationService {
     Long createNotification(NotificationCreateRequestDto requestDto);
-    List<NotificationResponseDto> getNotifications(Long memberId);
+    List<NotificationResponseDto> getNotifications(Long memberId, int page, int size);
     void markAsRead(Long notificationId, Long memberId);
     void markAllAsRead(Long memberId);
     UnreadCountResponseDto getUnreadCount(Long memberId);

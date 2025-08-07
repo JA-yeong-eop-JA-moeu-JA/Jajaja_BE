@@ -47,8 +47,10 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<NotificationResponseDto> getNotifications(Long memberId) {
-        return notificationRepository.findNotificationsByMemberId(memberId).stream()
+    public List<NotificationResponseDto> getNotifications(Long memberId, int page, int size) {
+        int offset = page * size;
+        List<Notification> notifications = notificationRepository.findNotificationsByMemberId(memberId, offset, size);
+        return notifications.stream()
                 .map(NotificationResponseDto::from)
                 .collect(Collectors.toList());
     }

@@ -15,13 +15,17 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<Notification> findNotificationsByMemberId(Long memberId) {
+    public List<Notification> findNotificationsByMemberId(Long memberId, int offset, int limit) {
         QNotification n = QNotification.notification;
-        return queryFactory.selectFrom(n)
+        return queryFactory
+                .selectFrom(n)
                 .where(n.member.id.eq(memberId))
                 .orderBy(n.id.desc())
+                .offset(offset)
+                .limit(limit)
                 .fetch();
     }
+
 
     @Override
     public int markAllAsReadByMemberId(Long memberId) {

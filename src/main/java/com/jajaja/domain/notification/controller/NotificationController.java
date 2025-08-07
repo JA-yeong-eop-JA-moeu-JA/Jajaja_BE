@@ -7,6 +7,7 @@ import com.jajaja.domain.notification.service.NotificationService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -36,8 +37,16 @@ public class NotificationController {
             description = "사용자의 알림 목록을 조회합니다."
     )
     @GetMapping
-    public ApiResponse<List<NotificationResponseDto>> getNotifications(@Auth Long memberId) {
-        return ApiResponse.onSuccess(notificationService.getNotifications(memberId));
+    public ApiResponse<List<NotificationResponseDto>> getNotifications(
+            @Auth Long memberId,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기", example = "10")
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.onSuccess(notificationService.getNotifications(memberId, page, size));
     }
 
     @Operation(
