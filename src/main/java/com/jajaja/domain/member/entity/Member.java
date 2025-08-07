@@ -36,15 +36,15 @@ public class Member extends BaseEntity {
     @Column(nullable = false, length = 10)
     private String name;
 
-    @Column(name = "profile_url", length = 512)
-    private String profileUrl;
+    @Column(name = "profile_key_name")
+    private String profileKeyName;
 
     @Column(length = 16)
     private String phone;
 
     @Column(nullable = false)
     private String email;
-    
+
     @Column(nullable = false)
     private Integer point;
 
@@ -52,7 +52,7 @@ public class Member extends BaseEntity {
     private MemberBusinessCategory memberBusinessCategory;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberCoupon> memberCoupons = new ArrayList <>();
+    private List<MemberCoupon> memberCoupons = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamMember> teamMembers = new ArrayList<>();
@@ -86,8 +86,12 @@ public class Member extends BaseEntity {
     public void updateEmail(String email) {
         this.email = email;
     }
-  
-    public void updatePoint(int point) { this.point = point; }
-    
-    public void updateProfileUrl(String profileUrl) { this.profileUrl = profileUrl; }
+
+    public void updatePoint(int point) {
+        this.point = point;
+    }
+
+    public void updateProfileKeyName(String profileKeyName) {
+        this.profileKeyName = profileKeyName;
+    }
 }
