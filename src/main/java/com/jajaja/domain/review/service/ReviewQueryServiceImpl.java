@@ -28,6 +28,7 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
     private final ReviewRepository reviewRepository;
     private final ReviewLikeRepository reviewLikeRepository;
     private final ReviewImageRepository reviewImageRepository;
+    private final ReviewCommonService reviewCommonService;
 
     @Override
     public ReviewBriefResponseDto getReviewBriefInfo(Long productId) {
@@ -154,7 +155,9 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
                 ? reviewLikeRepository.findReviewIdsLikedByMember(memberId, reviewIds)
                 : Set.of();
 
-        List<ReviewListDto> reviewDtos = reviewItemPage.stream()
+        List<ReviewItemDto> convertedDtos = reviewCommonService.changeReviewWriterProfile(reviewItemPage.getContent());
+
+        List<ReviewListDto> reviewDtos = convertedDtos.stream()
                 .map(dto -> new ReviewListDto(
                         dto,
                         likedReviewIds.contains(dto.id()),
