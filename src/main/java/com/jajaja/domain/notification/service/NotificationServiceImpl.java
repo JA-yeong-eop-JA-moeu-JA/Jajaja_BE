@@ -1,8 +1,12 @@
 package com.jajaja.domain.notification.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.jajaja.domain.member.entity.Member;
+import com.jajaja.domain.member.repository.MemberRepository;
+import com.jajaja.domain.notification.dto.NotificationCreateRequestDto;
+import com.jajaja.domain.notification.dto.NotificationResponseDto;
+import com.jajaja.domain.notification.dto.UnreadCountResponseDto;
+import com.jajaja.domain.notification.entity.Notification;
+import com.jajaja.domain.notification.repository.NotificationRepository;
 import com.jajaja.domain.notification.repository.NotificationSseEmitterRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
@@ -10,12 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.jajaja.domain.member.entity.Member;
-import com.jajaja.domain.member.repository.MemberRepository;
-import com.jajaja.domain.notification.dto.NotificationCreateRequestDto;
-import com.jajaja.domain.notification.dto.NotificationResponseDto;
-import com.jajaja.domain.notification.entity.Notification;
-import com.jajaja.domain.notification.repository.NotificationRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -72,4 +73,12 @@ public class NotificationServiceImpl implements NotificationService {
             throw new AccessDeniedException(ErrorStatus.NOTIFICATION_ACCESS_DENIED.getMessage());
         }
     }
+
+    @Override
+    @Transactional
+    public UnreadCountResponseDto getUnreadCount(Long memberId) {
+        int count = notificationRepository.countUnreadByMemberId(memberId);
+        return new UnreadCountResponseDto(count);
+    }
+
 }
