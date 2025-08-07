@@ -28,8 +28,9 @@ public class PointCommandServiceImpl implements PointCommandService {
 
     /**
      * 포인트를 사용합니다. 사용 가능한 리뷰 포인트를 찾아서 순차적으로 사용합니다.
+     *
      * @param memberId 회원 ID
-     * @param order 주문
+     * @param order    주문
      */
     @Override
     public void usePoints(Long memberId, Order order) {
@@ -60,6 +61,7 @@ public class PointCommandServiceImpl implements PointCommandService {
 
     /**
      * 리뷰 작성 후 포인트를 추가합니다.
+     *
      * @param memberId 회원 ID
      * @param reviewId 리뷰 ID
      */
@@ -83,6 +85,7 @@ public class PointCommandServiceImpl implements PointCommandService {
 
     /**
      * 사용된 포인트를 환불합니다.
+     *
      * @param orderId 주문 ID
      */
     @Override
@@ -113,5 +116,20 @@ public class PointCommandServiceImpl implements PointCommandService {
                 .order(usePoint.getOrder())
                 .build();
         pointRepository.save(refundPoint);
+    }
+
+    @Override
+    public void addFirstPurchasePointsIfPossible(Member member) {
+        if (!pointRepository.existsByMemberAndType(member, PointType.FIRST_PURCHASE)) {
+            Point point = Point.builder()
+                    .type(PointType.FIRST_PURCHASE)
+                    .amount(500) // 첫 구매 포인트 500 지급
+                    .usedAmount(0)
+                    // 30일 후 만료로 설정
+                    .expiresAt(LocalDate.now().plusDays(30))
+                    .member(member)
+                    .build();
+            pointRepository.save(point);
+        }
     }
 }

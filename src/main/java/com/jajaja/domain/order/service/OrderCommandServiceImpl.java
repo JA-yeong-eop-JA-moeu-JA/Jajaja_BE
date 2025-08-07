@@ -143,6 +143,9 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
             log.info("[OrderCommandService] 주문 생성 완료 - 주문ID: {}", order.getId());
 
+            // 최초 구매 시 포인트 지급
+            pointCommandService.addFirstPurchasePointsIfPossible(member);
+
             return OrderCreateResponseDto.of(order);
 
         } catch (Exception e) {

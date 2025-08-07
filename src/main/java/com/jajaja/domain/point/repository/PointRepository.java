@@ -1,5 +1,6 @@
 package com.jajaja.domain.point.repository;
 
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.point.entity.Point;
 import com.jajaja.domain.point.entity.enums.PointType;
@@ -22,4 +23,6 @@ public interface PointRepository extends JpaRepository<Point, Integer>, PointRep
     int findPointBalanceByMemberId(@Param("memberId") Long memberId);
     
     boolean existsByTypeAndOrder(PointType type, Order order);
+
+    boolean existsByMemberAndType(Member member, PointType type);
 }
