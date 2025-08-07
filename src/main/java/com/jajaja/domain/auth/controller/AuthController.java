@@ -38,6 +38,10 @@ public class AuthController {
         return ApiResponse.onSuccess(null);
     }
 
+    @Operation(
+            summary = "로그아웃 API | by 지안/윤진수",
+            description = "로그아웃을 수행하고 쿠키를 삭제합니다."
+    )
     @PostMapping("/logout")
     public ApiResponse<?> logout(@Auth Long memberId, HttpServletResponse response) {
         authService.logout(memberId, response);
