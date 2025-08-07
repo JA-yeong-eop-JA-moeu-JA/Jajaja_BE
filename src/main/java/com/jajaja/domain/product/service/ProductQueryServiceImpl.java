@@ -140,8 +140,11 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
         double averageRating = productCommonService.calculateAverageRating(product.getReviews());
 
+        Long reviewCount = reviewRepository.countByProductId(product.getId());
+
         return ProductDetailResponseDto.of(
                 product,
+                reviewCount,
                 salePrice,
                 averageRating,
                 teamResponseDtoList,
