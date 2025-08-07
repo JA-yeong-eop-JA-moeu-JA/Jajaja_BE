@@ -18,13 +18,14 @@ public record ProductDetailResponseDto(
         int discountRate,
         String imageUrl,
         double rating,
-        int reviewCount,
+        Long reviewCount,
         int deliveryPeriod,
         List<TeamListDto> teams,
         List<ReviewListDto> reviews
 ) {
     public static ProductDetailResponseDto of(
             Product product,
+            Long reviewCount,
             int salePrice,
             double averageRating,
             List<TeamListDto> teams,
@@ -39,7 +40,7 @@ public record ProductDetailResponseDto(
                 .discountRate(product.getDiscountRate())
                 .imageUrl(product.getImageUrl())
                 .rating(averageRating)
-                .reviewCount(product.getReviews().size())
+                .reviewCount(reviewCount)
                 .deliveryPeriod(product.getDeliveryPeriod())
                 .teams(teams)
                 .reviews(reviews)
