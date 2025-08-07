@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public record ReviewItemDto(
         int id,
         String nickname,
+        String profileKeyName,
         LocalDateTime createDate,
         double rating,
         String option,

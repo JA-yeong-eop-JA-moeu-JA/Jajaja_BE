@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public record TeamListDto(
         int id,
         String nickname,
+        String profileKeyName,
         LocalDateTime createdAt
 ) {
 
@@ -16,6 +17,7 @@ public record TeamListDto(
         return TeamListDto.builder()
                 .id(team.getId().intValue())
                 .nickname(team.getLeader().getName())
+                .profileKeyName(team.getLeader().getProfileKeyName())
                 .createdAt(team.getCreatedAt())
                 .build();
     }

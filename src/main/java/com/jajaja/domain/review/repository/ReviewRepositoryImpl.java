@@ -171,6 +171,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
         return Projections.constructor(ReviewItemDto.class,
                 review.id.intValue(),
                 member.name,
+                member.profileKeyName,
                 review.createdAt,
                 review.rating.doubleValue(),
                 option.name,
