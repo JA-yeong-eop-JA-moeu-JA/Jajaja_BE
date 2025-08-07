@@ -2,6 +2,7 @@ package com.jajaja.domain.coupon.service;
 
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.cart.entity.CartProduct;
+import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.global.common.dto.PriceInfoDto;
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.coupon.entity.enums.ConditionType;
@@ -24,6 +25,7 @@ public class CouponCommonService {
     private static final String CONDITION_DELIMITER = ",";
     
     private final CouponValidationRepository couponValidationRepository;
+    private final OrderRepository orderRepository;
     
     /**
      * 쿠폰 적용 가능 여부를 검증합니다.
@@ -88,6 +90,9 @@ public class CouponCommonService {
             case ALL:
                 // 모든 상품에 적용 가능
                 break;
+            case FIRST:
+                validateNoOrderHistory(cart);
+                break;
             case BRAND:
                 validateBrandCondition(cart, conditionValues);
                 break;
@@ -129,6 +134,12 @@ public class CouponCommonService {
             throw new CouponHandler(ErrorStatus.COUPON_CATEGORY_CONDITION_NOT_MET);
         }
     }
+    
+    private void validateNoOrderHistory(Cart cart) {
+        if(orderRepository.existsByMember(cart.getMember())) {
+            throw new CouponHandler(ErrorStatus.COUPON_NOT_AVAILABLE);
+        }
+    }
 
     private void validateCartNotEmpty(Cart cart) {
         if (cart.getCartProducts() == null || cart.getCartProducts().isEmpty()) {
@@ -138,10 +149,10 @@ public class CouponCommonService {
 
     private int calculateTargetAmount(Cart cart, Coupon coupon) {
         return switch (coupon.getConditionType()) {
-            case ALL -> cart.calculateTotalAmount();
+            case ALL, FIRST -> cart.calculateTotalAmount();
             case BRAND -> calculateBrandTargetAmount(cart, coupon.getConditionValues());
             case CATEGORY -> calculateCategoryTargetAmount(cart, coupon.getConditionValues());
-        };
+		};
     }
 
     private int calculateDiscountAmount(int targetAmount, Coupon coupon) {
@@ -272,6 +283,9 @@ public class CouponCommonService {
         
         switch (conditionType) {
             case ALL:
+                break;
+            case FIRST:
+                validateNoOrderHistory(selectedItems.get(0).getCart());
                 break;
             case BRAND:
                 validateBrandConditionForSelectedItems(selectedItems, conditionValues);
