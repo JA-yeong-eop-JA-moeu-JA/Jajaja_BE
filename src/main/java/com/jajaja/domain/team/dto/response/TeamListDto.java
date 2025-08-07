@@ -9,14 +9,14 @@ import java.time.LocalDateTime;
 public record TeamListDto(
         int id,
         String nickname,
-        LocalDateTime createdAt
+        LocalDateTime expireAt
 ) {
 
     public static TeamListDto from(Team team) {
         return TeamListDto.builder()
                 .id(team.getId().intValue())
                 .nickname(team.getLeader().getName())
-                .createdAt(team.getCreatedAt())
+                .expireAt(team.getExpireAt())
                 .build();
     }
 
