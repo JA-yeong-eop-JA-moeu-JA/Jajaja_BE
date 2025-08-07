@@ -4,9 +4,13 @@ import com.jajaja.domain.notification.entity.Notification;
 import com.jajaja.domain.notification.entity.QNotification;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -15,15 +19,25 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<Notification> findNotificationsByMemberId(Long memberId, int offset, int limit) {
+    public Page<Notification> findPageByMemberId(Long memberId, int page, int size) {
         QNotification n = QNotification.notification;
-        return queryFactory
+
+        List<Notification> content = queryFactory
                 .selectFrom(n)
                 .where(n.member.id.eq(memberId))
-                .orderBy(n.id.desc())
-                .offset(offset)
-                .limit(limit)
+                .orderBy(n.createdAt.desc())
+                .offset((long) page * size)
+                .limit(size)
                 .fetch();
+
+        long total = Optional.ofNullable(
+                queryFactory.select(n.count())
+                        .from(n)
+                        .where(n.member.id.eq(memberId))
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(content, PageRequest.of(page, size), total);
     }
 
 

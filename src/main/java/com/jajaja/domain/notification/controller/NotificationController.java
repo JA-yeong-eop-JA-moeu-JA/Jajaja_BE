@@ -1,7 +1,8 @@
 package com.jajaja.domain.notification.controller;
 
-import com.jajaja.domain.notification.dto.NotificationResponseDto;
-import com.jajaja.domain.notification.dto.UnreadCountResponseDto;
+import com.jajaja.domain.notification.dto.response.NotificationResponseDto;
+import com.jajaja.domain.notification.dto.response.PagingNotificationResponseDto;
+import com.jajaja.domain.notification.dto.response.UnreadCountResponseDto;
 import com.jajaja.domain.notification.repository.NotificationSseEmitterRepository;
 import com.jajaja.domain.notification.service.NotificationService;
 import com.jajaja.global.apiPayload.ApiResponse;
@@ -34,10 +35,10 @@ public class NotificationController {
 
     @Operation(
             summary = "알림 목록 조회 API | by 구름/윤윤지",
-            description = "사용자의 알림 목록을 조회합니다."
+            description = "사용자의 알림 목록을 페이징 처리하여 조회합니다."
     )
     @GetMapping
-    public ApiResponse<List<NotificationResponseDto>> getNotifications(
+    public ApiResponse<PagingNotificationResponseDto> getNotifications(
             @Auth Long memberId,
 
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")

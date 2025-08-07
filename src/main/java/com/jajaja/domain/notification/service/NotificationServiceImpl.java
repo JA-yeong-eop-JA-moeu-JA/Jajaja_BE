@@ -2,15 +2,17 @@ package com.jajaja.domain.notification.service;
 
 import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.member.repository.MemberRepository;
-import com.jajaja.domain.notification.dto.NotificationCreateRequestDto;
-import com.jajaja.domain.notification.dto.NotificationResponseDto;
-import com.jajaja.domain.notification.dto.UnreadCountResponseDto;
+import com.jajaja.domain.notification.dto.request.NotificationCreateRequestDto;
+import com.jajaja.domain.notification.dto.response.NotificationResponseDto;
+import com.jajaja.domain.notification.dto.response.PagingNotificationResponseDto;
+import com.jajaja.domain.notification.dto.response.UnreadCountResponseDto;
 import com.jajaja.domain.notification.entity.Notification;
 import com.jajaja.domain.notification.repository.NotificationRepository;
 import com.jajaja.domain.notification.repository.NotificationSseEmitterRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,13 +49,14 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<NotificationResponseDto> getNotifications(Long memberId, int page, int size) {
-        int offset = page * size;
-        List<Notification> notifications = notificationRepository.findNotificationsByMemberId(memberId, offset, size);
-        return notifications.stream()
+    public PagingNotificationResponseDto getNotifications(Long memberId, int page, int size) {
+        Page<Notification> notificationPage = notificationRepository.findPageByMemberId(memberId, page, size);
+        List<NotificationResponseDto> dtos = notificationPage.getContent().stream()
                 .map(NotificationResponseDto::from)
                 .collect(Collectors.toList());
+        return PagingNotificationResponseDto.of(notificationPage, dtos);
     }
+
 
     @Override
     @Transactional
