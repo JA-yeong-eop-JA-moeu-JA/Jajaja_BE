@@ -1,12 +1,17 @@
 package com.jajaja.domain.search.service;
 
+import com.jajaja.domain.member.entity.Member;
+import com.jajaja.domain.member.repository.MemberRepository;
 import com.jajaja.domain.product.converter.ProductConverter;
 import com.jajaja.domain.product.dto.response.ProductListResponseDto;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.domain.search.dto.PopularSearchKeywordsResponseDto;
+import com.jajaja.domain.search.dto.RecentSearchKeywordResponseDto;
+import com.jajaja.domain.search.entity.MemberSearchHistory;
 import com.jajaja.domain.search.entity.Search;
 import com.jajaja.domain.search.entity.enums.SearchSort;
+import com.jajaja.domain.search.repository.MemberSearchHistoryRepository;
 import com.jajaja.domain.search.repository.SearchRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
@@ -26,22 +31,31 @@ public class SearchServiceImpl implements SearchService {
     private final SearchRepository searchRepository;
     private final ProductConverter productConverter;
     private final ProductSalesRepository productSalesRepository;
+    private final MemberRepository memberRepository;
+    private final MemberSearchHistoryRepository memberSearchHistoryRepository;
 
     /**
      * 키워드 기반 상품 검색
      *
+     * @param memberId 로그인한 회원 ID (null 허용)
      * @param keyword 검색어
      * @param sort 정렬 기준 (POPULAR, NEW, LOW_PRICE, REVIEW)
      * @return 상품 리스트 DTO
      */
     @Override
     @Transactional
-    public List<ProductListResponseDto> searchProductsByKeyword(String keyword, SearchSort sort) {
+    public List<ProductListResponseDto> searchProductsByKeyword(Long memberId, String keyword, SearchSort sort) {
         if (keyword == null || keyword.isBlank()) {
             throw new BadRequestException(ErrorStatus.INVALID_KEYWORD);
         }
 
         saveOrIncrementKeyword(keyword);
+
+        if (memberId != null) {
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
+            saveMemberSearchKeyword(member, keyword);
+        }
 
         List<Product> products = searchRepository.findProductsByKeyword(keyword);
         if (products.isEmpty()) {
@@ -78,6 +92,45 @@ public class SearchServiceImpl implements SearchService {
                                 .build())
                 );
     }
+
+    @Transactional
+    public void saveMemberSearchKeyword(Member member, String keyword) {
+        memberSearchHistoryRepository.findByMemberAndKeyword(member, keyword)
+                .ifPresent(memberSearchHistoryRepository::delete);
+
+        memberSearchHistoryRepository.save(MemberSearchHistory.builder()
+                .member(member)
+                .keyword(keyword)
+                .build());
+
+        List<MemberSearchHistory> histories = memberSearchHistoryRepository.findByMemberOrderByCreatedAtDesc(member);
+        if (histories.size() > 10) {
+            memberSearchHistoryRepository.deleteAll(histories.subList(10, histories.size()));
+        }
+    }
+
+    @Override
+    public List<RecentSearchKeywordResponseDto> getRecentSearchKeywords(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return memberSearchHistoryRepository.findTop10ByMemberOrderByCreatedAtDesc(member)
+                .stream()
+                .map(h -> RecentSearchKeywordResponseDto.of(h.getId(), h.getKeyword()))
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteSearchKeywordById(Long memberId, Long keywordId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        memberSearchHistoryRepository.findByMemberAndId(member, keywordId)
+                .ifPresent(memberSearchHistoryRepository::delete);
+    }
+
+
 
     private void sortProducts(List<Product> products, SearchSort sort) {
         switch (sort) {
@@ -120,4 +173,5 @@ public class SearchServiceImpl implements SearchService {
         products.sort((p1, p2) -> salesMap.getOrDefault(p2.getId(), 0L)
                 .compareTo(salesMap.getOrDefault(p1.getId(), 0L)));
     }
+
 }
