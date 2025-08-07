@@ -18,6 +18,7 @@ import com.jajaja.domain.review.dto.response.ReviewItemDto;
 import com.jajaja.domain.review.repository.ReviewImageRepository;
 import com.jajaja.domain.review.repository.ReviewLikeRepository;
 import com.jajaja.domain.review.repository.ReviewRepository;
+import com.jajaja.domain.review.service.ReviewCommonService;
 import com.jajaja.domain.team.dto.response.TeamListDto;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.repository.TeamRepository;
@@ -25,7 +26,6 @@ import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.member.entity.MemberBusinessCategory;
 import com.jajaja.domain.member.repository.MemberBusinessCategoryRepository;
 import com.jajaja.domain.member.repository.MemberRepository;
-import com.jajaja.global.S3.service.S3Service;
 import com.jajaja.global.apiPayload.PageResponse;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
@@ -59,7 +59,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final ProductSalesRepository productSalesRepository;
     private final ProductCommonService productCommonService;
     private final MemberQueryService memberQueryService;
-    private final S3Service s3Service;
+    private final ReviewCommonService reviewCommonService;
     private final ProductConverter productConverter;
 
     @Override
@@ -110,20 +110,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 ? reviewLikeRepository.findReviewIdsLikedByMember(memberId, reviewIds)
                 : Set.of();
 
-        List<ReviewItemDto> convertedDtos = reviewPageDtos.stream()
-                .map(dto -> new ReviewItemDto(
-                        dto.id(),
-                        dto.memberId(),
-                        dto.nickname(),
-                        s3Service.generateStaticUrl(dto.profileUrl()),
-                        dto.createDate(),
-                        dto.rating(),
-                        dto.option(),
-                        dto.content(),
-                        dto.likeCount(),
-                        dto.imagesCount()
-                ))
-                .toList();
+        List<ReviewItemDto> convertedDtos = reviewCommonService.changeReviewWriterProfile(reviewPageDtos);
 
         List<ReviewListDto> reviewResponseDtoList = convertedDtos.stream()
                 .map(dto -> new ReviewListDto(
