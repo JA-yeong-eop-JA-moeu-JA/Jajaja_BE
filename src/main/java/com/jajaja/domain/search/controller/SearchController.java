@@ -2,9 +2,11 @@ package com.jajaja.domain.search.controller;
 
 import com.jajaja.domain.product.dto.response.ProductListResponseDto;
 import com.jajaja.domain.search.dto.PopularSearchKeywordsResponseDto;
+import com.jajaja.domain.search.dto.RecentSearchKeywordResponseDto;
 import com.jajaja.domain.search.entity.enums.SearchSort;
 import com.jajaja.domain.search.service.SearchService;
 import com.jajaja.global.apiPayload.ApiResponse;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +28,11 @@ public class SearchController {
     )
     @GetMapping
     public ApiResponse<List<ProductListResponseDto>> searchProducts(
-            @RequestParam
-            @NotBlank(message = "검색어를 입력해주세요.") String keyword,
+            @Auth Long memberId,
+            @RequestParam @NotBlank(message = "검색어를 입력해주세요.") String keyword,
             @RequestParam(defaultValue = "POPULAR") SearchSort sort) {
 
-        List<ProductListResponseDto> result = searchService.searchProductsByKeyword(keyword, sort);
+        List<ProductListResponseDto> result = searchService.searchProductsByKeyword(memberId, keyword, sort);
         return ApiResponse.onSuccess(result);
     }
 
@@ -41,5 +43,25 @@ public class SearchController {
     public ApiResponse<PopularSearchKeywordsResponseDto> getPopularKeywords() {
         PopularSearchKeywordsResponseDto popularKeywords = searchService.getPopularKeywords();
         return ApiResponse.onSuccess(popularKeywords);
+    }
+
+    @Operation(summary = "최근 검색어 조회 API | by 구름",
+            description = "회원의 최근 검색어를 조회합니다. (ID 포함)")
+    @GetMapping("/recent-keywords")
+    public ApiResponse<List<RecentSearchKeywordResponseDto>> getRecentSearchKeywords(@Auth Long memberId) {
+        List<RecentSearchKeywordResponseDto> keywords = searchService.getRecentSearchKeywords(memberId);
+        return ApiResponse.onSuccess(keywords);
+    }
+
+    @Operation(summary = "최근 검색어 삭제 API | by 구름",
+            description = "최근 검색어 중 특정 검색어를 삭제합니다."
+    )
+    @DeleteMapping("/recent-keywords/{keywordId}")
+    public ApiResponse<Void> deleteSearchKeyword(
+            @Auth Long memberId,
+            @PathVariable Long keywordId
+    ) {
+        searchService.deleteSearchKeywordById(memberId, keywordId);
+        return ApiResponse.onSuccess(null);
     }
 }
