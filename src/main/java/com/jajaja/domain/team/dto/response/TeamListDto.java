@@ -11,7 +11,7 @@ public record TeamListDto(
         int id,
         String nickname,
         String profileUrl,
-        LocalDateTime createdAt
+        LocalDateTime expireAt
 ) {
 
     public static TeamListDto of(Team team, MemberInfoResponseDto memberInfo) {
@@ -19,7 +19,7 @@ public record TeamListDto(
                 .id(team.getId().intValue())
                 .nickname(memberInfo.name())
                 .profileUrl(memberInfo.profileUrl())
-                .createdAt(team.getCreatedAt())
+                .expireAt(team.getExpireAt())
                 .build();
     }
 
