@@ -1,12 +1,12 @@
 package com.jajaja.domain.point.service;
 
+import com.jajaja.domain.order.entity.Order;
+
 public interface PointCommandService {
     
-    void usePoints(Long memberId, int amountToUse, long orderProductId);
+    void usePoints(Long memberId, Order order);
     
-    void addReviewPoints(Long memberId, int amount, long orderProductId);
+    void addReviewPoints(Long memberId, int amount, long reviewId);
     
-    void cancelReviewPoint(Long orderProductId);
-    
-    void refundUsedPoints(Long orderProductId);
+    void refundUsedPoints(Long orderId);
 }

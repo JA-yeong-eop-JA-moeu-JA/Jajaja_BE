@@ -1,5 +1,6 @@
 package com.jajaja.domain.review.entity;
 
+import com.jajaja.domain.point.entity.Point;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.entity.ProductOption;
 import com.jajaja.domain.member.entity.Member;
@@ -48,6 +49,9 @@ public class Review extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_option_id")
     private ProductOption productOption;
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Point> points = new ArrayList<>();
 
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();

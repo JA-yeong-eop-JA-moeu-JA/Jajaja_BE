@@ -7,7 +7,6 @@ import com.jajaja.domain.point.entity.QPoint;
 import com.jajaja.domain.point.entity.enums.PointType;
 import com.jajaja.domain.product.entity.QProduct;
 import com.jajaja.domain.team.entity.QTeam;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,9 +21,9 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class PointRepositoryImpl implements PointRepositoryCustom {
-    
+
     private final JPAQueryFactory queryFactory;
-    
+
     /**
      * 포인트 기록 페이징 조회
      */
@@ -35,7 +34,7 @@ public class PointRepositoryImpl implements PointRepositoryCustom {
         QOrder order = QOrder.order;
         QProduct product = QProduct.product;
         QTeam team = QTeam.team;
-        
+
         List<Long> pointIds = queryFactory
                 .select(point.id)
                 .from(point)
@@ -44,91 +43,98 @@ public class PointRepositoryImpl implements PointRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-        
+
         if (pointIds.isEmpty()) {
             return Page.empty(pageable);
         }
-        
+
         List<Point> points = queryFactory
                 .selectFrom(point)
                 .distinct()
-                .leftJoin(point.orderProduct, orderProduct).fetchJoin()
-                .leftJoin(orderProduct.order, order).fetchJoin()
+                .leftJoin(point.order, order).fetchJoin()
+                .leftJoin(order.orderProducts, orderProduct).fetchJoin()
                 .leftJoin(orderProduct.product, product).fetchJoin()
                 .leftJoin(order.team, team).fetchJoin()
                 .where(point.id.in(pointIds))
                 .orderBy(point.createdAt.desc())
                 .fetch();
-        
+
         long count = Optional.ofNullable(
                 queryFactory.select(point.count()).from(point).where(point.member.id.eq(memberId)).fetchOne()
         ).orElse(0L);
-        
+
         return new PageImpl<>(points, pageable, count);
     }
-    
+
     /**
      * 만료된 포인트 찾기 - 스케줄러에서 사용
      */
     @Override
     public List<Point> findExpiringPoints() {
         QPoint point = QPoint.point;
-        
+
         return queryFactory
                 .selectFrom(point)
                 .where(
-                        point.type.in(PointType.REVIEW, PointType.INVITE, PointType.FIRST_PURCHASE),
+                        point.type.in(PointType.REVIEW, PointType.SHARE, PointType.FIRST_PURCHASE),
                         point.usedAmount.lt(point.amount),
                         point.expiresAt.lt(LocalDate.now()),
                         point.isExpired.isFalse()
                 )
                 .fetch();
     }
-    
+
     /**
      * 유효한 포인트 조회 - 리뷰 포인트 중 사용되지 않은 포인트를 가장 오래된 순서로 조회
      */
     @Override
-    public List<Point> findValidReviewPointsOrderedByOldest(Long memberId, LocalDate today) {
+    public List<Point> findValidPointsOrderedByOldest(Long memberId, LocalDate today) {
         QPoint point = QPoint.point;
-        
+
         return queryFactory
                 .selectFrom(point)
                 .where(
                         point.member.id.eq(memberId),
-                        point.type.eq(PointType.REVIEW),
+                        point.type.in(PointType.REVIEW, PointType.SHARE, PointType.FIRST_PURCHASE),
                         point.usedAmount.lt(point.amount),
                         point.expiresAt.after(today)
                 )
                 .orderBy(point.createdAt.asc())
                 .fetch();
     }
-    
+
     /**
-     * 리뷰 포인트 조회 - 특정 주문 상품에 대한 "REVIEW 포인트" 조회
+     * 리뷰 포인트 조회 - 특정 주문에 대한 "REVIEW 포인트" 조회
      */
     @Override
-    public Optional<Point> findReviewPointByOrderProductId(Long orderProductId) {
+    public Optional<Point> findReviewPointByOrderId(Long orderId) {
         QPoint point = QPoint.point;
         return Optional.ofNullable(queryFactory
                 .selectFrom(point)
                 .where(
-                        point.orderProduct.id.eq(orderProductId),
+                        point.order.id.eq(orderId),
                         point.type.eq(PointType.REVIEW))
                 .fetchOne());
     }
-    
+
     /**
-     * 사용된 포인트 조회 - 특정 주문 상품에 대한 "USE 포인트" 조회
+     * 사용된 포인트 조회 - 특정 주문에 대한 "USE 포인트" 조회
      */
     @Override
-    public Optional<Point> findUsePointByOrderProductId(Long orderProductId) {
+    public Optional<Point> findUsePointByOrderId(Long orderId) {
         QPoint point = QPoint.point;
+        QOrder order = QOrder.order;
+        QPoint earnedPoint = new QPoint("earnedPoint");
+
         return Optional.ofNullable(queryFactory
                 .selectFrom(point)
+                .leftJoin(point.order, order).fetchJoin()
+                .leftJoin(order.points, earnedPoint).fetchJoin()
                 .where(
-                        point.orderProduct.id.eq(orderProductId),
+                        point.order.id.eq(orderId),
                         point.type.eq(PointType.USE)
-                ).fetchOne());
+                )
+                .distinct()
+                .fetchOne());
     }
 }
