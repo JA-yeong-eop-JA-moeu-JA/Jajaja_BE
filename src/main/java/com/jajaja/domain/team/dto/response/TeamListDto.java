@@ -19,7 +19,7 @@ public record TeamListDto(
                 .id(team.getId().intValue())
                 .nickname(memberInfo.name())
                 .profileUrl(memberInfo.profileUrl())
-                .expireAt(team.getCreatedAt())
+                .expireAt(team.getExpireAt())
                 .build();
     }
 
