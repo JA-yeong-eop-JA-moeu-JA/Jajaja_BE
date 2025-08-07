@@ -6,7 +6,7 @@ public interface PointCommandService {
     
     void usePoints(Long memberId, Order order);
     
-    void addReviewPoints(Long memberId, int amount, long reviewId);
+    void addReviewPoints(Long memberId, long reviewId);
     
     void refundUsedPoints(Long orderId);
 }

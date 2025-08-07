@@ -61,18 +61,17 @@ public class PointCommandServiceImpl implements PointCommandService {
     /**
      * 리뷰 작성 후 포인트를 추가합니다.
      * @param memberId 회원 ID
-     * @param amount 포인트 양
      * @param reviewId 리뷰 ID
      */
     @Override
-    public void addReviewPoints(Long memberId, int amount, long reviewId) {
+    public void addReviewPoints(Long memberId, long reviewId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.REVIEW_NOT_FOUND));
         Point point = Point.builder()
                 .type(PointType.REVIEW)
-                .amount(amount)
+                .amount(100) // 고정 100 포인트 지급
                 .usedAmount(0)
                 // 30일 후 만료로 설정
                 .expiresAt(LocalDate.now().plusDays(30))
