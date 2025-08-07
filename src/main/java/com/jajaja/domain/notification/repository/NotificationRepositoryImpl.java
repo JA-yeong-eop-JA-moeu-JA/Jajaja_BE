@@ -5,6 +5,7 @@ import com.jajaja.domain.notification.entity.QNotification;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 @Repository
@@ -30,4 +31,14 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
                 .where(n.member.id.eq(memberId).and(n.isRead.isFalse()))
                 .execute();
     }
+
+    @Override
+    public int countUnreadByMemberId(Long memberId) {
+        QNotification n = QNotification.notification;
+        return (int) queryFactory
+                .selectFrom(n)
+                .where(n.member.id.eq(memberId).and(n.isRead.isFalse()))
+                .fetchCount();
+    }
+
 }

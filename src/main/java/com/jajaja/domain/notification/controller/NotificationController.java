@@ -1,17 +1,18 @@
 package com.jajaja.domain.notification.controller;
 
-import java.util.List;
-
+import com.jajaja.domain.notification.dto.NotificationResponseDto;
+import com.jajaja.domain.notification.dto.UnreadCountResponseDto;
 import com.jajaja.domain.notification.repository.NotificationSseEmitterRepository;
+import com.jajaja.domain.notification.service.NotificationService;
+import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.domain.notification.dto.NotificationResponseDto;
-import com.jajaja.domain.notification.service.NotificationService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -58,4 +59,14 @@ public class NotificationController {
         notificationService.markAllAsRead(memberId);
         return ApiResponse.onSuccess(null);
     }
+
+    @Operation(
+            summary = "읽지 않은 알림 개수 조회 API | by 구름/윤윤지",
+            description = "사용자의 읽지 않은 알림 개수를 반환합니다."
+    )
+    @GetMapping("/unread")
+    public ApiResponse<UnreadCountResponseDto> getUnreadCount(@Auth Long memberId) {
+        return ApiResponse.onSuccess(notificationService.getUnreadCount(memberId));
+    }
+
 }
