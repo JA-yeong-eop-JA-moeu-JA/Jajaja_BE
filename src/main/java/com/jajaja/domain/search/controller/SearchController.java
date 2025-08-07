@@ -45,15 +45,16 @@ public class SearchController {
         return ApiResponse.onSuccess(popularKeywords);
     }
 
-    @Operation(summary = "최근 검색어 조회 API | by 구름",
-            description = "회원의 최근 검색어를 조회합니다. (ID 포함)")
+    @Operation(summary = "최근 검색어 조회 API | by 구름/윤윤지",
+            description = "회원의 최근 검색어를 조회합니다. (ID 포함)"
+    )
     @GetMapping("/recent-keywords")
     public ApiResponse<List<RecentSearchKeywordResponseDto>> getRecentSearchKeywords(@Auth Long memberId) {
         List<RecentSearchKeywordResponseDto> keywords = searchService.getRecentSearchKeywords(memberId);
         return ApiResponse.onSuccess(keywords);
     }
 
-    @Operation(summary = "최근 검색어 삭제 API | by 구름",
+    @Operation(summary = "최근 검색어 삭제 API | by 구름/윤윤지",
             description = "최근 검색어 중 특정 검색어를 삭제합니다."
     )
     @DeleteMapping("/recent-keywords/{keywordId}")
