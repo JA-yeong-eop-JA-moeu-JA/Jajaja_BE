@@ -170,6 +170,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
     private Expression<ReviewItemDto> reviewItemDtoProjection() {
         return Projections.constructor(ReviewItemDto.class,
                 review.id.intValue(),
+                member.id,
                 member.name,
                 member.profileKeyName,
                 review.createdAt,
