@@ -74,8 +74,10 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
                 ? reviewLikeRepository.findReviewIdsLikedByMember(memberId, reviewIds)
                 : Set.of();
 
+        List<ReviewItemDto> convertedDtos = reviewCommonService.changeReviewWriterProfile(reviewItemPage.getContent());
+
         // ReviewListDto로 병합
-        List<ReviewListDto> reviewDtos = reviewItemPage.stream()
+        List<ReviewListDto> reviewDtos = convertedDtos.stream()
                 .map(dto -> new ReviewListDto(
                         dto,
                         likedReviewIds.contains(dto.id()),
