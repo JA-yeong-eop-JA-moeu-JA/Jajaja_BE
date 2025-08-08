@@ -7,6 +7,7 @@ import com.jajaja.domain.cart.service.CartQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/carts")
+@Tag(name = "Cart API", description = "장바구니 관련 API")
 public class CartController {
 	
 	private final CartQueryService cartQueryService;
