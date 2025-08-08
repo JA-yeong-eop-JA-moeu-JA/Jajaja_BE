@@ -124,6 +124,7 @@ public class PointCommandServiceImpl implements PointCommandService {
     @Override
     public void addFirstPurchasePointsIfPossible(Member member) {
         if (!pointRepository.existsByMemberAndType(member, PointType.FIRST_PURCHASE)) {
+            member.updatePoint(member.getPoint() + 500);
             Point point = Point.builder()
                     .type(PointType.FIRST_PURCHASE)
                     .amount(500) // 첫 구매 포인트 500 지급
@@ -147,6 +148,7 @@ public class PointCommandServiceImpl implements PointCommandService {
             throw new BadRequestException(ErrorStatus.ALREADY_SHARED_PRODUCT);
         }
 
+        member.updatePoint(member.getPoint() + 300);
         Point point = Point.builder()
                 .type(PointType.SHARE)
                 .amount(300)
