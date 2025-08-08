@@ -6,6 +6,8 @@ import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.point.entity.Point;
 import com.jajaja.domain.point.entity.enums.PointType;
 import com.jajaja.domain.point.repository.PointRepository;
+import com.jajaja.domain.product.entity.Product;
+import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.review.entity.Review;
 import com.jajaja.domain.review.repository.ReviewRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
@@ -25,6 +27,7 @@ public class PointCommandServiceImpl implements PointCommandService {
     private final PointRepository pointRepository;
     private final MemberRepository memberRepository;
     private final ReviewRepository reviewRepository;
+    private final ProductRepository productRepository;
 
     /**
      * 포인트를 사용합니다. 사용 가능한 리뷰 포인트를 찾아서 순차적으로 사용합니다.
@@ -131,5 +134,28 @@ public class PointCommandServiceImpl implements PointCommandService {
                     .build();
             pointRepository.save(point);
         }
+    }
+
+    @Override
+    public void addSharePoint(Long memberId, Long productId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
+
+        if (pointRepository.existsByMemberAndTypeAndProduct(member, PointType.SHARE, product)) {
+            throw new BadRequestException(ErrorStatus.ALREADY_SHARED_PRODUCT);
+        }
+
+        Point point = Point.builder()
+                .type(PointType.SHARE)
+                .amount(300)
+                .usedAmount(0)
+                .expiresAt(LocalDate.now().plusDays(30))
+                .member(member)
+                .product(product)
+                .build();
+
+        pointRepository.save(point);
     }
 }

@@ -48,4 +48,14 @@ public class PointController {
         PagingPointHistoryResponseDto pagingPointHistoryResponseDto = pointQueryService.getPointHistory(memberId, PageRequest.of(page, size));
         return ApiResponse.onSuccess(pagingPointHistoryResponseDto);
     }
+
+    @Operation(
+            summary = "상품 공유를 통한 포인트 적립 | by 지안/윤진수",
+            description = "상품 당 1회만 가능합니다. 별도 공유한 상품 링크 없습니다!"
+    )
+    @PostMapping("/share/{productId}")
+    public ApiResponse<?> addSharePoint(@Auth Long memberId, @PathVariable Long productId) {
+        pointCommandService.addSharePoint(memberId, productId);
+        return ApiResponse.onSuccess(null);
+    }
 }

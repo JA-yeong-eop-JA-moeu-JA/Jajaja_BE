@@ -3,6 +3,7 @@ package com.jajaja.domain.point.entity;
 import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.point.entity.enums.PointType;
+import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.review.entity.Review;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
@@ -50,6 +51,10 @@ public class Point extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
     private Review review;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     public int getAvailableAmount() {
         return amount - (usedAmount != null ? usedAmount : 0);

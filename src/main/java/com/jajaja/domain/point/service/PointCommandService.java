@@ -12,4 +12,6 @@ public interface PointCommandService {
     void refundUsedPoints(Long orderId);
 
     void addFirstPurchasePointsIfPossible(Member member);
+
+    void addSharePoint(Long memberId, Long productId);
 }
