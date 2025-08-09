@@ -27,17 +27,11 @@ import com.jajaja.domain.product.entity.ProductSales;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
-import com.siot.IamportRestClient.IamportClient;
-import com.siot.IamportRestClient.exception.IamportResponseException;
-import com.siot.IamportRestClient.request.CancelData;
-import com.siot.IamportRestClient.response.IamportResponse;
-import com.siot.IamportRestClient.response.Payment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +41,6 @@ import java.util.UUID;
 @Transactional
 public class OrderCommandServiceImpl implements OrderCommandService {
     
-    private final IamportClient iamportClient;
     private final OrderRepository orderRepository;
     private final MemberRepository memberRepository;
     private final DeliveryRepository deliveryRepository;
@@ -71,22 +64,25 @@ public class OrderCommandServiceImpl implements OrderCommandService {
        validatePointUsage(request.getPoint(), member);
        
         int totalAmount = cartProducts.stream()
-                .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
+                .mapToInt(cp ->
+                        cp.getUnitPrice() * cp.getQuantity())
                 .sum();
-
+        
         int couponDiscount = calculateCouponDiscount(coupon, totalAmount);
         int shippingFee = calculateShippingFee(delivery);
         int finalAmount = totalAmount - couponDiscount - (request.getPoint() != null ? request.getPoint() : 0) + shippingFee;
-
-        String merchantUid = "ORD-" + UUID.randomUUID();
+        String orderId = memberId + "ORDER-" + UUID.randomUUID();
+        String orderName = cartProducts.get(0).getProduct().getName() + (cartProducts.size() > 1 ? " 외 " + (cartProducts.size() - 1) + "건" : "");
 
         Order order = Order.builder()
-                .orderStatus(OrderStatus.PENDING)
+                .orderStatus(OrderStatus.READY)
                 .orderType(OrderType.PERSONAL)
                 .discountAmount(couponDiscount)
                 .pointUsedAmount(request.getPoint() != null ? request.getPoint() : 0)
                 .shippingFee(shippingFee)
-                .orderNumber(merchantUid)
+                .paymentMethod(request.getPaymentMethod())
+                .orderId(orderId)
+                .orderName(orderName)
                 .totalAmount(totalAmount)
                 .paidAmount(finalAmount)
                 .member(member)
@@ -101,17 +97,18 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                     .productOption(cartProduct.getProductOption())
                     .quantity(cartProduct.getQuantity())
                     .price(cartProduct.getUnitPrice())
-                    .status(OrderStatus.PENDING)
+                    .status(OrderStatus.READY)
                     .build();
             order.getOrderProducts().add(orderProduct);
         });
 
         orderRepository.save(order);
 
-        log.info("[OrderCommandService] 결제 준비 완료 - 회원ID: {}, merchant_uid: {}, 최종금액: {}", memberId, merchantUid, finalAmount);
+        log.info("[OrderCommandService] 결제 준비 완료 - 회원ID: {}, orderId: {}, 최종금액: {}", memberId, orderId, finalAmount);
 
         return OrderPrepareResponseDto.of(
-                merchantUid,
+                orderId,
+                orderName,
                 totalAmount,
                 couponDiscount,
                 request.getPoint() != null ? request.getPoint() : 0,
@@ -122,16 +119,14 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
     @Override
     public OrderCreateResponseDto createOrder(Long memberId, OrderCreateRequestDto request) {
-        log.info("[OrderCommandService] 주문 생성 시작 - 회원ID: {}, 아임포트UID: {}", memberId, request.getImpUid());
+        log.info("[OrderCommandService] 주문 승인 시작 - 회원ID: {}, 오더ID: {}", memberId, request.getOrderId());
 
         Member member = findMember(memberId);
-        Order order = orderRepository.findByMerchantUid(request.getMerchantUid())
+        Order order = orderRepository.findByOrderId(request.getOrderId())
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
 
-        verifyPayment(request.getImpUid(), order);
-
         try {
-            order.updatePaymentInfo(request.getImpUid(), request.getPaymentMethod(), OrderStatus.PAYMENT_COMPLETED);
+            order.updatePaymentInfo(request.getOrderId(), request.getPaymentMethod(), OrderStatus.DONE);
 
             validatePointUsage(request.getPoint(), member);
             member.updatePoint(member.getPoint() - order.getPointUsedAmount());
@@ -168,8 +163,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             
         } catch (Exception e) {
             log.error("[OrderCommandService] 주문 생성 실패 - 회원ID: {}, 에러: {}", memberId, e.getMessage(), e);
-            order.updateStatus(OrderStatus.PAYMENT_FAILED);
-            processIamportRefund(order, "주문 생성 실패로 인한 자동 환불");
+            order.updateStatus(OrderStatus.ABORTED);
+            proccessRefund(order, "주문 생성 실패로 인한 자동 환불");
             throw e;
         }
     }
@@ -190,14 +185,14 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         if (order.getOrderStatus() == OrderStatus.REFUNDED || order.getOrderStatus() == OrderStatus.REFUND_REQUESTED) {
             throw new BadRequestException(ErrorStatus.ORDER_ALREADY_REFUNDED);
         }
-        if (order.getOrderStatus() != OrderStatus.PAYMENT_COMPLETED && order.getOrderStatus() != OrderStatus.PREPARING) {
+        if (!(order.getOrderStatus() == OrderStatus.DONE)) {
             throw new BadRequestException(ErrorStatus.ORDER_NOT_REFUNDABLE);
         }
         
         order.updateStatus(OrderStatus.REFUND_REQUESTED);
 
         try {
-            processIamportRefund(order, request.getRefundReason());
+            proccessRefund(order, request.getRefundReason());
 
             if (order.getPointUsedAmount() > 0) {
                 member.updatePoint(member.getPoint() + order.getPointUsedAmount());
@@ -226,42 +221,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             order.updateStatus(OrderStatus.REFUND_FAILED);
             log.error("[OrderCommandService] 환불 처리 실패 - 주문ID: {}, 에러: {}", request.getOrderId(), e.getMessage(), e);
             throw new BadRequestException(ErrorStatus.REFUND_FAILED);
-        }
-    }
-    
-    private void verifyPayment(String impUid, Order order) {
-        try {
-            IamportResponse<Payment> paymentResponse = iamportClient.paymentByImpUid(impUid);
-            
-            if (paymentResponse.getResponse() == null) {
-                throw new BadRequestException(ErrorStatus.PAYMENT_NOT_FOUND);
-            }
-            
-            Payment payment = paymentResponse.getResponse();
-            
-            if (!"paid".equals(payment.getStatus())) {
-                order.updateStatus(OrderStatus.PAYMENT_FAILED);
-                throw new BadRequestException(ErrorStatus.PAYMENT_NOT_COMPLETED);
-            }
-            
-            if (!payment.getMerchantUid().equals(order.getMerchantUid())) {
-                order.updateStatus(OrderStatus.CANCELLED);
-                processIamportRefund(order, "결제 정보 불일치로 인한 자동 환불");
-                throw new BadRequestException(ErrorStatus.PAYMENT_MERCHANT_UID_MISMATCH);
-            }
-            
-            if (payment.getAmount().intValue() != order.getPaidAmount()) {
-                order.updateStatus(OrderStatus.CANCELLED);
-                processIamportRefund(order, "결제 금액 불일치로 인한 자동 환불");
-                throw new BadRequestException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
-            }
-            
-            log.info("[OrderCommandService] 결제 검증 완료 - impUid: {}, merchantUid: {}, 금액: {}",
-                    impUid, order.getMerchantUid(), payment.getAmount());
-            
-        } catch (IamportResponseException | IOException e) {
-            log.error("[OrderCommandService] 결제 검증 실패 - impUid: {}, merchantUid: {}", impUid, order.getMerchantUid(), e);
-            throw new BadRequestException(ErrorStatus.PAYMENT_VERIFICATION_FAILED);
         }
     }
     
@@ -360,15 +319,11 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         return 0;
     }
 
-    private void processIamportRefund(Order order, String refundReason) {
+    private void proccessRefund(Order order, String refundReason) {
         try {
-            CancelData cancelData =
-                    new CancelData(order.getImpUid(), true, java.math.BigDecimal.valueOf(Math.max(0, order.getPaidAmount() - 6000)));
-            cancelData.setReason(refundReason);
-            iamportClient.cancelPaymentByImpUid(cancelData);
+            // 환불
 
         } catch (Exception e) {
-            log.error("[OrderCommandService] 아임포트 환불 실패 - impUid: {}", order.getImpUid(), e);
             throw new BadRequestException(ErrorStatus.REFUND_FAILED);
         }
     }

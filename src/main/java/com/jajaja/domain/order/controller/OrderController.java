@@ -36,8 +36,8 @@ public class OrderController {
         return ApiResponse.onSuccess(orderCommandService.prepareOrder(memberId, request));
     }
 
-    @PostMapping
-    @Operation(summary = "결제 후 결제 검증 API | by 엠마/신윤지", description = "결제를 검증하고 주문 데이터를 생성합니다.")
+    @PostMapping("/confirm")
+    @Operation(summary = "결제 후 결제 승인 API | by 엠마/신윤지", description = "결제를 검증하고 주문 데이터를 생성합니다.")
     public ApiResponse<OrderCreateResponseDto> createOrder(
             @Auth Long memberId,
             @Valid @RequestBody OrderCreateRequestDto request) {

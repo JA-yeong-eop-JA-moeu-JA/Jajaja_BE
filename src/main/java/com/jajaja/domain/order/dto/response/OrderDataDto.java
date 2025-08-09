@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class OrderDataDto {
-    private Long orderId;
-    private String orderNumber;
+    private Long id;
+    private String orderId;
     private OrderStatus orderStatus;
     private Integer totalAmount;
     private PaymentInfoDto paymentInfo;
@@ -21,8 +21,8 @@ public class OrderDataDto {
 
     public static OrderDataDto of(Order order) {
         return OrderDataDto.builder()
-                .orderId(order.getId())
-                .orderNumber(order.getOrderNumber())
+                .id(order.getId())
+                .orderId(order.getOrderId())
                 .orderStatus(order.getOrderStatus())
                 .totalAmount(order.getPaidAmount())
                 .paymentInfo(PaymentInfoDto.of(order))

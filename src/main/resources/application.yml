@@ -78,10 +78,6 @@ cloud:
     stack:
       auto: false
 
-iamport:
-  api-key: ${IAMPORT_API_KEY}
-  api-secret: ${IAMPORT_API_SECRET}
-
 deployment:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}

@@ -6,17 +6,19 @@ import lombok.Getter;
 @Getter
 @Builder
 public class OrderPrepareResponseDto {
-    private String merchantUid;
+    private String orderId;
+    private String orderName;
     private Integer totalAmount;
     private Integer discountAmount;
     private Integer pointDiscount;
     private Integer shippingFee;
     private Integer finalAmount;
 
-    public static OrderPrepareResponseDto of(String merchantUid, int totalAmount, int discountAmount, 
+    public static OrderPrepareResponseDto of(String orderId, String orderName, int totalAmount, int discountAmount,
                                            int pointDiscount, int shippingFee, int finalAmount) {
         return OrderPrepareResponseDto.builder()
-                .merchantUid(merchantUid)
+                .orderId(orderId)
+                .orderName(orderName)
                 .totalAmount(totalAmount)
                 .discountAmount(discountAmount)
                 .pointDiscount(pointDiscount)
