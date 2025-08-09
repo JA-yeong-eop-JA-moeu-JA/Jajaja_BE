@@ -1,6 +1,6 @@
 package com.jajaja.domain.search.controller;
 
-import com.jajaja.domain.product.dto.response.ProductListResponseDto;
+import com.jajaja.domain.search.dto.PagingSearchProductListResponseDto;
 import com.jajaja.domain.search.dto.PopularSearchKeywordsResponseDto;
 import com.jajaja.domain.search.dto.RecentSearchKeywordResponseDto;
 import com.jajaja.domain.search.entity.enums.SearchSort;
@@ -29,12 +29,15 @@ public class SearchController {
             description = "키워드 기반으로 상품을 검색하고, 정렬 기준에 따라 결과를 반환합니다."
     )
     @GetMapping
-    public ApiResponse<List<ProductListResponseDto>> searchProducts(
+    public ApiResponse<PagingSearchProductListResponseDto> searchProducts(
             @Auth Long memberId,
             @RequestParam @NotBlank(message = "검색어를 입력해주세요.") String keyword,
-            @RequestParam(defaultValue = "POPULAR") SearchSort sort) {
+            @RequestParam(defaultValue = "POPULAR") SearchSort sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
 
-        List<ProductListResponseDto> result = searchService.searchProductsByKeyword(memberId, keyword, sort);
+        PagingSearchProductListResponseDto result = searchService.searchProductsByKeyword(memberId, keyword, sort, page, size);
         return ApiResponse.onSuccess(result);
     }
 

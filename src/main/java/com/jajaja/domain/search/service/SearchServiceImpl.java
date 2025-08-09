@@ -6,6 +6,7 @@ import com.jajaja.domain.product.converter.ProductConverter;
 import com.jajaja.domain.product.dto.response.ProductListResponseDto;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
+import com.jajaja.domain.search.dto.PagingSearchProductListResponseDto;
 import com.jajaja.domain.search.dto.PopularSearchKeywordsResponseDto;
 import com.jajaja.domain.search.dto.RecentSearchKeywordResponseDto;
 import com.jajaja.domain.search.entity.MemberSearchHistory;
@@ -16,6 +17,7 @@ import com.jajaja.domain.search.repository.SearchRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +46,7 @@ public class SearchServiceImpl implements SearchService {
      */
     @Override
     @Transactional
-    public List<ProductListResponseDto> searchProductsByKeyword(Long memberId, String keyword, SearchSort sort) {
+    public PagingSearchProductListResponseDto searchProductsByKeyword(Long memberId, String keyword, SearchSort sort, int page, int size) {
         if (keyword == null || keyword.isBlank()) {
             throw new BadRequestException(ErrorStatus.INVALID_KEYWORD);
         }
@@ -57,16 +59,21 @@ public class SearchServiceImpl implements SearchService {
             saveMemberSearchKeyword(member, keyword);
         }
 
-        List<Product> products = searchRepository.findProductsByKeyword(keyword);
-        if (products.isEmpty()) {
-            return Collections.emptyList();
+        Page<Product> productPage = searchRepository.findProductsByKeywordWithPaging(keyword, page, size);
+
+        if (productPage.isEmpty()) {
+            return PagingSearchProductListResponseDto.of(productPage, Collections.emptyList());
         }
+
+        List<Product> products = new ArrayList<>(productPage.getContent());
 
         sortProducts(products, sort);
 
-        return products.stream()
+        List<ProductListResponseDto> productDtos = products.stream()
                 .map(productConverter::toProductListResponseDto)
                 .collect(Collectors.toList());
+
+        return PagingSearchProductListResponseDto.of(productPage, productDtos);
     }
 
     /**
