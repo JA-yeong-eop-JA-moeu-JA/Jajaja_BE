@@ -1,8 +1,10 @@
 package com.jajaja.domain.point.entity;
 
 import com.jajaja.domain.member.entity.Member;
-import com.jajaja.domain.order.entity.OrderProduct;
+import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.point.entity.enums.PointType;
+import com.jajaja.domain.product.entity.Product;
+import com.jajaja.domain.review.entity.Review;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import com.jajaja.global.common.domain.BaseEntity;
@@ -35,13 +37,24 @@ public class Point extends BaseEntity {
     @Column
     private LocalDate expiresAt;
 
+    @Column
+    private Boolean isExpired;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_product_id")
-    private OrderProduct orderProduct;
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id")
+    private Review review;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     public int getAvailableAmount() {
         return amount - (usedAmount != null ? usedAmount : 0);
@@ -62,5 +75,14 @@ public class Point extends BaseEntity {
             throw new BadRequestException(ErrorStatus.INVALID_POINT_OPERATION);
         }
         this.usedAmount -= amountToDecrease;
+    }
+
+    public void expire() {
+        this.isExpired = true;
+        this.usedAmount = this.amount;
+    }
+
+    public void restoreUsedAmount(int refundAmount) {
+        this.usedAmount -= refundAmount;
     }
 }

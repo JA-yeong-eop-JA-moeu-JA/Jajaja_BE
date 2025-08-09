@@ -22,23 +22,27 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PointQueryServiceImpl implements PointQueryService {
-    
-    private final PointRepository pointRepository;
+
     private final MemberRepository memberRepository;
-    
+    private final PointRepository pointRepository;
+
     @Override
     public PagingPointHistoryResponseDto getPointHistory(Long memberId, Pageable pageable) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
         Page<Point> pointPage = pointRepository.findByMemberId(memberId, pageable);
         List<PointHistoryDto> pointHistoryDtos = pointPage.getContent().stream()
                 .map(PointHistoryDto::from)
                 .collect(Collectors.toList());
-        int pointBalance = pointRepository.findPointBalanceByMemberId(memberId);
+        int pointBalance = member.getPoint();
         return PagingPointHistoryResponseDto.of(pointPage, pointBalance, pointHistoryDtos);
     }
-    
+
     @Override
     public PointBalanceResponseDto getPointBalance(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
-        return PointBalanceResponseDto.from(member.getPoint());
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
+        int pointBalance = member.getPoint();
+        return PointBalanceResponseDto.from(pointBalance);
     }
 }

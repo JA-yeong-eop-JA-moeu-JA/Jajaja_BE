@@ -22,6 +22,7 @@ import com.jajaja.domain.order.entity.OrderProduct;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.repository.OrderRepository;
+import com.jajaja.domain.point.service.PointCommandService;
 import com.jajaja.domain.product.entity.ProductSales;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
@@ -55,7 +56,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private final ProductSalesRepository productSalesRepository;
     private final CartCommandService cartCommandService;
     private final CouponCommonService couponCommonService;
-    
+    private final PointCommandService pointCommandService;
+
     @Override
     public OrderPrepareResponseDto prepareOrder(Long memberId, OrderPrepareRequestDto request) {
         log.info("[OrderCommandService] 결제 준비 시작 - 회원ID: {}", memberId);
@@ -130,9 +132,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
         try {
             order.updatePaymentInfo(request.getImpUid(), request.getPaymentMethod(), OrderStatus.PAYMENT_COMPLETED);
-            
+
             validatePointUsage(request.getPoint(), member);
-            member.updatePoint(member.getPoint() - order.getPointUsedAmount()); // TODO : 포인트 사용 내역 저장
+            member.updatePoint(member.getPoint() - order.getPointUsedAmount());
+            pointCommandService.usePoints(memberId, order);
 
             if (order.getCoupon() != null) {
                 memberCouponRepository.findByMemberIdAndCouponIdAndUsedAtIsNull(memberId, order.getCoupon().getId())
@@ -157,7 +160,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                     });
             
             log.info("[OrderCommandService] 주문 생성 완료 - 주문ID: {}", order.getId());
-            
+
+            // 최초 구매 시 포인트 지급
+            pointCommandService.addFirstPurchasePointsIfPossible(member);
+
             return OrderCreateResponseDto.of(order);
             
         } catch (Exception e) {
@@ -195,6 +201,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
             if (order.getPointUsedAmount() > 0) {
                 member.updatePoint(member.getPoint() + order.getPointUsedAmount());
+                pointCommandService.refundUsedPoints(order.getId());
             }
 
             order.updateStatus(OrderStatus.REFUNDED);

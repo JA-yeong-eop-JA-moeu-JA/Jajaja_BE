@@ -5,6 +5,7 @@ import com.jajaja.domain.delivery.entity.Delivery;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.entity.enums.PaymentMethod;
+import com.jajaja.domain.point.entity.Point;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.member.entity.Member;
 import com.jajaja.global.common.domain.BaseEntity;
@@ -86,6 +87,9 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderProduct> orderProducts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Point> points = new ArrayList<>();
 
     public int calculateAmount() {
         return orderProducts.stream()

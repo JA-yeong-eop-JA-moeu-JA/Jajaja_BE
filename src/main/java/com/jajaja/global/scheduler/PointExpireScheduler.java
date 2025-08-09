@@ -30,16 +30,22 @@ public class PointExpireScheduler {
         List<Point> expiredPoints = pointRepository.findExpiringPoints();
 
         log.info("만료된 포인트 수 = {}", expiredPoints.size());
-
         for (Point point : expiredPoints) {
+            point.expire();
+            int expiredAmount = point.getAvailableAmount();
+
+            // 만료 포인트 기록
             Point expiredPoint = Point.builder()
                     .type(PointType.EXPIRED)
                     // 남은 포인트만큼 만료(차감) 처리
                     .amount(point.getAvailableAmount())
                     .member(point.getMember())
-                    .orderProduct(point.getOrderProduct())
                     .build();
             pointRepository.save(expiredPoint);
+
+            // Member의 포인트 총액에서 만료된 포인트 차감
+            point.getMember().subtractPoint(expiredAmount);
+
             // 사용자에게 포인트 만료 알림 전송
             notificationService.createNotification(new NotificationCreateRequestDto(point.getMember().getId(), NotificationType.POINT_EXPIRED, "포인트가 만료되었습니다."));
         }
