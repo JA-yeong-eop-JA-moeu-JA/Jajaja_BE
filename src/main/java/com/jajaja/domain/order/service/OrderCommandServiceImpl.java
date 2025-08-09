@@ -17,23 +17,37 @@ import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
 import com.jajaja.domain.order.dto.response.OrderApproveResponseDto;
 import com.jajaja.domain.order.dto.response.OrderPrepareResponseDto;
 import com.jajaja.domain.order.dto.response.OrderRefundResponseDto;
+import com.jajaja.domain.order.dto.response.payment.PaymentResponseDto;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.order.entity.OrderProduct;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
+import com.jajaja.domain.order.entity.enums.PaymentMethod;
 import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.domain.point.service.PointCommandService;
 import com.jajaja.domain.product.entity.ProductSales;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
+import com.jajaja.global.apiPayload.exception.GeneralException;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
+import com.jajaja.global.apiPayload.exception.custom.TossPaymentException;
+import com.jajaja.global.config.RestTemplateConfig;
+import com.jajaja.global.config.TossPaymentsConfig;
+
+import java.util.*;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
-import java.util.List;
-import java.util.UUID;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service
@@ -50,6 +64,9 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private final CartCommandService cartCommandService;
     private final CouponCommonService couponCommonService;
     private final PointCommandService pointCommandService;
+
+    private final TossPaymentsConfig tossPaymentsConfig;
+    private final RestTemplateConfig restTemplateConfig;
 
     @Override
     public OrderPrepareResponseDto prepareOrder(Long memberId, OrderPrepareRequestDto request) {
@@ -123,20 +140,35 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         Member member = findMember(memberId);
         Order order = orderRepository.findByOrderId(request.getOrderId())
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
-
+        
+        // 결제 금액과 결제해야 할 금액이 동일한지 확인
+        if (!request.getPaidAmount().equals(order.getPaidAmount())) {
+            throw new GeneralException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
+        }
+        
         try {
-            order.updatePaymentInfo(request.getOrderId(), request.getPaymentMethod(), OrderStatus.DONE);
-
-            validatePointUsage(request.getPoint(), member);
+            // 결제 승인 확인
+            Map<String, Object> body = new HashMap<>();
+            body.put("paymentKey", request.getPaymentKey());
+            body.put("orderId", request.getOrderId());
+            body.put("amount", request.getPaidAmount());
+            
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, getHeaders());
+            ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(tossPaymentsConfig.getApproveURL(), entity, PaymentResponseDto.class);
+            PaymentResponseDto responseDto = getPaymentResponseDto(responseEntity);
+            order.updatePaymentInfo(request.getOrderId(), PaymentMethod.valueOf(responseDto.type()), OrderStatus.DONE);
+            
+            // 포인트 사용
             member.updatePoint(member.getPoint() - order.getPointUsedAmount());
             pointCommandService.usePoints(memberId, order);
-
+            
+            // 쿠폰 사용 처리
             if (order.getCoupon() != null) {
                 memberCouponRepository.findByMemberIdAndCouponIdAndUsedAtIsNull(memberId, order.getCoupon().getId())
                         .orElseThrow(() -> new BadRequestException(ErrorStatus.COUPON_NOT_AVAILABLE)).use();
             }
-
-            cartCommandService.deleteCartProducts(memberId, request.getItems());
+            
+            cartCommandService.deleteCartProducts(memberId, order.getOrderProducts().stream().map(OrderProduct::getId).toList());
             
             // 판매 완료 시 판매 카운트 증가
             order.getOrderProducts()
@@ -154,20 +186,48 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                     });
             
             log.info("[OrderCommandService] 주문 생성 완료 - 주문ID: {}", order.getId());
-
+            
             // 최초 구매 시 포인트 지급
             pointCommandService.addFirstPurchasePointsIfPossible(member);
-
+            
             return OrderApproveResponseDto.of(order);
             
+        } catch (HttpClientErrorException e) { // 400번대 에러
+            throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_BAD_REQUEST);
+        } catch (HttpServerErrorException e) { // 500번대 에러
+            throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_SERVER_ERROR);
         } catch (Exception e) {
             log.error("[OrderCommandService] 주문 생성 실패 - 회원ID: {}, 에러: {}", memberId, e.getMessage(), e);
             order.updateStatus(OrderStatus.ABORTED);
-            proccessRefund(order, "주문 생성 실패로 인한 자동 환불");
-            throw e;
+            throw new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR);
         }
     }
-
+    
+    private PaymentResponseDto getPaymentResponseDto(ResponseEntity<PaymentResponseDto> responseEntity) {
+        PaymentResponseDto responseDto = responseEntity.getBody();
+        
+        // 상태가 DONE이 아닌 경우 결제된 상태 X
+        if(!responseDto.status().equals("DONE"))  {
+            switch (responseDto.status()) {
+                case "WAITING_FOR_DEPOSIT":
+                    throw new GeneralException(ErrorStatus.PAYMENT_WAITING_FOR_DEPOSIT);
+                case "IN_PROGRESS":
+                    throw new GeneralException(ErrorStatus.PAYMENT_IN_PROGRESS);
+                case "CANCELED":
+                    throw new GeneralException(ErrorStatus.PAYMENT_CANCELED);
+                case "PARTIAL_CANCELED":
+                    throw new GeneralException(ErrorStatus.PAYMENT_PARTIAL_CANCELED);
+                case "ABORTED":
+                    throw new GeneralException(ErrorStatus.PAYMENT_ABORTED);
+                case "EXPIRED":
+                    throw new GeneralException(ErrorStatus.PAYMENT_EXPIRED);
+                default:
+                    throw new GeneralException(ErrorStatus.PAYMENT_UNSPECIFIED_ERROR);
+            }
+        }
+        return responseDto;
+    }
+    
     @Override
     public OrderRefundResponseDto refundOrder(Long memberId, OrderRefundRequestDto request) {
         log.info("[OrderCommandService] 환불 처리 시작 - 회원ID: {}, 주문ID: {}", memberId, request.getOrderId());
@@ -191,7 +251,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         order.updateStatus(OrderStatus.REFUND_REQUESTED);
 
         try {
-            proccessRefund(order, request.getRefundReason());
+            processRefund(order, request.getRefundReason());
 
             if (order.getPointUsedAmount() > 0) {
                 member.updatePoint(member.getPoint() + order.getPointUsedAmount());
@@ -317,11 +377,21 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         }
         return 0;
     }
+    
+    private HttpHeaders getHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(
+                Base64.getEncoder().encodeToString((tossPaymentsConfig.getSecretApiKey() + ":").getBytes(StandardCharsets.UTF_8))
+        );
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        
+        return headers;
+    }
 
-    private void proccessRefund(Order order, String refundReason) {
+    private void processRefund(Order order, String refundReason) {
         try {
-            // 환불
-
+            // TODO: 환불
         } catch (Exception e) {
             throw new BadRequestException(ErrorStatus.REFUND_FAILED);
         }

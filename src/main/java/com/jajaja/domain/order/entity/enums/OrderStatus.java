@@ -2,7 +2,6 @@ package com.jajaja.domain.order.entity.enums;
 
 public enum OrderStatus {
     READY,                  // 결제 대기
-    IN_PROGRESS,            // 결제 승인 전 
     WAITING_FOR_DEPOSIT,    // 가상 계좌 입금 대기 중
     DONE,                   // 결제 승인
     CANCELED,               // 승인된 결제 취소
