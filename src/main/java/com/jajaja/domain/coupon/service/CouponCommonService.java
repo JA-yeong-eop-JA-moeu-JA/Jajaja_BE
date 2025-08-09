@@ -191,7 +191,7 @@ public class CouponCommonService {
         
         return cart.getCartProducts().stream()
                 .filter(cartProduct -> matchesBrandCondition(cartProduct.getProduct().getStore(), allowedBrands))
-                .mapToInt(CartProduct::getTotalPrice)
+                .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
                 .sum();
     }
 
@@ -210,7 +210,7 @@ public class CouponCommonService {
                             cartProduct.getProduct().getId(), Collections.emptyList());
                     return matchesCategoryCondition(productCategories, allowedCategories);
                 })
-                .mapToInt(CartProduct::getTotalPrice)
+                .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
                 .sum();
     }
 
@@ -268,7 +268,7 @@ public class CouponCommonService {
     private void validateMinOrderAmountForSelectedItems(List<CartProduct> selectedItems, Coupon coupon) {
         if (coupon.getMinOrderAmount() != null) {
             int selectedItemsAmount = selectedItems.stream()
-                    .mapToInt(CartProduct::getTotalPrice)
+                    .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
                     .sum();
             
             if (selectedItemsAmount <= coupon.getMinOrderAmount()) {

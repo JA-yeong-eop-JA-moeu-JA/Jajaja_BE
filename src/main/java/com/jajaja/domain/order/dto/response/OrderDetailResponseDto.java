@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public record OrderDetailResponseDto(
         LocalDateTime date,
-        String orderNumber,
+        String orderId,
         List<OrderItemDto> items,
         OrderDeliveryDto delivery,
         OrderPaymentDto payment
@@ -17,7 +17,7 @@ public record OrderDetailResponseDto(
     public static OrderDetailResponseDto of(Order order, List<OrderItemDto> items) {
         return OrderDetailResponseDto.builder()
                 .date(order.getCreatedAt())
-                .orderNumber(order.getOrderNumber())
+                .orderId(order.getOrderId())
                 .items(items)
                 .delivery(OrderDeliveryDto.from(order.getDelivery()))
                 .payment(OrderPaymentDto.from(order))
