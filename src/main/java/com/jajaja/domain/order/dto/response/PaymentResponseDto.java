@@ -1,4 +1,4 @@
-package com.jajaja.domain.order.dto.response.payment;
+package com.jajaja.domain.order.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -25,7 +25,7 @@ public record PaymentResponseDto(
 		String cashReceipt,
 		List<String> cashReceipts,
 		Object discount,
-		Object cancels,
+		List<CancelDto> cancels,
 		String secret,
 		String type,
 		EasyPayDto easyPay,
@@ -49,4 +49,20 @@ public record PaymentResponseDto(
 	
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record Checkout(String url) {}
+	
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public record CancelDto(
+			String cancelReason,
+			String canceledAt,
+			int cancelAmount,
+			int taxFreeAmount,
+			int taxExemptionAmount,
+			int refundableAmount,
+			int transferDiscountAmount,
+			int easyPayDiscountAmount,
+			String transactionKey,
+			String receiptKey,
+			String cancelStatus,
+			String cancelRequestId
+	) {}
 }

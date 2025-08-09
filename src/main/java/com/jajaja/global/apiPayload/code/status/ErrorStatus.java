@@ -121,7 +121,7 @@ public enum ErrorStatus implements BaseErrorCode {
     PAYMENT_ABORTED(HttpStatus.BAD_REQUEST, "PAYMENT4008", "결제 승인이 실패했습니다."),
     PAYMENT_EXPIRED(HttpStatus.BAD_REQUEST, "PAYMENT4009", "결제 유효 시간이 만료되어 결제가 취소되었습니다."),
     PAYMENT_PARTIAL_CANCELED(HttpStatus.BAD_REQUEST, "PAYMENT4010", "결제가 부분 취소되었습니다."),
-    PAYMENT_UNSPECIFIED_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "PAYMENT5001", "결제 상태가 불분명하여 처리에 실패했습니다."),
+    PAYMENT_UNSPECIFIED_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "PAYMENT5001", "결제/환불 상태가 불분명하여 처리에 실패했습니다."),
     
     // 토스 관련 에러
     TOSS_PAYMENT_BAD_REQUEST(HttpStatus.BAD_REQUEST, "TOSS4001", "토스페이먼츠 API 요청에 오류가 발생했습니다. 확인이 필요합니다"),

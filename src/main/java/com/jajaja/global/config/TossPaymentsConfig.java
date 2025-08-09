@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "toss")
 public class TossPaymentsConfig {
 	private String approveURL;
+	private String refundURL;
 	private String clientApiKey;
 	private String secretApiKey;
 	private String secureKey;

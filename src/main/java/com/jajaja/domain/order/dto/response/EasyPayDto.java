@@ -1,4 +1,4 @@
-package com.jajaja.domain.order.dto.response.payment;
+package com.jajaja.domain.order.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

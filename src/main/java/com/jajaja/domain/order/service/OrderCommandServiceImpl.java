@@ -17,7 +17,7 @@ import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
 import com.jajaja.domain.order.dto.response.OrderApproveResponseDto;
 import com.jajaja.domain.order.dto.response.OrderPrepareResponseDto;
 import com.jajaja.domain.order.dto.response.OrderRefundResponseDto;
-import com.jajaja.domain.order.dto.response.payment.PaymentResponseDto;
+import com.jajaja.domain.order.dto.response.PaymentResponseDto;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.order.entity.OrderProduct;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
@@ -193,8 +193,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             return OrderApproveResponseDto.of(order);
             
         } catch (HttpClientErrorException e) { // 400번대 에러
+            log.error("토스 환불 4xx 서버 에러: {}", e.getResponseBodyAsString());
             throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_BAD_REQUEST);
         } catch (HttpServerErrorException e) { // 500번대 에러
+            log.error("토스 환불 5xx 서버 에러: {}", e.getResponseBodyAsString());
             throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_SERVER_ERROR);
         } catch (Exception e) {
             log.error("[OrderCommandService] 주문 생성 실패 - 회원ID: {}, 에러: {}", memberId, e.getMessage(), e);
@@ -248,11 +250,44 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             throw new BadRequestException(ErrorStatus.ORDER_NOT_REFUNDABLE);
         }
         
-        order.updateStatus(OrderStatus.REFUND_REQUESTED);
-
         try {
-            processRefund(order, request.getRefundReason());
-
+            order.updateStatus(OrderStatus.REFUND_REQUESTED);
+            
+            Map<String, Object> body = new HashMap<>();
+            body.put("cancelReason", request.getRefundReason());
+            
+            // 멱등성 설정
+            HttpHeaders headers = getHeaders();
+            headers.set("Idempotency-Key", UUID.randomUUID().toString());
+            
+            // 환불 시도
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(
+                    tossPaymentsConfig.getRefundURL().replace("paymentKey", request.getPaymentKey()),
+                    entity, PaymentResponseDto.class
+            );
+            PaymentResponseDto responseDto = responseEntity.getBody();
+            
+            if ("CANCELED".equals(responseDto.status())) {
+                log.info("환불 성공. 결제 키: {}, 환불 금액: {}", request.getPaymentKey(), order.getPaidAmount());
+                
+                if (responseDto.balanceAmount() != 0) {
+                    log.warn("환불 후 잔액이 0이 아닙니다. 결제 키: {}, 잔액: {}", request.getPaymentKey(), responseDto.balanceAmount());
+                    throw new GeneralException(ErrorStatus.REFUND_FAILED);
+                }
+                
+                if (responseDto.cancels() != null && !responseDto.cancels().isEmpty()) {
+                    PaymentResponseDto.CancelDto cancelInfo = responseDto.cancels().get(0);
+                    log.info("환불 정보 - 사유: {}, 금액: {}", cancelInfo.cancelReason(), cancelInfo.cancelAmount());
+                }
+                
+            } else {
+                // 2xx 응답을 받았지만 상태가 CANCELED가 아닌 경우 (비정상 상황)
+                log.error("환불 응답 상태가 비정상적입니다. 상태: {}", responseDto.status());
+                throw new GeneralException(ErrorStatus.PAYMENT_UNSPECIFIED_ERROR);
+            }
+            
+            
             if (order.getPointUsedAmount() > 0) {
                 member.updatePoint(member.getPoint() + order.getPointUsedAmount());
                 pointCommandService.refundUsedPoints(order.getId());
@@ -276,10 +311,16 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
             return OrderRefundResponseDto.of(order, order.getPointUsedAmount(), request.getRefundReason());
 
+        } catch (HttpClientErrorException e) {
+            log.error("토스 환불 4xx 서버 에러: {}", e.getResponseBodyAsString());
+            throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_BAD_REQUEST);
+        } catch (HttpServerErrorException e) { // 500번대
+            log.error("토스 환불 5xx 서버 에러: {}", e.getResponseBodyAsString());
+            throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_SERVER_ERROR);
         } catch (Exception e) {
             order.updateStatus(OrderStatus.REFUND_FAILED);
             log.error("[OrderCommandService] 환불 처리 실패 - 주문ID: {}, 에러: {}", request.getOrderId(), e.getMessage(), e);
-            throw new BadRequestException(ErrorStatus.REFUND_FAILED);
+            throw new GeneralException(ErrorStatus.REFUND_FAILED);
         }
     }
     
@@ -387,13 +428,5 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         
         return headers;
-    }
-
-    private void processRefund(Order order, String refundReason) {
-        try {
-            // TODO: 환불
-        } catch (Exception e) {
-            throw new BadRequestException(ErrorStatus.REFUND_FAILED);
-        }
     }
 }
