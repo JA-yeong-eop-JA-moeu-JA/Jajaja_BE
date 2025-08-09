@@ -87,7 +87,7 @@ public class Cart extends BaseEntity {
      */
     public int calculateTotalAmount() {
         return this.cartProducts.stream()
-                .mapToInt(CartProduct::getTotalPrice)
+                .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
                 .sum();
     }
 }
