@@ -6,9 +6,10 @@ import com.jajaja.domain.review.service.ReviewCommandService;
 import com.jajaja.domain.review.service.ReviewLikeCommandService;
 import com.jajaja.domain.review.service.ReviewQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reviews")
+@Tag(name = "Review API", description = "리뷰 관련 API")
 public class ReviewController {
 
     private final ReviewQueryService reviewQueryService;
@@ -35,7 +37,7 @@ public class ReviewController {
 
     @Operation(
             summary = "리뷰 상세 조회 - 하단 API | by 지지/이지희",
-            description = "리뷰 상세 조회의 하단(최신순|추천순 필터링)을 조회하는 기능입니다."
+            description = "리뷰 상세 조회의 하단(최신 순 | 추천 순 필터링)을 조회하는 기능입니다."
     )
     @GetMapping("/{productId}")
     public ApiResponse<PagingReviewListResponseDto> getReviewList(
@@ -57,7 +59,7 @@ public class ReviewController {
 
     @Operation(
             summary = "사진 리뷰 상세 조회 API | by 지지/이지희",
-            description = "필터링(최신순|추천순 필터링)을 통해 사진 리뷰 상세 조회하는 기능입니다."
+            description = "필터링(최신 순 | 추천 순 필터링)을 통해 사진 리뷰 상세 조회하는 기능입니다."
     )
     @GetMapping("/photo/{productId}")
     public ApiResponse<PagingReviewImageListResponseDto> getReviewImageList(
@@ -89,12 +91,12 @@ public class ReviewController {
     }
 
     @Operation(
-            summary = "리뷰 추가 API | by 루비/이송미",
+            summary = "리뷰 작성 API | by 루비/이송미",
             description = """
-                          구매한 상품에 대해 리뷰를 추가합니다.
+                          구매한 상품에 대해 리뷰를 작성합니다.
 
                           - 별점, 내용, 사진(최대 5장)을 포함할 수 있습니다.
-                          - 이미지는 S3 Presigned URL을 통해 업로드한 후,
+                          - 이미지는 S3 Presigned URL API를 통해 업로드한 후,
                             해당 key 값을 imageKeys로 전달해주세요.
                           """
     )
@@ -141,7 +143,7 @@ public class ReviewController {
 
     @Operation(
             summary = "전체 리뷰 목록 조회 API | by 루비/이송미",
-            description = "전체 리뷰를 정렬 기준(최신순|추천순)에 따라 조회합니다."
+            description = "전체 리뷰를 정렬 기준(최신 순 | 추천 순)에 따라 조회합니다."
     )
     @GetMapping
     public ApiResponse<PagingReviewListResponseDto> getAllReviews(
@@ -156,6 +158,24 @@ public class ReviewController {
             @RequestParam(defaultValue = "5") int size
     ) {
         PagingReviewListResponseDto responseDto = reviewQueryService.getAllReviewList(memberId, sort, page, size);
+        return ApiResponse.onSuccess(responseDto);
+    }
+
+    @Operation(
+            summary = "리뷰 작성 상품 목록 조회 API | by 루비/이송미",
+            description = "로그인한 사용자가 주문한 (리뷰 작성이 가능한) 상품 목록을 조회합니다."
+    )
+    @GetMapping("/reviewable")
+    public ApiResponse<PagingReviewableOrderListResponseDto> getReviewableProducts(
+            @Auth Long memberId,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기", example = "5")
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        PagingReviewableOrderListResponseDto responseDto = reviewQueryService.getReviewableProducts(memberId, page, size);
         return ApiResponse.onSuccess(responseDto);
     }
 

@@ -23,6 +23,8 @@ import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
 import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.domain.point.service.PointCommandService;
+import com.jajaja.domain.product.entity.ProductSales;
+import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import com.siot.IamportRestClient.IamportClient;
@@ -51,6 +53,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private final DeliveryRepository deliveryRepository;
     private final CartProductRepository cartProductRepository;
     private final MemberCouponRepository memberCouponRepository;
+    private final ProductSalesRepository productSalesRepository;
     private final CartCommandService cartCommandService;
     private final CouponCommonService couponCommonService;
     private final PointCommandService pointCommandService;
@@ -140,14 +143,29 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             }
 
             cartCommandService.deleteCartProducts(memberId, request.getItems());
-
+            
+            // 판매 완료 시 판매 카운트 증가
+            order.getOrderProducts()
+                    .forEach((pr) -> {
+                        if(productSalesRepository.updateSalesByProductIdAndBusinessCategory(pr.getProduct(),
+                                member.getMemberBusinessCategory().getBusinessCategory()
+                                , pr.getQuantity()) <= 0) {
+                            ProductSales newProductSales = ProductSales.builder()
+                                    .product(pr.getProduct())
+                                    .businessCategory(member.getMemberBusinessCategory().getBusinessCategory())
+                                    .salesCount(pr.getQuantity())
+                                    .build();
+                            productSalesRepository.save(newProductSales);
+                        }
+                    });
+            
             log.info("[OrderCommandService] 주문 생성 완료 - 주문ID: {}", order.getId());
 
             // 최초 구매 시 포인트 지급
             pointCommandService.addFirstPurchasePointsIfPossible(member);
 
             return OrderCreateResponseDto.of(order);
-
+            
         } catch (Exception e) {
             log.error("[OrderCommandService] 주문 생성 실패 - 회원ID: {}, 에러: {}", memberId, e.getMessage(), e);
             order.updateStatus(OrderStatus.PAYMENT_FAILED);
@@ -187,6 +205,19 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             }
 
             order.updateStatus(OrderStatus.REFUNDED);
+            
+            // 환불 성공 시 구매 통계에서 판매 개수만큼 수량 줄이기
+            order.getOrderProducts()
+                    .forEach((pr) -> {
+                        long updatedRows = productSalesRepository.updateSalesByProductIdAndBusinessCategory(pr.getProduct(),
+                                member.getMemberBusinessCategory().getBusinessCategory(),
+                                (pr.getQuantity() * -1));
+                        
+                        if(updatedRows <= 0) { // 만약 업데이트가 안 됐다면 로깅
+                            log.warn("OrderCommandService] 환불 후 판매량 차감 실패 - 상품ID: {}, 비즈니스카테고리ID: {}, 주문ID: {}", pr.getId(), member.getMemberBusinessCategory().getBusinessCategory().getId(), order.getId());
+                        }
+                    });
+            
             log.info("[OrderCommandService] 환불 처리 완료 - 주문ID: {}", order.getId());
 
             return OrderRefundResponseDto.of(order, order.getPointUsedAmount(), request.getRefundReason());

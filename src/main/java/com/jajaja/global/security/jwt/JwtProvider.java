@@ -1,17 +1,19 @@
-package com.jajaja.global.config.security.jwt;
+package com.jajaja.global.security.jwt;
 
 import com.jajaja.domain.auth.dto.CustomOAuth2User;
-import com.jajaja.domain.auth.dto.UserDto;
+import com.jajaja.domain.auth.dto.MemberDto;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.UnauthorizedException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -21,6 +23,12 @@ import java.util.Date;
 public class JwtProvider {
 
     private final JwtProperties jwtProperties;
+
+    @Value("${jwt.token.same-site}")
+    private String sameSite;
+
+    @Value("${jwt.token.secure}")
+    private Boolean secure;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes());
@@ -35,9 +43,9 @@ public class JwtProvider {
     }
 
     public String generateToken(Authentication authentication, long expirationTime) {
-        String userId = authentication.getName();
+        String memberId = authentication.getName();
         return Jwts.builder()
-                .claim("userId", Long.parseLong(userId))
+                .claim("memberId", Long.parseLong(memberId))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey())
@@ -66,29 +74,35 @@ public class JwtProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = getJwtParser().parseSignedClaims(token).getPayload();
-        Long userId = claims.get("userId", Long.class);
-        UserDto userDto = UserDto.builder().userId(userId).build();
-        CustomOAuth2User principal = new CustomOAuth2User(userDto);
+        Long memberId = claims.get("memberId", Long.class);
+        MemberDto memberDto = MemberDto.builder().memberId(memberId).build();
+        CustomOAuth2User principal = new CustomOAuth2User(memberDto);
         return new UsernamePasswordAuthenticationToken(principal, token, null);
     }
 
     public void writeTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
+        ResponseCookie.ResponseCookieBuilder accessBuilder = ResponseCookie.from("accessToken", accessToken)
                 .path("/")
                 .httpOnly(true)
-                .maxAge(jwtProperties.getExpiration().getAccess())
-                .domain(jwtProperties.getCookieDomain())
-                .build();
+                .secure(secure)
+                .sameSite(sameSite)
+                .maxAge(StringUtils.hasText(accessToken) ? jwtProperties.getExpiration().getAccess() / 1000 : 0);
 
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+        ResponseCookie.ResponseCookieBuilder refreshBuilder = ResponseCookie.from("refreshToken", refreshToken)
                 .path("/")
                 .httpOnly(true)
-                .maxAge(jwtProperties.getExpiration().getRefresh())
-                .domain(jwtProperties.getCookieDomain())
-                .build();
+                .secure(secure)
+                .sameSite(sameSite)
+                .maxAge(StringUtils.hasText(refreshToken) ? jwtProperties.getExpiration().getRefresh() / 1000 : 0);
 
-        response.addHeader("Set-Cookie", accessTokenCookie.toString());
-        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+
+        if (StringUtils.hasText(jwtProperties.getCookieDomain())) {
+            accessBuilder.domain(jwtProperties.getCookieDomain());
+            refreshBuilder.domain(jwtProperties.getCookieDomain());
+        }
+
+        response.addHeader("Set-Cookie", accessBuilder.build().toString());
+        response.addHeader("Set-Cookie", refreshBuilder.build().toString());
     }
 
     private JwtParser getJwtParser() {

@@ -1,4 +1,4 @@
-package com.jajaja.global.config.security.jwt;
+package com.jajaja.global.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jajaja.global.apiPayload.ApiResponse;

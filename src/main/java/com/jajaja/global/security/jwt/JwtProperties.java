@@ -1,4 +1,4 @@
-package com.jajaja.global.config.security.jwt;
+package com.jajaja.global.security.jwt;
 
 import lombok.Getter;
 import lombok.Setter;

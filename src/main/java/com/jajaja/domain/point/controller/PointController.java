@@ -5,7 +5,7 @@ import com.jajaja.domain.point.dto.response.PointBalanceResponseDto;
 import com.jajaja.domain.point.service.PointCommandService;
 import com.jajaja.domain.point.service.PointQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/points")
-@Tag(name = "Point", description = "포인트 API")
+@Tag(name = "Point", description = "포인트 관련 API")
 public class PointController {
 
     private final PointQueryService pointQueryService;

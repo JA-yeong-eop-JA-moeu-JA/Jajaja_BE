@@ -1,5 +1,7 @@
 package com.jajaja.domain.product.service;
 
+import com.jajaja.domain.member.dto.response.MemberInfoResponseDto;
+import com.jajaja.domain.member.service.MemberQueryService;
 import com.jajaja.domain.product.converter.ProductConverter;
 import com.jajaja.domain.product.dto.response.CategoryProductListResponseDto;
 import com.jajaja.domain.product.dto.response.HomeProductListResponseDto;
@@ -13,10 +15,10 @@ import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.domain.review.dto.response.ReviewListDto;
 import com.jajaja.domain.review.dto.response.ReviewItemDto;
-import com.jajaja.domain.review.entity.ReviewImage;
 import com.jajaja.domain.review.repository.ReviewImageRepository;
 import com.jajaja.domain.review.repository.ReviewLikeRepository;
 import com.jajaja.domain.review.repository.ReviewRepository;
+import com.jajaja.domain.review.service.ReviewCommonService;
 import com.jajaja.domain.team.dto.response.TeamListDto;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.repository.TeamRepository;
@@ -56,6 +58,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final MemberRepository memberRepository;
     private final ProductSalesRepository productSalesRepository;
     private final ProductCommonService productCommonService;
+    private final MemberQueryService memberQueryService;
+    private final ReviewCommonService reviewCommonService;
     private final ProductConverter productConverter;
 
     @Override
@@ -66,8 +70,28 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         // 모집 중인 팀 조회
         List<Team> matchingTeams = teamRepository.findMatchingTeamsByProductId(productId);
 
+        // 리더 ID 수집
+        List<Long> leaderIds = matchingTeams.stream()
+                .map(team -> team.getLeader().getId())
+                .distinct()
+                .toList();
+
+        // 리더 정보 조회
+        List<MemberInfoResponseDto> leaderInfos = memberQueryService.getMemberInfos(leaderIds);
+
+        Map<Long, MemberInfoResponseDto> leaderInfoMap = leaderInfos.stream()
+                .collect(Collectors.toMap(MemberInfoResponseDto::id, dto -> dto));
+
+        // TeamListDto 생성
         List<TeamListDto> teamResponseDtoList = matchingTeams.stream()
-                .map(TeamListDto::from)
+                .map(team -> {
+                    Long leaderId = team.getLeader().getId();
+                    MemberInfoResponseDto leaderInfo = leaderInfoMap.get(leaderId);
+                    if (leaderInfo == null) {
+                        throw new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND);
+                    }
+                    return TeamListDto.of(team, leaderInfo);
+                })
                 .toList();
 
         // 좋아요 수 상위 3개 리뷰만 조회
@@ -83,18 +107,18 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
         // isLike 조회
         Set<Integer> likedReviewIds = memberId != null
-                ? reviewLikeRepository.findReviewIdsLikedByUser(memberId, reviewIds)
+                ? reviewLikeRepository.findReviewIdsLikedByMember(memberId, reviewIds)
                 : Set.of();
 
-        // 병합
-        List<ReviewListDto> reviewResponseDtoList = reviewPageDtos.stream()
+        List<ReviewItemDto> convertedDtos = reviewCommonService.changeReviewWriterProfile(reviewPageDtos);
+
+        List<ReviewListDto> reviewResponseDtoList = convertedDtos.stream()
                 .map(dto -> new ReviewListDto(
                         dto,
                         likedReviewIds.contains(dto.id()),
                         imageUrlsMap.getOrDefault(dto.id(), List.of())
                 ))
                 .toList();
-
 
         int salePrice = productCommonService.calculateDiscountedPrice(
                 product.getPrice(),
@@ -103,8 +127,11 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
         double averageRating = productCommonService.calculateAverageRating(product.getReviews());
 
+        Long reviewCount = reviewRepository.countByProductId(product.getId());
+
         return ProductDetailResponseDto.of(
                 product,
+                reviewCount,
                 salePrice,
                 averageRating,
                 teamResponseDtoList,
@@ -115,13 +142,13 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     /**
      * 홈 화면에 표시할 상품 리스트 조회
      *
-     * @param userId     회원 ID (비회원이면 null)
+     * @param memberId     회원 ID (비회원이면 null)
      * @param categoryId 비회원 업종 ID (회원이면 null)
      * @return 홈 화면 상품 리스트 DTO
      */
     @Override
-    public HomeProductListResponseDto getProductList(Long userId, Long categoryId) {
-        Long targetCategoryId = resolveCategoryId(userId, categoryId);
+    public HomeProductListResponseDto getProductList(Long memberId, Long categoryId) {
+        Long targetCategoryId = resolveCategoryId(memberId, categoryId);
 
         // 추천 상품: 해당 업종 내 판매량 많은 순 상위 8개
         List<ProductListResponseDto> recommendProducts = productSalesRepository
@@ -141,7 +168,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         // 신상품: 전체 상품 중 생성일 최신 순 상위 8개
         List<ProductListResponseDto> newProducts = productRepository.findAll()
                 .stream()
-                .sorted(Comparator.comparing(Product::getCreatedAt).reversed())
+                .sorted(Comparator.comparing(Product::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())).reversed())
                 .limit(8)
                 .map(productConverter::toProductListResponseDto)
                 .toList();
@@ -150,18 +177,18 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     }
 
     /**
-     * 회원인 경우 userId로 User 엔티티 조회 후 업종 ID 찾기,
+     * 회원인 경우 memberId로 Member 엔티티 조회 후 업종 ID 찾기,
      * 비회원인 경우 categoryId로 업종 조회,
      * 둘 다 없으면 예외 발생
      *
-     * @param userId     회원 ID
+     * @param memberId     회원 ID
      * @param categoryId 비회원 업종 ID
      * @return 업종 ID
      * @throws BadRequestException 업종 정보가 없으면 발생
      */
-    private Long resolveCategoryId(Long userId, Long categoryId) {
-        if (userId != null) {
-            Member member = memberRepository.findById(userId)
+    private Long resolveCategoryId(Long memberId, Long categoryId) {
+        if (memberId != null) {
+            Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
             MemberBusinessCategory memberBusinessCategory = memberBusinessCategoryRepository.findByMember(member)
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_BUSINESS_CATEGORY_NOT_FOUND));

@@ -25,8 +25,8 @@ public class OrderQueryServiceImpl implements OrderQueryService {
     private final OrderRepository orderRepository;
 
     @Override
-    public PagingOrderListResponseDto getMyOrders(Long userId, Pageable pageable) {
-        Page<Order> orderPage = orderRepository.findByMemberId(userId, pageable);
+    public PagingOrderListResponseDto getMyOrders(Long memberId, Pageable pageable) {
+        Page<Order> orderPage = orderRepository.findByMemberId(memberId, pageable);
         List<OrderListDto> orderListDtos = orderPage.getContent().stream()
                 .map(order -> {
                     TeamStatus teamStatus = Optional.ofNullable(order.getTeam())

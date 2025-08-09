@@ -7,6 +7,7 @@ import com.jajaja.global.S3.dto.response.PresignedUrlUploadResponseDto;
 import com.jajaja.global.S3.service.S3Service;
 import com.jajaja.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,12 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/s3")
+@Tag(name = "S3 API", description = "S3 관련 API")
 public class S3Controller {
 
     private final S3Service s3Service;
 
     @Operation(
-            summary = "업로드용 presigned URL 생성 | by 지지/이지희",
+            summary = "이미지 업로드용 presigned URL 생성 | by 지지/이지희",
             description = "업로드를 위한 presigned URL을 생성합니다.")
     @PostMapping("/presigned/upload")
     public ApiResponse<PresignedUrlUploadResponseDto> getPresignedUrlToUpload(@RequestBody PresignedUploadRequestDto presignedUploadRequest) {
@@ -30,7 +32,7 @@ public class S3Controller {
     }
 
     @Operation(
-            summary = "여러 개 업로드용 presigned URL 생성 | by 지지/이지희",
+            summary = "이미지 여러 개 업로드용 presigned URL 생성 | by 지지/이지희",
             description = "업로드를 위한 presigned URL을 여러 개 생성합니다.")
     @PostMapping("/presigned/upload/list")
     public ApiResponse<PresignedUrlUploadListResponseDto> getPresignedUrlToUploadList(@RequestBody PresignedUploadListRequestDto presignedUploadListRequest) {

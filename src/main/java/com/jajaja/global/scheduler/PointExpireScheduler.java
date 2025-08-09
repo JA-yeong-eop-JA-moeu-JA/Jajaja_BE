@@ -1,6 +1,6 @@
 package com.jajaja.global.scheduler;
 
-import com.jajaja.domain.notification.dto.NotificationCreateRequestDto;
+import com.jajaja.domain.notification.dto.request.NotificationCreateRequestDto;
 import com.jajaja.domain.notification.entity.enums.NotificationType;
 import com.jajaja.domain.notification.service.NotificationService;
 import com.jajaja.domain.point.entity.Point;

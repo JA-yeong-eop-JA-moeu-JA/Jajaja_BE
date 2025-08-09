@@ -1,5 +1,6 @@
 package com.jajaja.domain.order.repository;
 
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.order.entity.Order;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, OrderReposi
 
     @EntityGraph(attributePaths = {"orderProducts", "orderProducts.product", "orderProducts.productOption", "team", "delivery"})
     Optional<Order> findById(Long id);
-
     Optional<Order> findByMerchantUid(String merchantUid);
+    Boolean existsByMember(Member member);
 }

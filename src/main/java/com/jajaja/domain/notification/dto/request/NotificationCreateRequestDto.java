@@ -1,4 +1,4 @@
-package com.jajaja.domain.notification.dto;
+package com.jajaja.domain.notification.dto.request;
 
 import com.jajaja.domain.notification.entity.enums.NotificationType;
 

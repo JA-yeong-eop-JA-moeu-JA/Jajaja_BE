@@ -1,7 +1,7 @@
-package com.jajaja.global.config.security.resolver;
+package com.jajaja.global.security.resolver;
 
 import com.jajaja.domain.auth.dto.CustomOAuth2User;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,7 +28,7 @@ public class AuthArgumentResolver implements HandlerMethodArgumentResolver {
         }
         Object principal = authentication.getPrincipal();
         if (principal instanceof CustomOAuth2User customUser) {
-            return customUser.userDto().userId();
+            return customUser.memberDto().memberId();
         }
         return null;
     }

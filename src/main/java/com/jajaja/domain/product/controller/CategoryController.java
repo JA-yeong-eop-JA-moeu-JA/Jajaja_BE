@@ -5,6 +5,7 @@ import com.jajaja.domain.product.dto.response.SubCategoryResponseDto;
 import com.jajaja.domain.product.service.CategoryQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/categories")
+@Tag(name = "Category API", description = "카테고리 관련 API")
 public class CategoryController {
 
     private final CategoryQueryService categoryQueryService;

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface OrderQueryService {
 
-    PagingOrderListResponseDto getMyOrders(Long userId, Pageable pageable);
+    PagingOrderListResponseDto getMyOrders(Long memberId, Pageable pageable);
 
     OrderDetailResponseDto getOrderById(Long orderId);
 }

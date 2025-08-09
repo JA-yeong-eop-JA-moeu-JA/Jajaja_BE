@@ -26,9 +26,13 @@ public class MemberCommandServiceImpl implements MemberCommandService {
         if (request.name() != null) member.updateName(request.name());
         if (request.phone() != null) member.updatePhone(request.phone());
         if (request.profileKeyName() != null) {
-            String imageUrl = s3Service.generateStaticUrl(request.profileKeyName());
-            member.updateProfileUrl(imageUrl);
+            if (request.profileKeyName().isBlank()) {
+                member.updateProfileKeyName("default-profile-image.png");
+            } else {
+                member.updateProfileKeyName(request.profileKeyName());
+            }
         }
-        return MemberInfoResponseDto.from(member);
+        String profileUrl = s3Service.generateStaticUrl(member.getProfileKeyName());
+        return MemberInfoResponseDto.of(member, profileUrl);
     }
 }

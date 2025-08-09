@@ -7,9 +7,10 @@ import com.jajaja.domain.product.dto.response.ProductOptionResponseDto;
 import com.jajaja.domain.product.service.ProductOptionQueryService;
 import com.jajaja.domain.product.service.ProductQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
+@Tag(name = "Product API", description = "상품 관련 API")
 public class ProductController {
 
     private final ProductQueryService productQueryService;
@@ -32,16 +34,16 @@ public class ProductController {
     )
     @GetMapping("")
     public ApiResponse<HomeProductListResponseDto> getHomeProducts(
-            @Auth Long userId,
+            @Auth Long memberId,
             @RequestParam(required = false) Long categoryId
     ) {
-        HomeProductListResponseDto response = productQueryService.getProductList(userId, categoryId);
+        HomeProductListResponseDto response = productQueryService.getProductList(memberId, categoryId);
         return ApiResponse.onSuccess(response);
     }
 
     @Operation(
             summary = "하위 카테고리 상품 목록 조회 API | by 루비/이송미",
-            description = "상품을 정렬 기준(인기순 | 최신상품순 | 낮은 가격 순 | 리뷰 많은 순)에 따라 조회합니다."
+            description = "상품을 정렬 기준(인기 순 | 최신 상품순 | 낮은 가격 순 | 리뷰 많은 순)에 따라 조회합니다."
     )
     @GetMapping("/categories/{subcategoryId}/products")
     public ApiResponse<CategoryProductListResponseDto> getProductsBySubCategory(

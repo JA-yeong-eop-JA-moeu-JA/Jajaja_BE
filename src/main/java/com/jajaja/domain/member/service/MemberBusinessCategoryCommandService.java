@@ -6,5 +6,5 @@ import jakarta.transaction.Transactional;
 public interface MemberBusinessCategoryCommandService {
 
     @Transactional
-    void registerUserBusinessCategory(Long userId, MemberBusinessCategoryRequestDto dto);
+    void registerMemberBusinessCategory(Long memberId, MemberBusinessCategoryRequestDto dto);
 }

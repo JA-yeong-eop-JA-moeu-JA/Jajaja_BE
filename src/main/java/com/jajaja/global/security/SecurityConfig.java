@@ -1,11 +1,12 @@
-package com.jajaja.global.config.security;
+package com.jajaja.global.security;
 
 import com.jajaja.domain.auth.service.CustomOAuth2UserService;
-import com.jajaja.global.config.security.jwt.JwtAuthenticationEntryPoint;
-import com.jajaja.global.config.security.jwt.JwtAuthenticationFilter;
-import com.jajaja.global.config.security.jwt.JwtExceptionFilter;
-import com.jajaja.global.config.security.jwt.JwtProvider;
-import com.jajaja.global.config.security.oauth.CustomOAuth2SuccessHandler;
+import com.jajaja.global.config.CorsConfig;
+import com.jajaja.global.security.jwt.JwtAuthenticationEntryPoint;
+import com.jajaja.global.security.jwt.JwtAuthenticationFilter;
+import com.jajaja.global.security.jwt.JwtExceptionFilter;
+import com.jajaja.global.security.jwt.JwtProvider;
+import com.jajaja.global.security.oauth.CustomOAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CorsConfig corsConfig;
     private final JwtProvider jwtProvider;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
@@ -65,6 +67,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PATCH, PATCH_WHITELIST).permitAll()
                                 .anyRequest().authenticated()
                 )
+                .addFilter(corsConfig.corsFilter())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtExceptionFilter(), JwtAuthenticationFilter.class)
                 .build();

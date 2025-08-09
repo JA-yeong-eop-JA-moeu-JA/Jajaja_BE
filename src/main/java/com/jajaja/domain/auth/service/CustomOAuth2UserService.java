@@ -3,7 +3,7 @@ package com.jajaja.domain.auth.service;
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.cart.repository.CartRepository;
 import com.jajaja.domain.member.converter.MemberConverter;
-import com.jajaja.domain.auth.dto.UserDto;
+import com.jajaja.domain.auth.dto.MemberDto;
 import com.jajaja.domain.auth.dto.CustomOAuth2User;
 import com.jajaja.domain.auth.dto.GoogleResponseDto;
 import com.jajaja.domain.auth.dto.KakaoResponseDto;
@@ -54,7 +54,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             existingMember.updateEmail(oAuth2Response.getEmail());
             member = existingMember;
         }
-        UserDto userDto = UserDto.of(member.getId(), oauthType, oauthId, oAuth2Response.getName());
-        return new CustomOAuth2User(userDto);
+        MemberDto memberDto = MemberDto.of(member.getId(), oauthType, oauthId, oAuth2Response.getName());
+        return new CustomOAuth2User(memberDto);
     }
 }

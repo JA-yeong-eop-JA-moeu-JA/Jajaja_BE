@@ -5,8 +5,9 @@ import com.jajaja.domain.cart.dto.CartResponseDto;
 import com.jajaja.domain.cart.service.CartCommandService;
 import com.jajaja.domain.cart.service.CartQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/carts")
+@Tag(name = "Cart API", description = "장바구니 관련 API")
 public class CartController {
 	
 	private final CartQueryService cartQueryService;
@@ -39,8 +41,8 @@ public class CartController {
 	}
 	
 	@Operation(
-			summary = "장바구니 아이템 삭제 API | by 엠마/신윤지",
-			description = "장바구니에 아이템을 추가하거나 수량을 수정합니다.")
+			summary = "장바구니 아이템 제거 API | by 엠마/신윤지",
+			description = "장바구니의 아이템을 제거합니다.")
 	@DeleteMapping("/products")
 	public ApiResponse<String> deleteCartProduct(@Auth Long memberId,
 												 @RequestParam("productId") Long productId,

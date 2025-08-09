@@ -11,7 +11,7 @@ import com.jajaja.domain.order.dto.response.PagingOrderListResponseDto;
 import com.jajaja.domain.order.service.OrderCommandService;
 import com.jajaja.domain.order.service.OrderQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,7 +29,7 @@ public class OrderController {
     private final OrderCommandService orderCommandService;
 
     @PostMapping("/prepare")
-    @Operation(summary = "결제 준비 API | by 엠마/신윤지", description = "결제 전 주문 데이터를 검증하고 merchant_uid를 생성합니다.")
+    @Operation(summary = "결제 전 준비 API | by 엠마/신윤지", description = "결제 전 주문 데이터를 검증하고 결제에 필요한 merchant_uid를 생성합니다.")
     public ApiResponse<OrderPrepareResponseDto> prepareOrder(
             @Auth Long memberId,
             @Valid @RequestBody OrderPrepareRequestDto request) {
@@ -37,7 +37,7 @@ public class OrderController {
     }
 
     @PostMapping
-    @Operation(summary = "결제 검증 API | by 엠마/신윤지", description = "결제를 검증하고 주문 데이터를 생성합니다.")
+    @Operation(summary = "결제 후 결제 검증 API | by 엠마/신윤지", description = "결제를 검증하고 주문 데이터를 생성합니다.")
     public ApiResponse<OrderCreateResponseDto> createOrder(
             @Auth Long memberId,
             @Valid @RequestBody OrderCreateRequestDto request) {
@@ -57,8 +57,8 @@ public class OrderController {
             description = "사용자의 모든 주문 목록을 조회합니다."
     )
     @GetMapping("/me")
-    public ApiResponse<PagingOrderListResponseDto> getMyOrders(@Auth Long userId, Pageable pageable) {
-        PagingOrderListResponseDto pagingOrderListResponseDto = orderQueryService.getMyOrders(userId, pageable);
+    public ApiResponse<PagingOrderListResponseDto> getMyOrders(@Auth Long memberId, Pageable pageable) {
+        PagingOrderListResponseDto pagingOrderListResponseDto = orderQueryService.getMyOrders(memberId, pageable);
         return ApiResponse.onSuccess(pagingOrderListResponseDto);
     }
 
