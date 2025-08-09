@@ -6,11 +6,11 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class OrderCreateResponseDto {
+public class OrderApproveResponseDto {
     private OrderDataDto data;
 
-    public static OrderCreateResponseDto of(Order order) {
-        return OrderCreateResponseDto.builder()
+    public static OrderApproveResponseDto of(Order order) {
+        return OrderApproveResponseDto.builder()
                 .data(OrderDataDto.of(order))
                 .build();
     }

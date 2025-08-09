@@ -11,10 +11,10 @@ import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.member.entity.MemberCoupon;
 import com.jajaja.domain.member.repository.MemberCouponRepository;
 import com.jajaja.domain.member.repository.MemberRepository;
-import com.jajaja.domain.order.dto.request.OrderCreateRequestDto;
+import com.jajaja.domain.order.dto.request.OrderApproveRequestDto;
 import com.jajaja.domain.order.dto.request.OrderPrepareRequestDto;
 import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
-import com.jajaja.domain.order.dto.response.OrderCreateResponseDto;
+import com.jajaja.domain.order.dto.response.OrderApproveResponseDto;
 import com.jajaja.domain.order.dto.response.OrderPrepareResponseDto;
 import com.jajaja.domain.order.dto.response.OrderRefundResponseDto;
 import com.jajaja.domain.order.entity.Order;
@@ -67,7 +67,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .mapToInt(cp ->
                         cp.getUnitPrice() * cp.getQuantity())
                 .sum();
-        
         int couponDiscount = calculateCouponDiscount(coupon, totalAmount);
         int shippingFee = calculateShippingFee(delivery);
         int finalAmount = totalAmount - couponDiscount - (request.getPoint() != null ? request.getPoint() : 0) + shippingFee;
@@ -118,7 +117,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     }
 
     @Override
-    public OrderCreateResponseDto createOrder(Long memberId, OrderCreateRequestDto request) {
+    public OrderApproveResponseDto approveOrder(Long memberId, OrderApproveRequestDto request) {
         log.info("[OrderCommandService] 주문 승인 시작 - 회원ID: {}, 오더ID: {}", memberId, request.getOrderId());
 
         Member member = findMember(memberId);
@@ -159,7 +158,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             // 최초 구매 시 포인트 지급
             pointCommandService.addFirstPurchasePointsIfPossible(member);
 
-            return OrderCreateResponseDto.of(order);
+            return OrderApproveResponseDto.of(order);
             
         } catch (Exception e) {
             log.error("[OrderCommandService] 주문 생성 실패 - 회원ID: {}, 에러: {}", memberId, e.getMessage(), e);

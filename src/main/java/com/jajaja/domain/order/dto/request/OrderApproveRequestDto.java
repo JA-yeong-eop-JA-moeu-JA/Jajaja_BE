@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class OrderCreateRequestDto {
+public class OrderApproveRequestDto {
 
     @NotNull(message = "구매할 상품 목록은 필수입니다.")
     private List<Long> items;
