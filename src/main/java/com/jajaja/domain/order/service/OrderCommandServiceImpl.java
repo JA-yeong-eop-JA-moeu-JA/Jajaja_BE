@@ -17,7 +17,7 @@ import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
 import com.jajaja.domain.order.dto.response.OrderApproveResponseDto;
 import com.jajaja.domain.order.dto.response.OrderPrepareResponseDto;
 import com.jajaja.domain.order.dto.response.OrderRefundResponseDto;
-import com.jajaja.domain.order.dto.response.PaymentResponseDto;
+import com.jajaja.domain.order.dto.response.TossPayments.PaymentResponseDto;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.order.entity.OrderProduct;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
