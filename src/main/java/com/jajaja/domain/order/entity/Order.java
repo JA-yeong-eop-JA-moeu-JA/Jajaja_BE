@@ -39,36 +39,36 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
-    @Column(nullable = false)
-    private Integer discountAmount;
-
-    @Column(nullable = false)
-    private Integer pointUsedAmount;
-
-    @Column(nullable = false)
-    private Integer shippingFee;
-
-    @Column(length = 50, nullable = false)
-    private String orderNumber;
-
-    @Column(nullable = false)
-    private Integer totalAmount;
-
-    @Column(nullable = false)
-    private Integer paidAmount;
-
     @Column
-    private LocalDateTime paidAt;
-
-    @Column
-    private String impUid;
-
-    @Column
-    private String merchantUid;
+    private String orderId; // 결제 시 사용하는 오더 아이디
 
     @Column(length = 500)
+    private String orderName; // 결제할 때 사용할 결제 건 명
+    
+    @Column(length = 200)
+    private String paymentKey; // 결제 승인 시 사용하는 페이먼트 키
+    
+    @Column(nullable = false)
+    private Integer discountAmount;
+    
+    @Column(nullable = false)
+    private Integer pointUsedAmount;
+    
+    @Column(nullable = false)
+    private Integer shippingFee;
+    
+    @Column(nullable = false)
+    private Integer totalAmount;
+    
+    @Column(nullable = false)
+    private Integer paidAmount;
+    
+    @Column
+    private LocalDateTime paidAt;
+    
+    @Column(length = 500)
     private String deliveryRequest;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -105,8 +105,8 @@ public class Order extends BaseEntity {
         this.orderStatus = status;
     }
 
-    public void updatePaymentInfo(String impUid, PaymentMethod paymentMethod, OrderStatus orderStatus) {
-        this.impUid = impUid;
+    public void updatePaymentInfo(String paymentKey, PaymentMethod paymentMethod, OrderStatus orderStatus) {
+        this.paymentKey = paymentKey;
         this.paymentMethod = paymentMethod;
         this.orderStatus = orderStatus;
         this.paidAt = LocalDateTime.now();

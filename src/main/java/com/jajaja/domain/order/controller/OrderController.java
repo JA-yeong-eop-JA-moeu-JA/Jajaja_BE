@@ -1,9 +1,9 @@
 package com.jajaja.domain.order.controller;
 
-import com.jajaja.domain.order.dto.request.OrderCreateRequestDto;
+import com.jajaja.domain.order.dto.request.OrderApproveRequestDto;
 import com.jajaja.domain.order.dto.request.OrderPrepareRequestDto;
 import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
-import com.jajaja.domain.order.dto.response.OrderCreateResponseDto;
+import com.jajaja.domain.order.dto.response.OrderApproveResponseDto;
 import com.jajaja.domain.order.dto.response.OrderDetailResponseDto;
 import com.jajaja.domain.order.dto.response.OrderPrepareResponseDto;
 import com.jajaja.domain.order.dto.response.OrderRefundResponseDto;
@@ -36,12 +36,12 @@ public class OrderController {
         return ApiResponse.onSuccess(orderCommandService.prepareOrder(memberId, request));
     }
 
-    @PostMapping
-    @Operation(summary = "결제 후 결제 검증 API | by 엠마/신윤지", description = "결제를 검증하고 주문 데이터를 생성합니다.")
-    public ApiResponse<OrderCreateResponseDto> createOrder(
+    @PostMapping("/confirm")
+    @Operation(summary = "결제 후 결제 승인 API | by 엠마/신윤지", description = "결제를 검증하고 주문 데이터를 생성합니다.")
+    public ApiResponse<OrderApproveResponseDto> createOrder(
             @Auth Long memberId,
-            @Valid @RequestBody OrderCreateRequestDto request) {
-        return ApiResponse.onSuccess(orderCommandService.createOrder(memberId, request));
+            @Valid @RequestBody OrderApproveRequestDto request) {
+        return ApiResponse.onSuccess(orderCommandService.approveOrder(memberId, request));
     }
 
     @PostMapping("/refund")

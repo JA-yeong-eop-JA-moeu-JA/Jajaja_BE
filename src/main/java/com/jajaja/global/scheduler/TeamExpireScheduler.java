@@ -54,7 +54,7 @@ public class TeamExpireScheduler {
             if (order != null) {
                 try {
                     order.updateStatus(OrderStatus.TEAM_MATCHING_FAILED);
-                    OrderRefundRequestDto refundRequest = OrderRefundRequestDto.of(order.getId(), "팀 매칭 실패로 인한 자동 환불");
+                    OrderRefundRequestDto refundRequest = OrderRefundRequestDto.of(order.getId(), order.getPaymentKey(),"팀 매칭 실패로 인한 자동 환불");
                     orderCommandService.refundOrder(leader.getId(), refundRequest);
                     log.info("팀 매칭 실패 주문 자동 환불 완료 - 주문ID: {}", order.getId());
                 } catch (Exception e) {
