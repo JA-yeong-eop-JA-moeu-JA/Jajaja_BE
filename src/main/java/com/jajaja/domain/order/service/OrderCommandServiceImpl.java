@@ -154,7 +154,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             body.put("amount", request.getPaidAmount());
             
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, getHeaders());
-            ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(tossPaymentsConfig.getApproveURL(), entity, PaymentResponseDto.class);
+            ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(tossPaymentsConfig.getApproveUrl(), entity, PaymentResponseDto.class);
             PaymentResponseDto responseDto = getPaymentResponseDto(responseEntity);
             order.updatePaymentInfo(request.getOrderId(), PaymentMethod.valueOf(responseDto.type()), OrderStatus.DONE);
             
@@ -263,7 +263,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             // 환불 시도
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(
-                    tossPaymentsConfig.getRefundURL().replace("paymentKey", request.getPaymentKey()),
+                    tossPaymentsConfig.getRefundUrl().replace("paymentKey", request.getPaymentKey()),
                     entity, PaymentResponseDto.class
             );
             PaymentResponseDto responseDto = responseEntity.getBody();
