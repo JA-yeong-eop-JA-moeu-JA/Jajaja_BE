@@ -49,7 +49,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         Review review = Review.builder()
                 .member(member)
                 .product(product)
-                .rating(dto.rating())
+                .rating(dto.rating().byteValue())
                 .content(dto.content())
                 .build();
         Review savedReview = reviewRepository.save(review);

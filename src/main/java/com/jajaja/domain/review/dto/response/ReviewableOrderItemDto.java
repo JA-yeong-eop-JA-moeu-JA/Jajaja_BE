@@ -12,6 +12,8 @@ public record ReviewableOrderItemDto(
         Long orderProductId,
         Long productId,
         String productName,
+        String store,
+        String optionName,
         String imageUrl,
         int price,
         int quantity,
@@ -24,6 +26,10 @@ public record ReviewableOrderItemDto(
                 .orderProductId(op.getId())
                 .productId(op.getProduct().getId())
                 .productName(op.getProduct().getName())
+                .store(op.getProduct().getStore())
+                .optionName(op.getProductOption() != null
+                        ? op.getProductOption().getName()
+                        : null)
                 .imageUrl(op.getProduct().getThumbnailUrl())
                 .price(op.getPrice())
                 .quantity(op.getQuantity())

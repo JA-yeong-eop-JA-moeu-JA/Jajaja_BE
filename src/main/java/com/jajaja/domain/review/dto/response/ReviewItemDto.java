@@ -12,6 +12,7 @@ public record ReviewItemDto(
         String profileUrl,
         LocalDateTime createDate,
         double rating,
+        String productName,
         String option,
         String content,
         Long likeCount,
