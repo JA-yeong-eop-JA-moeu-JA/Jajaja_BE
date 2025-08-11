@@ -290,6 +290,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
         QOrder order = QOrder.order;
         QOrderProduct op = QOrderProduct.orderProduct;
         QProduct product = QProduct.product;
+        QProductOption productOption = QProductOption.productOption;
         QReview review = QReview.review;
 
         List<ReviewableOrderItemDto> content = queryFactory
@@ -299,6 +300,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                         op.id,
                         product.id,
                         product.name,
+                        product.store,
+                        productOption.name,
                         product.thumbnailUrl,
                         op.price,
                         op.quantity,
@@ -307,6 +310,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 .from(order)
                 .join(order.orderProducts, op)
                 .join(op.product, product)
+                .leftJoin(op.productOption, productOption)
                 .leftJoin(review)
                 .on(
                         review.orderProduct.id.eq(op.id)
