@@ -28,7 +28,8 @@ public class ReviewCommonServiceImpl implements ReviewCommonService {
                         dto.option(),
                         dto.content(),
                         dto.likeCount(),
-                        dto.imagesCount()
+                        dto.imagesCount(),
+                        dto.productName()
                 ))
                 .toList();
     }

@@ -15,5 +15,6 @@ public record ReviewItemDto(
         String option,
         String content,
         Long likeCount,
-        Long imagesCount
+        Long imagesCount,
+        String productName
 ) { }

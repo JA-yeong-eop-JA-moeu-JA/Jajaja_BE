@@ -16,6 +16,7 @@ import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
     private final JPAQueryFactory queryFactory;
     private final QReview review = QReview.review;
     private final QMember member = QMember.member;
+    private final QProduct product = QProduct.product;
     private final QProductOption option = QProductOption.productOption;
     private final QReviewLike reviewLike = QReviewLike.reviewLike;
     private final QReviewImage reviewImage = QReviewImage.reviewImage;
@@ -178,7 +180,24 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 option.name,
                 review.content,
                 likeCountExpression(review),
-                imageCountExpression(review)
+                imageCountExpression(review),
+                Expressions.constant("")
+        );
+    }
+
+    private Expression<ReviewItemDto> reviewItemDtoProjectionWithProductName() {
+        return Projections.constructor(ReviewItemDto.class,
+                review.id.intValue(),
+                member.id,
+                member.name,
+                member.profileKeyName,
+                review.createdAt,
+                review.rating.doubleValue(),
+                option.name,
+                review.content,
+                likeCountExpression(review),
+                imageCountExpression(review),
+                product.name
         );
     }
 
@@ -192,9 +211,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 .and(review.deletedAt.isNull());
 
         List<ReviewItemDto> content = queryFactory
-                .select(reviewItemDtoProjection())
+                .select(reviewItemDtoProjectionWithProductName())
                 .from(review)
                 .join(review.member, member)
+                .join(review.product, product)
                 .leftJoin(review.productOption, option)
                 .where(condition)
                 .orderBy(review.createdAt.desc())
