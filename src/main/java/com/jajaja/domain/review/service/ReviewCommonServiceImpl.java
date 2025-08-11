@@ -25,11 +25,11 @@ public class ReviewCommonServiceImpl implements ReviewCommonService {
                         s3Service.generateStaticUrl(dto.profileUrl()),
                         dto.createDate(),
                         dto.rating(),
+                        dto.productName(),
                         dto.option(),
                         dto.content(),
                         dto.likeCount(),
-                        dto.imagesCount(),
-                        dto.productName()
+                        dto.imagesCount()
                 ))
                 .toList();
     }

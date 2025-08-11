@@ -16,7 +16,6 @@ import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -45,11 +44,13 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
         return queryFactory
                 .select(reviewItemDtoProjection())
                 .from(review)
+                .join(review.product, product)
                 .leftJoin(review.member, member)
                 .leftJoin(review.productOption, option)
                 .leftJoin(review.reviewLikes, reviewLike)
                 .where(review.product.id.eq(productId).and(review.deletedAt.isNull()))
-                .groupBy(review.id, member.name, review.createdAt, review.rating, option.name, review.content)
+                .groupBy(review.id, member.name, option.name, review.createdAt,
+                        review.rating, product.name, review.content)
                 .orderBy(reviewLike.id.count().desc())
                 .limit(3)
                 .fetch();
@@ -92,6 +93,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
         List<ReviewItemDto> content = queryFactory
                 .select(reviewItemDtoProjection())
                 .from(review)
+                .join(review.product, product)
                 .join(review.member, member)
                 .leftJoin(review.productOption, option)
                 .where(review.product.id.eq(productId)
@@ -117,13 +119,14 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
         List<ReviewItemDto> content = queryFactory
                 .select(reviewItemDtoProjection())
                 .from(review)
+                .join(review.product, product)
                 .join(review.member, member)
                 .leftJoin(review.productOption, option)
                 .leftJoin(review.reviewLikes, reviewLike)
                 .where(review.product.id.eq(productId)
                         .and(review.deletedAt.isNull()))
-                .groupBy(review.id, member.name, option.name,
-                        review.createdAt, review.rating, review.content)
+                .groupBy(review.id, member.name, option.name, review.createdAt,
+                        review.rating, product.name, review.content)
                 .orderBy(reviewLike.id.count().desc())
                 .offset((long) page * size)
                 .limit(size)
@@ -177,29 +180,14 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 member.profileKeyName,
                 review.createdAt,
                 review.rating.doubleValue(),
+                product.name,
                 option.name,
                 review.content,
                 likeCountExpression(review),
-                imageCountExpression(review),
-                Expressions.constant("")
+                imageCountExpression(review)
         );
     }
 
-    private Expression<ReviewItemDto> reviewItemDtoProjectionWithProductName() {
-        return Projections.constructor(ReviewItemDto.class,
-                review.id.intValue(),
-                member.id,
-                member.name,
-                member.profileKeyName,
-                review.createdAt,
-                review.rating.doubleValue(),
-                option.name,
-                review.content,
-                likeCountExpression(review),
-                imageCountExpression(review),
-                product.name
-        );
-    }
 
     @Override
     public Page<ReviewItemDto> findPageByMemberIdOrderByCreatedAt(Long memberId, int page, int size) {
@@ -211,7 +199,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 .and(review.deletedAt.isNull());
 
         List<ReviewItemDto> content = queryFactory
-                .select(reviewItemDtoProjectionWithProductName())
+                .select(reviewItemDtoProjection())
                 .from(review)
                 .join(review.member, member)
                 .join(review.product, product)
@@ -238,6 +226,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 .select(reviewItemDtoProjection())
                 .from(review)
                 .join(review.member, member)
+                .join(review.product, product)
                 .leftJoin(review.productOption, option)
                 .where(review.deletedAt.isNull())
                 .orderBy(review.createdAt.desc())
@@ -261,6 +250,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                 .select(reviewItemDtoProjection())
                 .from(review)
                 .join(review.member, member)
+                .join(review.product, product)
                 .leftJoin(review.productOption, option)
                 .leftJoin(review.reviewLikes, reviewLike)
                 .where(review.deletedAt.isNull())
