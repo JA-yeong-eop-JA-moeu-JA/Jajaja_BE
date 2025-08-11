@@ -29,7 +29,7 @@ public class OrderController {
     private final OrderCommandService orderCommandService;
 
     @PostMapping("/prepare")
-    @Operation(summary = "결제 전 준비 API | by 엠마/신윤지", description = "결제 전 주문 데이터를 검증하고 결제에 필요한 merchant_uid를 생성합니다.")
+    @Operation(summary = "결제 전 준비 API | by 엠마/신윤지", description = "결제 전 주문 데이터를 검증하고 결제에 필요한 orderId를 생성합니다.")
     public ApiResponse<OrderPrepareResponseDto> prepareOrder(
             @Auth Long memberId,
             @Valid @RequestBody OrderPrepareRequestDto request) {

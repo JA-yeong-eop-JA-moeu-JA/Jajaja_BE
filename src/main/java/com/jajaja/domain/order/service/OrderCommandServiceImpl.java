@@ -96,7 +96,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .discountAmount(couponDiscount)
                 .pointUsedAmount(request.getPoint() != null ? request.getPoint() : 0)
                 .shippingFee(shippingFee)
-                .paymentMethod(request.getPaymentMethod())
+                .paymentMethod(PaymentMethod.NORMAL)
                 .orderId(orderId)
                 .orderName(orderName)
                 .totalAmount(totalAmount)
@@ -239,7 +239,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
         
         if (!order.getMember().equals(member)) {
-            throw new BadRequestException(ErrorStatus.ORDER_NOT_FOUND);
+            throw new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND);
         }
         
         // 환불이 가능한지 확인
