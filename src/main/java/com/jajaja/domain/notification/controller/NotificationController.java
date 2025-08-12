@@ -1,6 +1,5 @@
 package com.jajaja.domain.notification.controller;
 
-import com.jajaja.domain.notification.dto.response.NotificationResponseDto;
 import com.jajaja.domain.notification.dto.response.PagingNotificationResponseDto;
 import com.jajaja.domain.notification.dto.response.UnreadCountResponseDto;
 import com.jajaja.domain.notification.repository.NotificationSseEmitterRepository;

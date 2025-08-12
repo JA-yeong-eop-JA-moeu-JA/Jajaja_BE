@@ -47,7 +47,7 @@ public class TeamExpireScheduler {
             Member leader = team.getLeader();
 
             // 멤버에게 팀 매칭 실패 알림 전송
-            notificationService.createNotification(new NotificationCreateRequestDto(leader.getId(), NotificationType.MATCHING, "팀 매칭에 실패했습니다."));
+            notificationService.createNotification(NotificationCreateRequestDto.of(leader.getId(), NotificationType.MATCHING, "팀 매칭에 실패했습니다."));
 
             // 팀과 연결된 주문을 자동 환불 처리
             Order order = team.getOrder();

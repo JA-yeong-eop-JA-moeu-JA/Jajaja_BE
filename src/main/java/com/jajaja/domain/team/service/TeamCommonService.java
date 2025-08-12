@@ -38,6 +38,6 @@ public class TeamCommonService {
         team.getTeamMembers().add(teamMember);
         team.updateStatus(TeamStatus.COMPLETED);
 
-        notificationService.createNotification(new NotificationCreateRequestDto(leader.getId(), NotificationType.MATCHING, "팀 매칭이 완료되었습니다."));
+        notificationService.createNotification(NotificationCreateRequestDto.of(leader.getId(), NotificationType.MATCHING, "팀 매칭이 완료되었습니다."));
     }
 }

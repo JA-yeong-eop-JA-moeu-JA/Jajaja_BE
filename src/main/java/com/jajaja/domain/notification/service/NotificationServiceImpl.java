@@ -1,5 +1,7 @@
 package com.jajaja.domain.notification.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.member.repository.MemberRepository;
 import com.jajaja.domain.notification.dto.request.NotificationCreateRequestDto;
@@ -28,6 +30,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
     private final NotificationSseEmitterRepository emitterRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -35,10 +38,18 @@ public class NotificationServiceImpl implements NotificationService {
         Member member = memberRepository.findById(requestDto.memberId())
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
+        String detailJson = null;
+        try {
+            detailJson = requestDto.detail() == null ? null : objectMapper.writeValueAsString(requestDto.detail());
+        } catch (JsonProcessingException e) {
+            throw new BadRequestException(ErrorStatus.SERIALIZATION_FAILURE);
+        }
+
         Notification notification = Notification.builder()
                 .member(member)
                 .type(requestDto.type())
-                .body(requestDto.body())
+                .title(requestDto.title())
+                .detail(detailJson)
                 .isRead(false)
                 .build();
 
