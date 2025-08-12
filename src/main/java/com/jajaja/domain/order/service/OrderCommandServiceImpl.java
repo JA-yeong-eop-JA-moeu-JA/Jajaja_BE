@@ -11,34 +11,43 @@ import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.member.entity.MemberCoupon;
 import com.jajaja.domain.member.repository.MemberCouponRepository;
 import com.jajaja.domain.member.repository.MemberRepository;
-import com.jajaja.domain.order.dto.request.OrderCreateRequestDto;
+import com.jajaja.domain.order.dto.request.OrderApproveRequestDto;
 import com.jajaja.domain.order.dto.request.OrderPrepareRequestDto;
 import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
-import com.jajaja.domain.order.dto.response.OrderCreateResponseDto;
+import com.jajaja.domain.order.dto.response.OrderApproveResponseDto;
 import com.jajaja.domain.order.dto.response.OrderPrepareResponseDto;
 import com.jajaja.domain.order.dto.response.OrderRefundResponseDto;
+import com.jajaja.domain.order.dto.response.TossPayments.PaymentResponseDto;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.order.entity.OrderProduct;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.entity.enums.OrderType;
+import com.jajaja.domain.order.entity.enums.PaymentMethod;
 import com.jajaja.domain.order.repository.OrderRepository;
+import com.jajaja.domain.point.service.PointCommandService;
 import com.jajaja.domain.product.entity.ProductSales;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
+import com.jajaja.global.apiPayload.exception.GeneralException;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
-import com.siot.IamportRestClient.IamportClient;
-import com.siot.IamportRestClient.exception.IamportResponseException;
-import com.siot.IamportRestClient.request.CancelData;
-import com.siot.IamportRestClient.response.IamportResponse;
-import com.siot.IamportRestClient.response.Payment;
+import com.jajaja.global.apiPayload.exception.custom.TossPaymentException;
+import com.jajaja.global.config.RestTemplateConfig;
+import com.jajaja.global.config.TossPaymentsConfig;
+
+import java.util.*;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service
@@ -46,7 +55,6 @@ import java.util.UUID;
 @Transactional
 public class OrderCommandServiceImpl implements OrderCommandService {
     
-    private final IamportClient iamportClient;
     private final OrderRepository orderRepository;
     private final MemberRepository memberRepository;
     private final DeliveryRepository deliveryRepository;
@@ -55,7 +63,11 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private final ProductSalesRepository productSalesRepository;
     private final CartCommandService cartCommandService;
     private final CouponCommonService couponCommonService;
-    
+    private final PointCommandService pointCommandService;
+
+    private final TossPaymentsConfig tossPaymentsConfig;
+    private final RestTemplateConfig restTemplateConfig;
+
     @Override
     public OrderPrepareResponseDto prepareOrder(Long memberId, OrderPrepareRequestDto request) {
         log.info("[OrderCommandService] 결제 준비 시작 - 회원ID: {}", memberId);
@@ -69,22 +81,24 @@ public class OrderCommandServiceImpl implements OrderCommandService {
        validatePointUsage(request.getPoint(), member);
        
         int totalAmount = cartProducts.stream()
-                .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
+                .mapToInt(cp ->
+                        cp.getUnitPrice() * cp.getQuantity())
                 .sum();
-
         int couponDiscount = calculateCouponDiscount(coupon, totalAmount);
         int shippingFee = calculateShippingFee(delivery);
         int finalAmount = totalAmount - couponDiscount - (request.getPoint() != null ? request.getPoint() : 0) + shippingFee;
-
-        String merchantUid = "ORD-" + UUID.randomUUID();
+        String orderId = memberId + "ORDER-" + UUID.randomUUID();
+        String orderName = cartProducts.get(0).getProduct().getName() + (cartProducts.size() > 1 ? " 외 " + (cartProducts.size() - 1) + "건" : "");
 
         Order order = Order.builder()
-                .orderStatus(OrderStatus.PENDING)
+                .orderStatus(OrderStatus.READY)
                 .orderType(OrderType.PERSONAL)
                 .discountAmount(couponDiscount)
                 .pointUsedAmount(request.getPoint() != null ? request.getPoint() : 0)
                 .shippingFee(shippingFee)
-                .orderNumber(merchantUid)
+                .paymentMethod(PaymentMethod.NORMAL)
+                .orderId(orderId)
+                .orderName(orderName)
                 .totalAmount(totalAmount)
                 .paidAmount(finalAmount)
                 .member(member)
@@ -99,17 +113,18 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                     .productOption(cartProduct.getProductOption())
                     .quantity(cartProduct.getQuantity())
                     .price(cartProduct.getUnitPrice())
-                    .status(OrderStatus.PENDING)
+                    .status(OrderStatus.READY)
                     .build();
             order.getOrderProducts().add(orderProduct);
         });
 
         orderRepository.save(order);
 
-        log.info("[OrderCommandService] 결제 준비 완료 - 회원ID: {}, merchant_uid: {}, 최종금액: {}", memberId, merchantUid, finalAmount);
+        log.info("[OrderCommandService] 결제 준비 완료 - 회원ID: {}, orderId: {}, 최종금액: {}", memberId, orderId, finalAmount);
 
         return OrderPrepareResponseDto.of(
-                merchantUid,
+                orderId,
+                orderName,
                 totalAmount,
                 couponDiscount,
                 request.getPoint() != null ? request.getPoint() : 0,
@@ -119,27 +134,41 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     }
 
     @Override
-    public OrderCreateResponseDto createOrder(Long memberId, OrderCreateRequestDto request) {
-        log.info("[OrderCommandService] 주문 생성 시작 - 회원ID: {}, 아임포트UID: {}", memberId, request.getImpUid());
+    public OrderApproveResponseDto approveOrder(Long memberId, OrderApproveRequestDto request) {
+        log.info("[OrderCommandService] 주문 승인 시작 - 회원ID: {}, 오더ID: {}", memberId, request.getOrderId());
 
         Member member = findMember(memberId);
-        Order order = orderRepository.findByMerchantUid(request.getMerchantUid())
+        Order order = orderRepository.findByOrderId(request.getOrderId())
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
-
-        verifyPayment(request.getImpUid(), order);
-
+        
+        // 결제 금액과 결제해야 할 금액이 동일한지 확인
+        if (!request.getPaidAmount().equals(order.getPaidAmount())) {
+            throw new GeneralException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
+        }
+        
         try {
-            order.updatePaymentInfo(request.getImpUid(), request.getPaymentMethod(), OrderStatus.PAYMENT_COMPLETED);
+            // 결제 승인 확인
+            Map<String, Object> body = new HashMap<>();
+            body.put("paymentKey", request.getPaymentKey());
+            body.put("orderId", request.getOrderId());
+            body.put("amount", request.getPaidAmount());
             
-            validatePointUsage(request.getPoint(), member);
-            member.updatePoint(member.getPoint() - order.getPointUsedAmount()); // TODO : 포인트 사용 내역 저장
-
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, getHeaders());
+            ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(tossPaymentsConfig.getApproveUrl(), entity, PaymentResponseDto.class);
+            PaymentResponseDto responseDto = getPaymentResponseDto(responseEntity);
+            order.updatePaymentInfo(request.getOrderId(), PaymentMethod.valueOf(responseDto.type()), OrderStatus.DONE);
+            
+            // 포인트 사용
+            member.updatePoint(member.getPoint() - order.getPointUsedAmount());
+            pointCommandService.usePoints(memberId, order);
+            
+            // 쿠폰 사용 처리
             if (order.getCoupon() != null) {
                 memberCouponRepository.findByMemberIdAndCouponIdAndUsedAtIsNull(memberId, order.getCoupon().getId())
                         .orElseThrow(() -> new BadRequestException(ErrorStatus.COUPON_NOT_AVAILABLE)).use();
             }
-
-            cartCommandService.deleteCartProducts(memberId, request.getItems());
+            
+            cartCommandService.deleteCartProducts(memberId, order.getOrderProducts().stream().map(OrderProduct::getId).toList());
             
             // 판매 완료 시 판매 카운트 증가
             order.getOrderProducts()
@@ -158,16 +187,49 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             
             log.info("[OrderCommandService] 주문 생성 완료 - 주문ID: {}", order.getId());
             
-            return OrderCreateResponseDto.of(order);
+            // 최초 구매 시 포인트 지급
+            pointCommandService.addFirstPurchasePointsIfPossible(member);
             
+            return OrderApproveResponseDto.of(order);
+            
+        } catch (HttpClientErrorException e) { // 400번대 에러
+            log.error("토스 환불 4xx 서버 에러: {}", e.getResponseBodyAsString());
+            throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_BAD_REQUEST);
+        } catch (HttpServerErrorException e) { // 500번대 에러
+            log.error("토스 환불 5xx 서버 에러: {}", e.getResponseBodyAsString());
+            throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_SERVER_ERROR);
         } catch (Exception e) {
             log.error("[OrderCommandService] 주문 생성 실패 - 회원ID: {}, 에러: {}", memberId, e.getMessage(), e);
-            order.updateStatus(OrderStatus.PAYMENT_FAILED);
-            processIamportRefund(order, "주문 생성 실패로 인한 자동 환불");
-            throw e;
+            order.updateStatus(OrderStatus.ABORTED);
+            throw new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR);
         }
     }
-
+    
+    private PaymentResponseDto getPaymentResponseDto(ResponseEntity<PaymentResponseDto> responseEntity) {
+        PaymentResponseDto responseDto = responseEntity.getBody();
+        
+        // 상태가 DONE이 아닌 경우 결제된 상태 X
+        if(!responseDto.status().equals("DONE"))  {
+            switch (responseDto.status()) {
+                case "WAITING_FOR_DEPOSIT":
+                    throw new GeneralException(ErrorStatus.PAYMENT_WAITING_FOR_DEPOSIT);
+                case "IN_PROGRESS":
+                    throw new GeneralException(ErrorStatus.PAYMENT_IN_PROGRESS);
+                case "CANCELED":
+                    throw new GeneralException(ErrorStatus.PAYMENT_CANCELED);
+                case "PARTIAL_CANCELED":
+                    throw new GeneralException(ErrorStatus.PAYMENT_PARTIAL_CANCELED);
+                case "ABORTED":
+                    throw new GeneralException(ErrorStatus.PAYMENT_ABORTED);
+                case "EXPIRED":
+                    throw new GeneralException(ErrorStatus.PAYMENT_EXPIRED);
+                default:
+                    throw new GeneralException(ErrorStatus.PAYMENT_UNSPECIFIED_ERROR);
+            }
+        }
+        return responseDto;
+    }
+    
     @Override
     public OrderRefundResponseDto refundOrder(Long memberId, OrderRefundRequestDto request) {
         log.info("[OrderCommandService] 환불 처리 시작 - 회원ID: {}, 주문ID: {}", memberId, request.getOrderId());
@@ -177,24 +239,58 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
         
         if (!order.getMember().equals(member)) {
-            throw new BadRequestException(ErrorStatus.ORDER_NOT_FOUND);
+            throw new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND);
         }
         
         // 환불이 가능한지 확인
         if (order.getOrderStatus() == OrderStatus.REFUNDED || order.getOrderStatus() == OrderStatus.REFUND_REQUESTED) {
             throw new BadRequestException(ErrorStatus.ORDER_ALREADY_REFUNDED);
         }
-        if (order.getOrderStatus() != OrderStatus.PAYMENT_COMPLETED && order.getOrderStatus() != OrderStatus.PREPARING) {
+        if (!(order.getOrderStatus() == OrderStatus.DONE)) {
             throw new BadRequestException(ErrorStatus.ORDER_NOT_REFUNDABLE);
         }
         
-        order.updateStatus(OrderStatus.REFUND_REQUESTED);
-
         try {
-            processIamportRefund(order, request.getRefundReason());
-
+            order.updateStatus(OrderStatus.REFUND_REQUESTED);
+            
+            Map<String, Object> body = new HashMap<>();
+            body.put("cancelReason", request.getRefundReason());
+            
+            // 멱등성 설정
+            HttpHeaders headers = getHeaders();
+            headers.set("Idempotency-Key", UUID.randomUUID().toString());
+            
+            // 환불 시도
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(
+                    tossPaymentsConfig.getRefundUrl().replace("paymentKey", request.getPaymentKey()),
+                    entity, PaymentResponseDto.class
+            );
+            PaymentResponseDto responseDto = responseEntity.getBody();
+            
+            if ("CANCELED".equals(responseDto.status())) {
+                log.info("환불 성공. 결제 키: {}, 환불 금액: {}", request.getPaymentKey(), order.getPaidAmount());
+                
+                if (responseDto.balanceAmount() != 0) {
+                    log.warn("환불 후 잔액이 0이 아닙니다. 결제 키: {}, 잔액: {}", request.getPaymentKey(), responseDto.balanceAmount());
+                    throw new GeneralException(ErrorStatus.REFUND_FAILED);
+                }
+                
+                if (responseDto.cancels() != null && !responseDto.cancels().isEmpty()) {
+                    PaymentResponseDto.CancelDto cancelInfo = responseDto.cancels().get(0);
+                    log.info("환불 정보 - 사유: {}, 금액: {}", cancelInfo.cancelReason(), cancelInfo.cancelAmount());
+                }
+                
+            } else {
+                // 2xx 응답을 받았지만 상태가 CANCELED가 아닌 경우 (비정상 상황)
+                log.error("환불 응답 상태가 비정상적입니다. 상태: {}", responseDto.status());
+                throw new GeneralException(ErrorStatus.PAYMENT_UNSPECIFIED_ERROR);
+            }
+            
+            
             if (order.getPointUsedAmount() > 0) {
                 member.updatePoint(member.getPoint() + order.getPointUsedAmount());
+                pointCommandService.refundUsedPoints(order.getId());
             }
 
             order.updateStatus(OrderStatus.REFUNDED);
@@ -215,46 +311,16 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
             return OrderRefundResponseDto.of(order, order.getPointUsedAmount(), request.getRefundReason());
 
+        } catch (HttpClientErrorException e) {
+            log.error("토스 환불 4xx 서버 에러: {}", e.getResponseBodyAsString());
+            throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_BAD_REQUEST);
+        } catch (HttpServerErrorException e) { // 500번대
+            log.error("토스 환불 5xx 서버 에러: {}", e.getResponseBodyAsString());
+            throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_SERVER_ERROR);
         } catch (Exception e) {
             order.updateStatus(OrderStatus.REFUND_FAILED);
             log.error("[OrderCommandService] 환불 처리 실패 - 주문ID: {}, 에러: {}", request.getOrderId(), e.getMessage(), e);
-            throw new BadRequestException(ErrorStatus.REFUND_FAILED);
-        }
-    }
-    
-    private void verifyPayment(String impUid, Order order) {
-        try {
-            IamportResponse<Payment> paymentResponse = iamportClient.paymentByImpUid(impUid);
-            
-            if (paymentResponse.getResponse() == null) {
-                throw new BadRequestException(ErrorStatus.PAYMENT_NOT_FOUND);
-            }
-            
-            Payment payment = paymentResponse.getResponse();
-            
-            if (!"paid".equals(payment.getStatus())) {
-                order.updateStatus(OrderStatus.PAYMENT_FAILED);
-                throw new BadRequestException(ErrorStatus.PAYMENT_NOT_COMPLETED);
-            }
-            
-            if (!payment.getMerchantUid().equals(order.getMerchantUid())) {
-                order.updateStatus(OrderStatus.CANCELLED);
-                processIamportRefund(order, "결제 정보 불일치로 인한 자동 환불");
-                throw new BadRequestException(ErrorStatus.PAYMENT_MERCHANT_UID_MISMATCH);
-            }
-            
-            if (payment.getAmount().intValue() != order.getPaidAmount()) {
-                order.updateStatus(OrderStatus.CANCELLED);
-                processIamportRefund(order, "결제 금액 불일치로 인한 자동 환불");
-                throw new BadRequestException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
-            }
-            
-            log.info("[OrderCommandService] 결제 검증 완료 - impUid: {}, merchantUid: {}, 금액: {}",
-                    impUid, order.getMerchantUid(), payment.getAmount());
-            
-        } catch (IamportResponseException | IOException e) {
-            log.error("[OrderCommandService] 결제 검증 실패 - impUid: {}, merchantUid: {}", impUid, order.getMerchantUid(), e);
-            throw new BadRequestException(ErrorStatus.PAYMENT_VERIFICATION_FAILED);
+            throw new GeneralException(ErrorStatus.REFUND_FAILED);
         }
     }
     
@@ -352,17 +418,15 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         }
         return 0;
     }
-
-    private void processIamportRefund(Order order, String refundReason) {
-        try {
-            CancelData cancelData =
-                    new CancelData(order.getImpUid(), true, java.math.BigDecimal.valueOf(Math.max(0, order.getPaidAmount() - 6000)));
-            cancelData.setReason(refundReason);
-            iamportClient.cancelPaymentByImpUid(cancelData);
-
-        } catch (Exception e) {
-            log.error("[OrderCommandService] 아임포트 환불 실패 - impUid: {}", order.getImpUid(), e);
-            throw new BadRequestException(ErrorStatus.REFUND_FAILED);
-        }
+    
+    private HttpHeaders getHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(
+                Base64.getEncoder().encodeToString((tossPaymentsConfig.getSecretApiKey() + ":").getBytes(StandardCharsets.UTF_8))
+        );
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        
+        return headers;
     }
 }

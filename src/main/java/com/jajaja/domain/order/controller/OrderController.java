@@ -1,9 +1,9 @@
 package com.jajaja.domain.order.controller;
 
-import com.jajaja.domain.order.dto.request.OrderCreateRequestDto;
+import com.jajaja.domain.order.dto.request.OrderApproveRequestDto;
 import com.jajaja.domain.order.dto.request.OrderPrepareRequestDto;
 import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
-import com.jajaja.domain.order.dto.response.OrderCreateResponseDto;
+import com.jajaja.domain.order.dto.response.OrderApproveResponseDto;
 import com.jajaja.domain.order.dto.response.OrderDetailResponseDto;
 import com.jajaja.domain.order.dto.response.OrderPrepareResponseDto;
 import com.jajaja.domain.order.dto.response.OrderRefundResponseDto;
@@ -11,7 +11,7 @@ import com.jajaja.domain.order.dto.response.PagingOrderListResponseDto;
 import com.jajaja.domain.order.service.OrderCommandService;
 import com.jajaja.domain.order.service.OrderQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,19 +29,19 @@ public class OrderController {
     private final OrderCommandService orderCommandService;
 
     @PostMapping("/prepare")
-    @Operation(summary = "결제 전 준비 API | by 엠마/신윤지", description = "결제 전 주문 데이터를 검증하고 결제에 필요한 merchant_uid를 생성합니다.")
+    @Operation(summary = "결제 전 준비 API | by 엠마/신윤지", description = "결제 전 주문 데이터를 검증하고 결제에 필요한 orderId를 생성합니다.")
     public ApiResponse<OrderPrepareResponseDto> prepareOrder(
             @Auth Long memberId,
             @Valid @RequestBody OrderPrepareRequestDto request) {
         return ApiResponse.onSuccess(orderCommandService.prepareOrder(memberId, request));
     }
 
-    @PostMapping
-    @Operation(summary = "결제 후 결제 검증 API | by 엠마/신윤지", description = "결제를 검증하고 주문 데이터를 생성합니다.")
-    public ApiResponse<OrderCreateResponseDto> createOrder(
+    @PostMapping("/confirm")
+    @Operation(summary = "결제 후 결제 승인 API | by 엠마/신윤지", description = "결제를 검증하고 주문 데이터를 생성합니다.")
+    public ApiResponse<OrderApproveResponseDto> createOrder(
             @Auth Long memberId,
-            @Valid @RequestBody OrderCreateRequestDto request) {
-        return ApiResponse.onSuccess(orderCommandService.createOrder(memberId, request));
+            @Valid @RequestBody OrderApproveRequestDto request) {
+        return ApiResponse.onSuccess(orderCommandService.approveOrder(memberId, request));
     }
 
     @PostMapping("/refund")

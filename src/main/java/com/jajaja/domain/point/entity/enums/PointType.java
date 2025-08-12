@@ -5,5 +5,11 @@ public enum PointType {
     USE,
     EXPIRED,
     CANCEL,
-    REFUND
+    REFUND,
+    SHARE,
+    FIRST_PURCHASE;
+
+    public boolean isEarnType() {
+        return this == PointType.REVIEW || this == PointType.SHARE || this == PointType.FIRST_PURCHASE;
+    }
 }

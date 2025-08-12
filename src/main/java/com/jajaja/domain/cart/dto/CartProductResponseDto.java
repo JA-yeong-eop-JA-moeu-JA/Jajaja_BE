@@ -37,7 +37,7 @@ public record CartProductResponseDto(
 				.quantity(cartProduct.getQuantity())
 				.productThumbnail(product.getImageUrl())
 				.unitPrice(price)
-				.totalPrice(cartProduct.getTotalPrice())
+				.totalPrice(cartProduct.getUnitPrice() * cartProduct.getQuantity())
 				.teamAvailable(isTeamAvailable)
 				.build();
 	}

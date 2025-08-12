@@ -1,4 +1,4 @@
-package com.jajaja.global.config.security.annotation;
+package com.jajaja.global.security.annotation;
 
 import io.swagger.v3.oas.annotations.Parameter;
 

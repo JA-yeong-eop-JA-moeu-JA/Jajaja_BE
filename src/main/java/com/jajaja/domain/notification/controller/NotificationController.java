@@ -1,21 +1,25 @@
 package com.jajaja.domain.notification.controller;
 
-import java.util.List;
-
+import com.jajaja.domain.notification.dto.response.PagingNotificationResponseDto;
+import com.jajaja.domain.notification.dto.response.UnreadCountResponseDto;
 import com.jajaja.domain.notification.repository.NotificationSseEmitterRepository;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.domain.notification.service.NotificationService;
+import com.jajaja.global.apiPayload.ApiResponse;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.domain.notification.dto.NotificationResponseDto;
-import com.jajaja.domain.notification.service.NotificationService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
+@Tag(name = "Notification API", description = "알림 관련 API")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -32,11 +36,19 @@ public class NotificationController {
 
     @Operation(
             summary = "알림 목록 조회 API | by 구름/윤윤지",
-            description = "사용자의 알림 목록을 조회합니다."
+            description = "사용자의 알림 목록을 페이징 처리하여 조회합니다."
     )
     @GetMapping
-    public ApiResponse<List<NotificationResponseDto>> getNotifications(@Auth Long memberId) {
-        return ApiResponse.onSuccess(notificationService.getNotifications(memberId));
+    public ApiResponse<PagingNotificationResponseDto> getNotifications(
+            @Auth Long memberId,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기", example = "10")
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.onSuccess(notificationService.getNotifications(memberId, page, size));
     }
 
     @Operation(
@@ -58,4 +70,14 @@ public class NotificationController {
         notificationService.markAllAsRead(memberId);
         return ApiResponse.onSuccess(null);
     }
+
+    @Operation(
+            summary = "읽지 않은 알림 개수 조회 API | by 구름/윤윤지",
+            description = "사용자의 읽지 않은 알림 개수를 반환합니다."
+    )
+    @GetMapping("/unread")
+    public ApiResponse<UnreadCountResponseDto> getUnreadCount(@Auth Long memberId) {
+        return ApiResponse.onSuccess(notificationService.getUnreadCount(memberId));
+    }
+
 }

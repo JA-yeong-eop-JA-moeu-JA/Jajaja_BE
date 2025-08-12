@@ -14,9 +14,9 @@ public interface PointRepositoryCustom {
     
     List<Point> findExpiringPoints();
     
-    List<Point> findValidReviewPointsOrderedByOldest(Long memberId, LocalDate today);
+    List<Point> findValidPointsOrderedByOldest(Long memberId, LocalDate today);
     
-    Optional<Point> findReviewPointByOrderProductId(Long orderProductId);
+    Optional<Point> findReviewPointByOrderId(Long orderId);
     
-    Optional<Point> findUsePointByOrderProductId(Long orderProductId);
+    Optional<Point> findUsePointByOrderId(Long orderId);
 }

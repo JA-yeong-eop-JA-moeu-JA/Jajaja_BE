@@ -2,7 +2,7 @@ package com.jajaja.global.scheduler;
 
 
 import com.jajaja.domain.member.entity.Member;
-import com.jajaja.domain.notification.dto.NotificationCreateRequestDto;
+import com.jajaja.domain.notification.dto.request.NotificationCreateRequestDto;
 import com.jajaja.domain.notification.entity.enums.NotificationType;
 import com.jajaja.domain.notification.service.NotificationService;
 import com.jajaja.domain.order.entity.Order;
@@ -47,14 +47,14 @@ public class TeamExpireScheduler {
             Member leader = team.getLeader();
 
             // 멤버에게 팀 매칭 실패 알림 전송
-            notificationService.createNotification(new NotificationCreateRequestDto(leader.getId(), NotificationType.MATCHING, "팀 매칭에 실패했습니다."));
+            notificationService.createNotification(NotificationCreateRequestDto.of(leader.getId(), NotificationType.MATCHING, "팀 매칭에 실패했습니다."));
 
             // 팀과 연결된 주문을 자동 환불 처리
             Order order = team.getOrder();
             if (order != null) {
                 try {
                     order.updateStatus(OrderStatus.TEAM_MATCHING_FAILED);
-                    OrderRefundRequestDto refundRequest = OrderRefundRequestDto.of(order.getId(), "팀 매칭 실패로 인한 자동 환불");
+                    OrderRefundRequestDto refundRequest = OrderRefundRequestDto.of(order.getId(), order.getPaymentKey(),"팀 매칭 실패로 인한 자동 환불");
                     orderCommandService.refundOrder(leader.getId(), refundRequest);
                     log.info("팀 매칭 실패 주문 자동 환불 완료 - 주문ID: {}", order.getId());
                 } catch (Exception e) {

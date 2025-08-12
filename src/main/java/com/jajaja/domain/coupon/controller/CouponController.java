@@ -5,15 +5,17 @@ import com.jajaja.domain.coupon.dto.PagingCouponListResponseDto;
 import com.jajaja.domain.coupon.service.CouponCommandService;
 import com.jajaja.domain.coupon.service.CouponQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/coupons")
+@Tag(name = "Coupon API", description = "쿠폰 관련 API")
 public class CouponController {
 	
 	private final CouponQueryService couponQueryService;

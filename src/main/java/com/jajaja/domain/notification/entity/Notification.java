@@ -22,7 +22,11 @@ public class Notification extends BaseEntity {
     private NotificationType type;
 
     @Column(nullable = false, length = 512)
-    private String body;
+    private String title;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String detail;
 
     @Column(nullable = false)
     @Builder.Default

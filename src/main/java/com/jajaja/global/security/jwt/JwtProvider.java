@@ -1,4 +1,4 @@
-package com.jajaja.global.config.security.jwt;
+package com.jajaja.global.security.jwt;
 
 import com.jajaja.domain.auth.dto.CustomOAuth2User;
 import com.jajaja.domain.auth.dto.MemberDto;
@@ -13,6 +13,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -85,19 +86,19 @@ public class JwtProvider {
                 .httpOnly(true)
                 .secure(secure)
                 .sameSite(sameSite)
-                .maxAge(jwtProperties.getExpiration().getAccess() / 1000);
+                .maxAge(StringUtils.hasText(accessToken) ? jwtProperties.getExpiration().getAccess() / 1000 : 0);
 
         ResponseCookie.ResponseCookieBuilder refreshBuilder = ResponseCookie.from("refreshToken", refreshToken)
                 .path("/")
                 .httpOnly(true)
                 .secure(secure)
                 .sameSite(sameSite)
-                .maxAge(jwtProperties.getExpiration().getRefresh() / 1000);
+                .maxAge(StringUtils.hasText(refreshToken) ? jwtProperties.getExpiration().getRefresh() / 1000 : 0);
 
 
-        if (jwtProperties.getCookieDomain() != null && !jwtProperties.getCookieDomain().isBlank()) {
-            accessBuilder.domain(jwtProperties.getCookieDomain()).build();
-            refreshBuilder.domain(jwtProperties.getCookieDomain()).build();
+        if (StringUtils.hasText(jwtProperties.getCookieDomain())) {
+            accessBuilder.domain(jwtProperties.getCookieDomain());
+            refreshBuilder.domain(jwtProperties.getCookieDomain());
         }
 
         response.addHeader("Set-Cookie", accessBuilder.build().toString());

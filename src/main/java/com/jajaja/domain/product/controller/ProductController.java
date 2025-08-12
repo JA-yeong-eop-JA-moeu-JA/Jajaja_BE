@@ -7,9 +7,10 @@ import com.jajaja.domain.product.dto.response.ProductOptionResponseDto;
 import com.jajaja.domain.product.service.ProductOptionQueryService;
 import com.jajaja.domain.product.service.ProductQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
+@Tag(name = "Product API", description = "상품 관련 API")
 public class ProductController {
 
     private final ProductQueryService productQueryService;

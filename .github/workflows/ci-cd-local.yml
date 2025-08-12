@@ -3,7 +3,7 @@ name: Build & Push Local Dev Image
 on:
   push:
     branches:
-      - main
+      - dev
 
 env:
   LOCAL_IMAGE_NAME: munjji/jajaja-local

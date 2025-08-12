@@ -3,6 +3,7 @@ package com.jajaja.domain.review.service;
 import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.member.repository.MemberRepository;
 import com.jajaja.domain.order.repository.OrderProductRepository;
+import com.jajaja.domain.point.service.PointCommandService;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.review.dto.request.ReviewCreateRequestDto;
@@ -31,6 +32,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
     private final ReviewRepository reviewRepository;
     private final ReviewImageRepository reviewImageRepository;
     private final S3Service s3Service;
+    private final PointCommandService pointCommandService;
 
     @Override
     public Long createReview(Long memberId, Long productId, ReviewCreateRequestDto dto) {
@@ -47,10 +49,14 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         Review review = Review.builder()
                 .member(member)
                 .product(product)
-                .rating(dto.rating())
+                .rating(dto.rating().byteValue())
                 .content(dto.content())
                 .build();
-        reviewRepository.save(review);
+        Review savedReview = reviewRepository.save(review);
+
+        // 리뷰 작성 후 포인트 지급
+        member.updatePoint(member.getPoint() + 100); // 고정 100 포인트 지급
+        pointCommandService.addReviewPoints(memberId, savedReview.getId());
 
         // 이미지 처리
         List<String> imageKeys = dto.imageKeys();

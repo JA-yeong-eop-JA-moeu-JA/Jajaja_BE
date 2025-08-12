@@ -97,6 +97,8 @@ public enum ErrorStatus implements BaseErrorCode {
     // NOTIFICATION 관련 에러
     NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "NOTIFICATION4001", "알림이 없습니다."),
     NOTIFICATION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "NOTIFICATION4031", "해당 알림에 대한 접근 권한이 없습니다."),
+    SERIALIZATION_FAILURE(HttpStatus.BAD_REQUEST, "NOTIFICATION4002", "알림 데이터 직렬화에 실패했습니다."),
+
 
     // S3 관련 에러
     INVALID_IMAGE_KEY(HttpStatus.BAD_REQUEST, "IMAGE4001", "유효하지 않은 이미지 키입니다."),
@@ -107,14 +109,27 @@ public enum ErrorStatus implements BaseErrorCode {
     ALREADY_CANCELLED_POINT(HttpStatus.BAD_REQUEST, "POINT4003", "이미 취소된 포인트입니다."),
     ALREADY_REFUNDED_POINT(HttpStatus.BAD_REQUEST, "POINT4004", "이미 환불된 포인트입니다."),
     INVALID_POINT_OPERATION(HttpStatus.BAD_REQUEST, "POINT4005", "유효하지 않은 포인트 작업입니다."),
+    ALREADY_SHARED_PRODUCT(HttpStatus.BAD_REQUEST, "POINT4006", "이미 공유된 상품입니다."),
 
     // 결제 관련 에러
     PAYMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "PAYMENT4001", "결제 정보를 찾을 수 없습니다."),
     PAYMENT_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "PAYMENT4002", "결제가 완료되지 않았습니다."),
     PAYMENT_VERIFICATION_FAILED(HttpStatus.BAD_REQUEST, "PAYMENT4003", "결제 검증에 실패했습니다."),
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "PAYMENT4004", "결제 금액이 일치하지 않습니다."),
-    PAYMENT_MERCHANT_UID_MISMATCH(HttpStatus.BAD_REQUEST, "PAYMENT4005", "결제 고유번호가 일치하지 않습니다."),;
-
+    
+    PAYMENT_WAITING_FOR_DEPOSIT(HttpStatus.BAD_REQUEST, "PAYMENT4005", "가상계좌 입금이 아직 완료되지 않았습니다."),
+    PAYMENT_IN_PROGRESS(HttpStatus.BAD_REQUEST, "PAYMENT4006", "결제 인증은 완료되었으나, 아직 최종 승인되지 않았습니다."),
+    PAYMENT_CANCELED(HttpStatus.BAD_REQUEST, "PAYMENT4007", "결제가 취소되었습니다."),
+    PAYMENT_ABORTED(HttpStatus.BAD_REQUEST, "PAYMENT4008", "결제 승인이 실패했습니다."),
+    PAYMENT_EXPIRED(HttpStatus.BAD_REQUEST, "PAYMENT4009", "결제 유효 시간이 만료되어 결제가 취소되었습니다."),
+    PAYMENT_PARTIAL_CANCELED(HttpStatus.BAD_REQUEST, "PAYMENT4010", "결제가 부분 취소되었습니다."),
+    PAYMENT_UNSPECIFIED_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "PAYMENT5001", "결제/환불 상태가 불분명하여 처리에 실패했습니다."),
+    
+    // 토스 관련 에러
+    TOSS_PAYMENT_BAD_REQUEST(HttpStatus.BAD_REQUEST, "TOSS4001", "토스페이먼츠 API 요청에 오류가 발생했습니다. 확인이 필요합니다"),
+    TOSS_PAYMENT_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "TOSS5001", "결제 서버에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.")
+    ;
+    
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;

@@ -3,8 +3,10 @@ package com.jajaja.domain.auth.controller;
 import com.jajaja.domain.auth.dto.TokenResponseDto;
 import com.jajaja.domain.auth.service.AuthService;
 import com.jajaja.global.apiPayload.ApiResponse;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@Tag(name = "Auth API", description = "Auth 관련 API")
 public class AuthController {
 
     private final AuthService authService;
@@ -34,6 +37,16 @@ public class AuthController {
             @Parameter(hidden = true)
             @CookieValue(required = false) String refreshToken, HttpServletResponse response) {
         authService.reissueToken(refreshToken, response);
+        return ApiResponse.onSuccess(null);
+    }
+
+    @Operation(
+            summary = "로그아웃 API | by 지안/윤진수",
+            description = "로그아웃을 수행하고 쿠키를 삭제합니다."
+    )
+    @PostMapping("/logout")
+    public ApiResponse<?> logout(@Auth Long memberId, HttpServletResponse response) {
+        authService.logout(memberId, response);
         return ApiResponse.onSuccess(null);
     }
 }

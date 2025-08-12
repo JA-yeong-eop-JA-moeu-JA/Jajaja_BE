@@ -4,6 +4,7 @@ import com.jajaja.domain.team.dto.response.TeamProductItemResponseDto;
 import com.jajaja.domain.team.dto.response.TeamProductListResponseDto;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.repository.TeamRepository;
+import com.jajaja.global.S3.service.S3Service;
 import com.jajaja.global.apiPayload.PageResponse;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
@@ -23,6 +24,7 @@ import java.util.List;
 public class TeamQueryServiceImpl implements TeamQueryService {
 
     private final TeamRepository teamRepository;
+    private final S3Service s3Service;
 
     @Override
     public TeamProductListResponseDto getMatchingTeamProducts(int page, int size) {
@@ -34,7 +36,10 @@ public class TeamQueryServiceImpl implements TeamQueryService {
         }
 
         List<TeamProductItemResponseDto> teamDtos = teamPage.getContent().stream()
-                .map(TeamProductItemResponseDto::from)
+                .map(team -> {
+                    String profileUrl = s3Service.generateStaticUrl(team.getLeader().getProfileKeyName());
+                    return TeamProductItemResponseDto.of(team, profileUrl);
+                })
                 .toList();
 
         Page<TeamProductItemResponseDto> mappedPage = new PageImpl<>(teamDtos, pageable, teamPage.getTotalElements());

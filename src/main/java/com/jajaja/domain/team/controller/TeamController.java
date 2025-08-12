@@ -5,15 +5,17 @@ import com.jajaja.domain.team.dto.response.TeamProductListResponseDto;
 import com.jajaja.domain.team.service.TeamCommandService;
 import com.jajaja.domain.team.service.TeamQueryService;
 import com.jajaja.global.apiPayload.ApiResponse;
-import com.jajaja.global.config.security.annotation.Auth;
+import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/teams")
+@Tag(name = "Team API", description = "팀 관련 API")
 public class TeamController {
 
     private final TeamCommandService teamCommandService;

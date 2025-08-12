@@ -41,3 +41,8 @@ application.properties
 
 ### QClass
 **/generated
+
+### 알림 테스트용 ##
+src/main/java/com/jajaja/domain/notification/controller/NotificationTestController.java
+src/main/resources/static/notification-test.html
+

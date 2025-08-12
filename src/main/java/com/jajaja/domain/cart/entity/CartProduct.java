@@ -20,9 +20,6 @@ public class CartProduct extends BaseEntity {
     @Column(nullable = false)
     private Integer quantity;
     
-    @Column(nullable = false)
-    private Integer totalPrice;
-    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id")
     private Cart cart;
@@ -47,7 +44,6 @@ public class CartProduct extends BaseEntity {
                 .product(product)
                 .productOption(option)
                 .quantity(quantity)
-                .totalPrice(unitPrice * quantity)
                 .build();
     }
     
@@ -59,15 +55,6 @@ public class CartProduct extends BaseEntity {
     public void update(ProductOption newOption, int newQuantity) {
         this.productOption = newOption;
         this.quantity = newQuantity;
-        this.recalculateTotalPrice();
-    }
-    
-    /**
-     * totalPrice를 계산합니다.
-     */
-    private void recalculateTotalPrice() {
-        int unitPrice = (this.productOption != null) ? this.productOption.getPrice() : this.product.getPrice();
-        this.totalPrice = unitPrice * this.quantity;
     }
     
     /**

@@ -1,5 +1,7 @@
 package com.jajaja.domain.product.service;
 
+import com.jajaja.domain.member.dto.response.MemberInfoResponseDto;
+import com.jajaja.domain.member.service.MemberQueryService;
 import com.jajaja.domain.product.converter.ProductConverter;
 import com.jajaja.domain.product.dto.response.CategoryProductListResponseDto;
 import com.jajaja.domain.product.dto.response.HomeProductListResponseDto;
@@ -16,6 +18,7 @@ import com.jajaja.domain.review.dto.response.ReviewItemDto;
 import com.jajaja.domain.review.repository.ReviewImageRepository;
 import com.jajaja.domain.review.repository.ReviewLikeRepository;
 import com.jajaja.domain.review.repository.ReviewRepository;
+import com.jajaja.domain.review.service.ReviewCommonService;
 import com.jajaja.domain.team.dto.response.TeamListDto;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.repository.TeamRepository;
@@ -55,6 +58,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final MemberRepository memberRepository;
     private final ProductSalesRepository productSalesRepository;
     private final ProductCommonService productCommonService;
+    private final MemberQueryService memberQueryService;
+    private final ReviewCommonService reviewCommonService;
     private final ProductConverter productConverter;
 
     @Override
@@ -65,8 +70,28 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         // 모집 중인 팀 조회
         List<Team> matchingTeams = teamRepository.findMatchingTeamsByProductId(productId);
 
+        // 리더 ID 수집
+        List<Long> leaderIds = matchingTeams.stream()
+                .map(team -> team.getLeader().getId())
+                .distinct()
+                .toList();
+
+        // 리더 정보 조회
+        List<MemberInfoResponseDto> leaderInfos = memberQueryService.getMemberInfos(leaderIds);
+
+        Map<Long, MemberInfoResponseDto> leaderInfoMap = leaderInfos.stream()
+                .collect(Collectors.toMap(MemberInfoResponseDto::id, dto -> dto));
+
+        // TeamListDto 생성
         List<TeamListDto> teamResponseDtoList = matchingTeams.stream()
-                .map(TeamListDto::from)
+                .map(team -> {
+                    Long leaderId = team.getLeader().getId();
+                    MemberInfoResponseDto leaderInfo = leaderInfoMap.get(leaderId);
+                    if (leaderInfo == null) {
+                        throw new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND);
+                    }
+                    return TeamListDto.of(team, leaderInfo);
+                })
                 .toList();
 
         // 좋아요 수 상위 3개 리뷰만 조회
@@ -85,15 +110,15 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 ? reviewLikeRepository.findReviewIdsLikedByMember(memberId, reviewIds)
                 : Set.of();
 
-        // 병합
-        List<ReviewListDto> reviewResponseDtoList = reviewPageDtos.stream()
+        List<ReviewItemDto> convertedDtos = reviewCommonService.changeReviewWriterProfile(reviewPageDtos);
+
+        List<ReviewListDto> reviewResponseDtoList = convertedDtos.stream()
                 .map(dto -> new ReviewListDto(
                         dto,
                         likedReviewIds.contains(dto.id()),
                         imageUrlsMap.getOrDefault(dto.id(), List.of())
                 ))
                 .toList();
-
 
         int salePrice = productCommonService.calculateDiscountedPrice(
                 product.getPrice(),
@@ -102,8 +127,11 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
         double averageRating = productCommonService.calculateAverageRating(product.getReviews());
 
+        Long reviewCount = reviewRepository.countByProductId(product.getId());
+
         return ProductDetailResponseDto.of(
                 product,
+                reviewCount,
                 salePrice,
                 averageRating,
                 teamResponseDtoList,
