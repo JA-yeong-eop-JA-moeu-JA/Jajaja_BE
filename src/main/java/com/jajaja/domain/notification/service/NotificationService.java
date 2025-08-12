@@ -4,8 +4,6 @@ import com.jajaja.domain.notification.dto.request.NotificationCreateRequestDto;
 import com.jajaja.domain.notification.dto.response.PagingNotificationResponseDto;
 import com.jajaja.domain.notification.dto.response.UnreadCountResponseDto;
 
-import java.util.List;
-
 public interface NotificationService {
     Long createNotification(NotificationCreateRequestDto requestDto);
     PagingNotificationResponseDto getNotifications(Long memberId, int page, int size);

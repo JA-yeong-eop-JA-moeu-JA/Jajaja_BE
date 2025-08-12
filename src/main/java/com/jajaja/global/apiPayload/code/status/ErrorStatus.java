@@ -97,6 +97,8 @@ public enum ErrorStatus implements BaseErrorCode {
     // NOTIFICATION 관련 에러
     NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "NOTIFICATION4001", "알림이 없습니다."),
     NOTIFICATION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "NOTIFICATION4031", "해당 알림에 대한 접근 권한이 없습니다."),
+    SERIALIZATION_FAILURE(HttpStatus.BAD_REQUEST, "NOTIFICATION4002", "알림 데이터 직렬화에 실패했습니다."),
+
 
     // S3 관련 에러
     INVALID_IMAGE_KEY(HttpStatus.BAD_REQUEST, "IMAGE4001", "유효하지 않은 이미지 키입니다."),

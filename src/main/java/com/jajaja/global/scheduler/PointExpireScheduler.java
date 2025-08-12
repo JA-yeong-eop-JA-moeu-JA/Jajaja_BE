@@ -47,7 +47,7 @@ public class PointExpireScheduler {
             point.getMember().subtractPoint(expiredAmount);
 
             // 사용자에게 포인트 만료 알림 전송
-            notificationService.createNotification(new NotificationCreateRequestDto(point.getMember().getId(), NotificationType.POINT_EXPIRED, "포인트가 만료되었습니다."));
+            notificationService.createNotification(NotificationCreateRequestDto.of(point.getMember().getId(), NotificationType.POINT_EXPIRED, "포인트가 만료되었습니다."));
         }
     }
 }
