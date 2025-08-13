@@ -27,6 +27,8 @@ import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.domain.point.service.PointCommandService;
 import com.jajaja.domain.product.entity.ProductSales;
 import com.jajaja.domain.product.repository.ProductSalesRepository;
+import com.jajaja.domain.product.service.ProductCommonService;
+import com.jajaja.domain.team.repository.TeamRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.GeneralException;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
@@ -61,7 +63,9 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private final CartProductRepository cartProductRepository;
     private final MemberCouponRepository memberCouponRepository;
     private final ProductSalesRepository productSalesRepository;
+    private final TeamRepository teamRepository;
     private final CartCommandService cartCommandService;
+    private final ProductCommonService productCommonService;
     private final CouponCommonService couponCommonService;
     private final PointCommandService pointCommandService;
 
@@ -80,20 +84,29 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         Coupon coupon = validateCoupon(request.appliedCouponId(), memberId, cartProducts);
        validatePointUsage(request.point(), member);
        
-        int totalAmount = cartProducts.stream()
-                .mapToInt(cp ->
-                        cp.getUnitPrice() * cp.getQuantity())
-                .sum();
+       int totalAmount = 0;
+       if(request.orderType() == OrderType.PERSONAL) {
+           totalAmount = cartProducts.stream()
+                   .mapToInt(cp ->
+                           cp.getUnitPrice() * cp.getQuantity())
+                   .sum();
+       } else {
+           teamRepository.findById(request.teamId()).orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
+           totalAmount = cartProducts.stream()
+                   .mapToInt(cp ->
+                               cp.getQuantity() * (productCommonService.calculateDiscountedPrice(cp.getUnitPrice(), cp.getProduct().getDiscountRate())))
+                   .sum();
+       }
         int couponDiscount = calculateCouponDiscount(coupon, totalAmount);
         int shippingFee = calculateShippingFee(delivery);
         int pointDiscount = request.point() != null ? request.point() : 0;
 		int finalAmount = totalAmount - couponDiscount - (pointDiscount) + shippingFee;
         String orderId = memberId + "ORDER-" + UUID.randomUUID();
         String orderName = cartProducts.get(0).getProduct().getName() + (cartProducts.size() > 1 ? " 외 " + (cartProducts.size() - 1) + "건" : "");
-
+        
         Order order = Order.builder()
                 .orderStatus(OrderStatus.READY)
-                .orderType(OrderType.PERSONAL)
+                .orderType(request.orderType())
                 .discountAmount(couponDiscount)
                 .pointUsedAmount(pointDiscount)
                 .shippingFee(shippingFee)
@@ -101,7 +114,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .orderId(orderId)
                 .orderName(orderName)
                 .totalAmount(totalAmount)
-                .paidAmount(finalAmount)
                 .member(member)
                 .delivery(delivery)
                 .coupon(coupon)
@@ -158,7 +170,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, getHeaders());
             ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(tossPaymentsConfig.getApproveUrl(), entity, PaymentResponseDto.class);
             PaymentResponseDto responseDto = getPaymentResponseDto(responseEntity);
-            order.updatePaymentInfo(request.orderId(), PaymentMethod.valueOf(responseDto.type()), OrderStatus.DONE);
+            order.updatePaymentInfo(request.orderId(), PaymentMethod.valueOf(responseDto.type()), OrderStatus.DONE, request.paidAmount());
             
             // 포인트 사용
             member.updatePoint(member.getPoint() - order.getPointUsedAmount());

@@ -10,11 +10,14 @@ public record OrderPrepareRequestDto (
 
     @NotNull(message = "구매할 상품 목록은 필수입니다.")
     List<Long> items,
+    
     @NotNull(message = "배송지 ID는 필수입니다.")
     Long addressId,
     
     @NotNull(message = "결제 타입은 필수입니다.")
     OrderType orderType,
+    
+    Long teamId,
     
     String deliveryRequest,
     
