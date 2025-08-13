@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,8 +33,11 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                     TeamStatus teamStatus = Optional.ofNullable(order.getTeam())
                             .map(Team::getStatus)
                             .orElse(null);
+                    LocalDateTime teamCreatedAt = Optional.ofNullable(order.getTeam())
+                            .map(Team::getCreatedAt)
+                            .orElse(null);
                     List<OrderItemDto> items = order.getOrderProducts().stream()
-                            .map(orderProduct -> OrderItemDto.of(orderProduct, teamStatus))
+                            .map(orderProduct -> OrderItemDto.of(orderProduct, teamStatus, teamCreatedAt))
                             .collect(Collectors.toList());
                     return OrderListDto.of(order, items);
                 })
@@ -48,8 +52,11 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         TeamStatus teamStatus = Optional.ofNullable(order.getTeam())
                 .map(Team::getStatus)
                 .orElse(null);
+        LocalDateTime teamCreatedAt = Optional.ofNullable(order.getTeam())
+                .map(Team::getCreatedAt)
+                .orElse(null);
         List<OrderItemDto> items = order.getOrderProducts().stream()
-                .map(orderProduct -> OrderItemDto.of(orderProduct, teamStatus))
+                .map(orderProduct -> OrderItemDto.of(orderProduct, teamStatus, teamCreatedAt))
                 .collect(Collectors.toList());
         return OrderDetailResponseDto.of(order, items);
     }
