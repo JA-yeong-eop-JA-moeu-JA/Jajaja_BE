@@ -46,7 +46,7 @@ public class TeamCommonService {
                 NotificationCreateRequestDto.of(
                         leader.getId(),
                         NotificationType.MATCHING,
-                        "팀 매칭 완료",
+                        String.format("‘%s’ 팀 매칭이 완료됐습니다.", product.getName()),
                         Map.of(
                                 "productId", product.getId(),
                                 "productName", product.getName(),

@@ -54,7 +54,7 @@ public class TeamExpireScheduler {
                     NotificationCreateRequestDto.of(
                             leader.getId(),
                             NotificationType.MATCHING,
-                            "팀 매칭 실패",
+                            String.format("‘%s’ 팀 매칭이 실패했습니다 .", product.getName()),
                             Map.of(
                                     "productId", product.getId(),
                                     "productName", product.getName(),
