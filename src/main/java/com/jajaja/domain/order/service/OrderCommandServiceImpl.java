@@ -73,12 +73,12 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         log.info("[OrderCommandService] 결제 준비 시작 - 회원ID: {}", memberId);
 
         Member member = findMember(memberId);
-        Delivery delivery = deliveryRepository.findById(request.getAddressId())
+        Delivery delivery = deliveryRepository.findById(request.addressId())
                 .filter(del -> del.getMember().getId().equals(memberId))
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.DELIVERY_NOT_FOUND));
-        List<CartProduct> cartProducts = findAndValidateCartProducts(request.getItems(), memberId);
-        Coupon coupon = validateCoupon(request.getAppliedCouponId(), memberId, cartProducts);
-       validatePointUsage(request.getPoint(), member);
+        List<CartProduct> cartProducts = findAndValidateCartProducts(request.items(), memberId);
+        Coupon coupon = validateCoupon(request.appliedCouponId(), memberId, cartProducts);
+       validatePointUsage(request.point(), member);
        
         int totalAmount = cartProducts.stream()
                 .mapToInt(cp ->
@@ -86,7 +86,8 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .sum();
         int couponDiscount = calculateCouponDiscount(coupon, totalAmount);
         int shippingFee = calculateShippingFee(delivery);
-        int finalAmount = totalAmount - couponDiscount - (request.getPoint() != null ? request.getPoint() : 0) + shippingFee;
+        int pointDiscount = request.point() != null ? request.point() : 0;
+		int finalAmount = totalAmount - couponDiscount - (pointDiscount) + shippingFee;
         String orderId = memberId + "ORDER-" + UUID.randomUUID();
         String orderName = cartProducts.get(0).getProduct().getName() + (cartProducts.size() > 1 ? " 외 " + (cartProducts.size() - 1) + "건" : "");
 
@@ -94,7 +95,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .orderStatus(OrderStatus.READY)
                 .orderType(OrderType.PERSONAL)
                 .discountAmount(couponDiscount)
-                .pointUsedAmount(request.getPoint() != null ? request.getPoint() : 0)
+                .pointUsedAmount(pointDiscount)
                 .shippingFee(shippingFee)
                 .paymentMethod(PaymentMethod.NORMAL)
                 .orderId(orderId)
@@ -125,9 +126,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         return OrderPrepareResponseDto.of(
                 orderId,
                 orderName,
+                request.orderType(),
                 totalAmount,
                 couponDiscount,
-                request.getPoint() != null ? request.getPoint() : 0,
+                pointDiscount,
                 shippingFee,
                 finalAmount
         );
@@ -135,28 +137,28 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
     @Override
     public OrderApproveResponseDto approveOrder(Long memberId, OrderApproveRequestDto request) {
-        log.info("[OrderCommandService] 주문 승인 시작 - 회원ID: {}, 오더ID: {}", memberId, request.getOrderId());
+        log.info("[OrderCommandService] 주문 승인 시작 - 회원ID: {}, 오더ID: {}", memberId, request.orderId());
 
         Member member = findMember(memberId);
-        Order order = orderRepository.findByOrderId(request.getOrderId())
+        Order order = orderRepository.findByOrderId(request.orderId())
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
         
         // 결제 금액과 결제해야 할 금액이 동일한지 확인
-        if (!request.getPaidAmount().equals(order.getPaidAmount())) {
+        if (!request.paidAmount().equals(order.getPaidAmount())) {
             throw new GeneralException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
         }
         
         try {
             // 결제 승인 확인
             Map<String, Object> body = new HashMap<>();
-            body.put("paymentKey", request.getPaymentKey());
-            body.put("orderId", request.getOrderId());
-            body.put("amount", request.getPaidAmount());
+            body.put("paymentKey", request.paymentKey());
+            body.put("orderId", request.orderId());
+            body.put("amount", request.paidAmount());
             
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, getHeaders());
             ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(tossPaymentsConfig.getApproveUrl(), entity, PaymentResponseDto.class);
             PaymentResponseDto responseDto = getPaymentResponseDto(responseEntity);
-            order.updatePaymentInfo(request.getOrderId(), PaymentMethod.valueOf(responseDto.type()), OrderStatus.DONE);
+            order.updatePaymentInfo(request.orderId(), PaymentMethod.valueOf(responseDto.type()), OrderStatus.DONE);
             
             // 포인트 사용
             member.updatePoint(member.getPoint() - order.getPointUsedAmount());
@@ -232,10 +234,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     
     @Override
     public OrderRefundResponseDto refundOrder(Long memberId, OrderRefundRequestDto request) {
-        log.info("[OrderCommandService] 환불 처리 시작 - 회원ID: {}, 주문ID: {}", memberId, request.getOrderId());
+        log.info("[OrderCommandService] 환불 처리 시작 - 회원ID: {}, 주문ID: {}", memberId, request.orderId());
         
         Member member = findMember(memberId);
-        Order order = orderRepository.findById(request.getOrderId())
+        Order order = orderRepository.findById(request.orderId())
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
         
         if (!order.getMember().equals(member)) {
@@ -254,7 +256,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             order.updateStatus(OrderStatus.REFUND_REQUESTED);
             
             Map<String, Object> body = new HashMap<>();
-            body.put("cancelReason", request.getRefundReason());
+            body.put("cancelReason", request.refundReason());
             
             // 멱등성 설정
             HttpHeaders headers = getHeaders();
@@ -263,16 +265,16 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             // 환불 시도
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(
-                    tossPaymentsConfig.getRefundUrl().replace("paymentKey", request.getPaymentKey()),
+                    tossPaymentsConfig.getRefundUrl().replace("paymentKey", request.paymentKey()),
                     entity, PaymentResponseDto.class
             );
             PaymentResponseDto responseDto = responseEntity.getBody();
             
             if ("CANCELED".equals(responseDto.status())) {
-                log.info("환불 성공. 결제 키: {}, 환불 금액: {}", request.getPaymentKey(), order.getPaidAmount());
+                log.info("환불 성공. 결제 키: {}, 환불 금액: {}", request.paymentKey(), order.getPaidAmount());
                 
                 if (responseDto.balanceAmount() != 0) {
-                    log.warn("환불 후 잔액이 0이 아닙니다. 결제 키: {}, 잔액: {}", request.getPaymentKey(), responseDto.balanceAmount());
+                    log.warn("환불 후 잔액이 0이 아닙니다. 결제 키: {}, 잔액: {}", request.paymentKey(), responseDto.balanceAmount());
                     throw new GeneralException(ErrorStatus.REFUND_FAILED);
                 }
                 
@@ -309,7 +311,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             
             log.info("[OrderCommandService] 환불 처리 완료 - 주문ID: {}", order.getId());
 
-            return OrderRefundResponseDto.of(order, order.getPointUsedAmount(), request.getRefundReason());
+            return OrderRefundResponseDto.of(order, order.getPointUsedAmount(), request.refundReason());
 
         } catch (HttpClientErrorException e) {
             log.error("토스 환불 4xx 서버 에러: {}", e.getResponseBodyAsString());
@@ -319,7 +321,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_SERVER_ERROR);
         } catch (Exception e) {
             order.updateStatus(OrderStatus.REFUND_FAILED);
-            log.error("[OrderCommandService] 환불 처리 실패 - 주문ID: {}, 에러: {}", request.getOrderId(), e.getMessage(), e);
+            log.error("[OrderCommandService] 환불 처리 실패 - 주문ID: {}, 에러: {}", request.orderId(), e.getMessage(), e);
             throw new GeneralException(ErrorStatus.REFUND_FAILED);
         }
     }
