@@ -41,15 +41,17 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
     }
 
     @Override
-    public Optional<Team> findByIdWithLeaderAndMembers(Long teamId) {
+    public Optional<Team> findByIdWithLeaderMembersAndProduct(Long teamId) {
         QTeam team = QTeam.team;
         QMember leader = QMember.member;
         QTeamMember teamMember = QTeamMember.teamMember;
+        QProduct product = QProduct.product;
 
         List<Team> result = queryFactory
                 .selectFrom(team)
                 .join(team.leader, leader).fetchJoin()
                 .leftJoin(team.teamMembers, teamMember).fetchJoin()
+                .join(team.product, product).fetchJoin()
                 .where(team.id.eq(teamId))
                 .fetch();
 

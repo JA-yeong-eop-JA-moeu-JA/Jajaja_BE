@@ -3,6 +3,7 @@ package com.jajaja.domain.team.service;
 import com.jajaja.domain.notification.dto.request.NotificationCreateRequestDto;
 import com.jajaja.domain.notification.entity.enums.NotificationType;
 import com.jajaja.domain.notification.service.NotificationService;
+import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.TeamMember;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
@@ -14,12 +15,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class TeamCommonService {
 
-    private final TeamRepository teamRepository;
     private final NotificationService notificationService;
 
     public void joinTeam(Member member, Member leader, Team team) {
@@ -38,6 +40,20 @@ public class TeamCommonService {
         team.getTeamMembers().add(teamMember);
         team.updateStatus(TeamStatus.COMPLETED);
 
-        notificationService.createNotification(NotificationCreateRequestDto.of(leader.getId(), NotificationType.MATCHING, "팀 매칭이 완료되었습니다."));
+        Product product = team.getProduct();
+
+        notificationService.createNotification(
+                NotificationCreateRequestDto.of(
+                        leader.getId(),
+                        NotificationType.MATCHING,
+                        String.format("‘%s’ 팀 매칭이 완료됐습니다.", product.getName()),
+                        Map.of(
+                                "productId", product.getId(),
+                                "productName", product.getName(),
+                                "productImage", product.getThumbnailUrl(),
+                                "isTeamMatched", true
+                        )
+                )
+        );
     }
 }
