@@ -1,26 +1,25 @@
 package com.jajaja.domain.order.dto.request;
 
+import com.jajaja.domain.order.entity.enums.OrderType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Getter
-@NoArgsConstructor
-public class OrderPrepareRequestDto {
+public record OrderPrepareRequestDto (
 
     @NotNull(message = "구매할 상품 목록은 필수입니다.")
-    private List<Long> items;
-
+    List<Long> items,
     @NotNull(message = "배송지 ID는 필수입니다.")
-    private Long addressId;
-
-    private String deliveryRequest;
+    Long addressId,
     
-    private Long appliedCouponId;
+    @NotNull(message = "결제 타입은 필수입니다.")
+    OrderType orderType,
+    
+    String deliveryRequest,
+    
+    Long appliedCouponId,
 
     @PositiveOrZero(message = "포인트는 0 이상이어야 합니다.")
-    private Integer point = 0;
-}
+    Integer point
+) {}
