@@ -74,7 +74,7 @@ jobs:
             sudo docker pull ${{ env.DOCKER_IMAGE_NAME }}
 
             echo "Running new container $NEW_CONTAINER_NAME"
-            sudo docker run --name $NEW_CONTAINER_NAME -d -p 8080:8080 -e TZ=Asia/Seoul -network jajaja ${{ env.DOCKER_IMAGE_NAME }}
+            sudo docker run --name $NEW_CONTAINER_NAME -d -p 8080:8080 -e TZ=Asia/Seoul --network jajaja ${{ env.DOCKER_IMAGE_NAME }}
 
             echo "Checking health..."
             HEALTH_CHECK_URL="http://127.0.0.1:8080/health"
