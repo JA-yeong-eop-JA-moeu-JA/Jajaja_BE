@@ -118,6 +118,9 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<RecentSearchKeywordResponseDto> getRecentSearchKeywords(Long memberId) {
+        if (memberId == null) {
+            return Collections.emptyList();
+        }
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
