@@ -9,6 +9,7 @@ import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
 import com.jajaja.domain.order.service.OrderCommandService;
 import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
+import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.domain.team.repository.TeamRepository;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -36,7 +38,7 @@ public class TeamExpireScheduler {
         log.info("[스케줄러 실행] TeamExpireScheduler 시작");
 
         LocalDateTime now = LocalDateTime.now();
-        List<Team> expiredTeams = teamRepository.findExpiredTeamsWithLeader(TeamStatus.MATCHING, now);
+        List<Team> expiredTeams = teamRepository.findExpiredTeamsWithLeaderAndProduct(TeamStatus.MATCHING, now);
 
         log.info("만료된 팀 개수 = {}", expiredTeams.size());
 
@@ -45,9 +47,22 @@ public class TeamExpireScheduler {
             log.info("팀 상태 업데이트 → id: {}, status: {}", team.getId(), team.getStatus());
 
             Member leader = team.getLeader();
+            Product product = team.getProduct();
 
             // 멤버에게 팀 매칭 실패 알림 전송
-            notificationService.createNotification(NotificationCreateRequestDto.of(leader.getId(), NotificationType.MATCHING, "팀 매칭에 실패했습니다."));
+            notificationService.createNotification(
+                    NotificationCreateRequestDto.of(
+                            leader.getId(),
+                            NotificationType.MATCHING,
+                            "팀 매칭 실패",
+                            Map.of(
+                                    "productId", product.getId(),
+                                    "productName", product.getName(),
+                                    "productImage", product.getThumbnailUrl(),
+                                    "isTeamMatched", false
+                            )
+                    )
+            );
 
             // 팀과 연결된 주문을 자동 환불 처리
             Order order = team.getOrder();

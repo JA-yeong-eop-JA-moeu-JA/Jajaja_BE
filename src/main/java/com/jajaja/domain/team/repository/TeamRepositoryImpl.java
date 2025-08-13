@@ -59,13 +59,15 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
     }
 
     @Override
-    public List<Team> findExpiredTeamsWithLeader(TeamStatus status, LocalDateTime now) {
+    public List<Team> findExpiredTeamsWithLeaderAndProduct(TeamStatus status, LocalDateTime now) {
         QTeam team = QTeam.team;
         QMember leader = QMember.member;
+        QProduct product = QProduct.product;
 
         return queryFactory
                 .selectFrom(team)
                 .join(team.leader, leader).fetchJoin()
+                .join(team.product, product).fetchJoin()
                 .where(team.status.eq(status)
                         .and(team.expireAt.loe(now)))
                 .fetch();
