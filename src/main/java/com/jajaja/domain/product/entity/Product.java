@@ -30,10 +30,10 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Integer price;
 
-    @Column(nullable = false)
+    @Column(length = 512, nullable = false)
     private String thumbnailUrl;
 
-    @Column(nullable = false)
+    @Column(length = 512, nullable = false)
     private String imageUrl;
 
     @Column
