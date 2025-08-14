@@ -84,7 +84,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         Coupon coupon = validateCoupon(request.appliedCouponId(), memberId, cartProducts);
        validatePointUsage(request.point(), member);
        
-       int totalAmount = 0;
+       int totalAmount;
        if(request.orderType() == OrderType.PERSONAL) {
            totalAmount = cartProducts.stream()
                    .mapToInt(cp ->
@@ -156,7 +156,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
         
         // 결제 금액과 결제해야 할 금액이 동일한지 확인
-        if (!request.paidAmount().equals(order.getPaidAmount())) {
+        if (!request.paidAmount().equals(order.getTotalAmount())) {
             throw new GeneralException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
         }
         
