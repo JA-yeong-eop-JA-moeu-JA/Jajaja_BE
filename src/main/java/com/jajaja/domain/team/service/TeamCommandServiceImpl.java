@@ -26,7 +26,7 @@ public class TeamCommandServiceImpl implements TeamCommandService {
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
     private final TeamRepository teamRepository;
-    private final TeamCommonService teamCommonService;
+    private final TeamCommonServiceImpl teamCommonService;
 
     @Override
     public TeamCreateResponseDto createTeam(Long memberId, Long productId) {
@@ -53,7 +53,7 @@ public class TeamCommandServiceImpl implements TeamCommandService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Team team = teamRepository.findByIdWithLeaderAndMembers(teamId)
+        Team team = teamRepository.findByIdWithLeaderMembersAndProduct(teamId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
 
         Member leader = team.getLeader();

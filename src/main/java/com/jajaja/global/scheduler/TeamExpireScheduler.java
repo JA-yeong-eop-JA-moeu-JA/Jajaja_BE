@@ -7,8 +7,10 @@ import com.jajaja.domain.notification.entity.enums.NotificationType;
 import com.jajaja.domain.notification.service.NotificationService;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
+import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.domain.order.service.OrderCommandService;
 import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
+import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.team.entity.Team;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
 import com.jajaja.domain.team.repository.TeamRepository;
@@ -19,7 +21,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -36,7 +40,7 @@ public class TeamExpireScheduler {
         log.info("[스케줄러 실행] TeamExpireScheduler 시작");
 
         LocalDateTime now = LocalDateTime.now();
-        List<Team> expiredTeams = teamRepository.findExpiredTeamsWithLeader(TeamStatus.MATCHING, now);
+        List<Team> expiredTeams = teamRepository.findExpiredTeamsWithAll(TeamStatus.MATCHING, now);
 
         log.info("만료된 팀 개수 = {}", expiredTeams.size());
 
@@ -45,12 +49,27 @@ public class TeamExpireScheduler {
             log.info("팀 상태 업데이트 → id: {}, status: {}", team.getId(), team.getStatus());
 
             Member leader = team.getLeader();
+            Product product = team.getProduct();
+            Order order = team.getOrder();
+            Long teamOrderId = (order != null) ? order.getId() : null;
+
+            Map<String, Object> data = new HashMap<>();
+            if (teamOrderId != null) data.put("orderId", teamOrderId);
+            data.put("productName", product.getName());
+            data.put("productImage", product.getThumbnailUrl());
+            data.put("isTeamMatched", false);
 
             // 멤버에게 팀 매칭 실패 알림 전송
-            notificationService.createNotification(NotificationCreateRequestDto.of(leader.getId(), NotificationType.MATCHING, "팀 매칭에 실패했습니다."));
+            notificationService.createNotification(
+                    NotificationCreateRequestDto.of(
+                            leader.getId(),
+                            NotificationType.MATCHING,
+                            String.format("‘%s’ 팀 매칭이 실패했습니다.", product.getName()),
+                            data
+                    )
+            );
 
             // 팀과 연결된 주문을 자동 환불 처리
-            Order order = team.getOrder();
             if (order != null) {
                 try {
                     order.updateStatus(OrderStatus.TEAM_MATCHING_FAILED);
