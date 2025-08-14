@@ -48,6 +48,9 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private Integer point;
 
+    @Column(nullable = false)
+    private boolean termsAccepted;
+
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
     private MemberBusinessCategory memberBusinessCategory;
 
