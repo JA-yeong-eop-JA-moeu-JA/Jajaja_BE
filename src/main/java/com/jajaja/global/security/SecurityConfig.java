@@ -34,7 +34,7 @@ public class SecurityConfig {
     };
 
     private static final String[] GET_WHITELIST = {
-            "/api/products/**", "/api/search/**", "/api/categories/**", "/api/reviews/**"
+            "/api/products/**", "/api/search/**", "/api/categories/**", "/api/reviews/**", "/api/search/recent-keywords"
     };
 
     private static final String[] POST_WHITELIST = {
