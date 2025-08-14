@@ -44,6 +44,11 @@ public class MemberController {
         return ApiResponse.onSuccess(updatedMemberInfo);
     }
 
+    @Operation(
+            summary = "약관 동의",
+            description = "로그인한 사용자가 약관에 동의합니다. \n" +
+                    "약관 동의 후 정상 access, refresh 토큰을 발급받습니다."
+    )
     @PostMapping("/terms/accept")
     public ApiResponse<?> acceptTerms(@Auth Long memberId, HttpServletResponse response) {
         memberCommandService.acceptTerms(memberId, response);
