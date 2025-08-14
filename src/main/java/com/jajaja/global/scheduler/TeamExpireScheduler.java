@@ -31,7 +31,6 @@ import java.util.Map;
 public class TeamExpireScheduler {
 
     private final TeamRepository teamRepository;
-    private final OrderRepository orderRepository;
     private final NotificationService notificationService;
     private final OrderCommandService orderCommandService;
 
@@ -41,7 +40,7 @@ public class TeamExpireScheduler {
         log.info("[스케줄러 실행] TeamExpireScheduler 시작");
 
         LocalDateTime now = LocalDateTime.now();
-        List<Team> expiredTeams = teamRepository.findExpiredTeamsWithLeaderAndProduct(TeamStatus.MATCHING, now);
+        List<Team> expiredTeams = teamRepository.findExpiredTeamsWithAll(TeamStatus.MATCHING, now);
 
         log.info("만료된 팀 개수 = {}", expiredTeams.size());
 
@@ -51,10 +50,8 @@ public class TeamExpireScheduler {
 
             Member leader = team.getLeader();
             Product product = team.getProduct();
-
-            Long teamOrderId = orderRepository.findByTeamId(team.getId())
-                    .map(Order::getId)
-                    .orElse(null);
+            Order order = team.getOrder();
+            Long teamOrderId = (order != null) ? order.getId() : null;
 
             Map<String, Object> data = new HashMap<>();
             if (teamOrderId != null) data.put("orderId", teamOrderId);
@@ -67,13 +64,12 @@ public class TeamExpireScheduler {
                     NotificationCreateRequestDto.of(
                             leader.getId(),
                             NotificationType.MATCHING,
-                            String.format("‘%s’ 팀 매칭이 실패했습니다 .", product.getName()),
+                            String.format("‘%s’ 팀 매칭이 실패했습니다.", product.getName()),
                             data
                     )
             );
 
             // 팀과 연결된 주문을 자동 환불 처리
-            Order order = team.getOrder();
             if (order != null) {
                 try {
                     order.updateStatus(OrderStatus.TEAM_MATCHING_FAILED);

@@ -26,7 +26,6 @@ import java.util.Map;
 public class TeamCommonService {
 
     private final NotificationService notificationService;
-    private final OrderRepository orderRepository;
 
     public void joinTeam(Member member, Member leader, Team team) {
         if (!team.getTeamMembers().isEmpty()) {
@@ -45,16 +44,15 @@ public class TeamCommonService {
         team.updateStatus(TeamStatus.COMPLETED);
 
         Product product = team.getProduct();
-
-        Long teamOrderId = orderRepository.findByTeamId(team.getId())
-                .map(Order::getId)
-                .orElse(null);
+        Order order = team.getOrder();
+        Long teamOrderId = (order != null) ? order.getId() : null;
 
         Map<String, Object> data = new HashMap<>();
         if (teamOrderId != null) data.put("orderId", teamOrderId);
         data.put("productName", product.getName());
         data.put("productImage", product.getThumbnailUrl());
         data.put("isTeamMatched", true);
+
         notificationService.createNotification(
                 NotificationCreateRequestDto.of(
                         leader.getId(),

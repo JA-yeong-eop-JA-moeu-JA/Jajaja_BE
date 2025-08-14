@@ -13,5 +13,4 @@ public interface OrderRepository extends JpaRepository<Order, Long>, OrderReposi
     Optional<Order> findById(Long id);
     Optional<Order> findByOrderId(String orderId);
     Boolean existsByMember(Member member);
-    Optional<Order> findByTeamId(Long teamId);
 }
