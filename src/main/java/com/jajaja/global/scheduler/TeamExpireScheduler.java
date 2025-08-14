@@ -7,6 +7,7 @@ import com.jajaja.domain.notification.entity.enums.NotificationType;
 import com.jajaja.domain.notification.service.NotificationService;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
+import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.domain.order.service.OrderCommandService;
 import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
 import com.jajaja.domain.product.entity.Product;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +31,7 @@ import java.util.Map;
 public class TeamExpireScheduler {
 
     private final TeamRepository teamRepository;
+    private final OrderRepository orderRepository;
     private final NotificationService notificationService;
     private final OrderCommandService orderCommandService;
 
@@ -49,18 +52,23 @@ public class TeamExpireScheduler {
             Member leader = team.getLeader();
             Product product = team.getProduct();
 
+            Long teamOrderId = orderRepository.findByTeamId(team.getId())
+                    .map(Order::getId)
+                    .orElse(null);
+
+            Map<String, Object> data = new HashMap<>();
+            if (teamOrderId != null) data.put("orderId", teamOrderId);
+            data.put("productName", product.getName());
+            data.put("productImage", product.getThumbnailUrl());
+            data.put("isTeamMatched", false);
+
             // 멤버에게 팀 매칭 실패 알림 전송
             notificationService.createNotification(
                     NotificationCreateRequestDto.of(
                             leader.getId(),
                             NotificationType.MATCHING,
                             String.format("‘%s’ 팀 매칭이 실패했습니다 .", product.getName()),
-                            Map.of(
-                                    "productId", product.getId(),
-                                    "productName", product.getName(),
-                                    "productImage", product.getThumbnailUrl(),
-                                    "isTeamMatched", false
-                            )
+                            data
                     )
             );
 
