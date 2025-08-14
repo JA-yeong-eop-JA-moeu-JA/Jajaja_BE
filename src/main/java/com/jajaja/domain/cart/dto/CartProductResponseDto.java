@@ -35,7 +35,7 @@ public record CartProductResponseDto(
 				.optionId(optionId)
 				.optionName(optionName)
 				.quantity(cartProduct.getQuantity())
-				.productThumbnail(product.getImageUrl())
+				.productThumbnail(product.getThumbnailUrl())
 				.unitPrice(price)
 				.totalPrice(cartProduct.getUnitPrice() * cartProduct.getQuantity())
 				.teamAvailable(isTeamAvailable)
