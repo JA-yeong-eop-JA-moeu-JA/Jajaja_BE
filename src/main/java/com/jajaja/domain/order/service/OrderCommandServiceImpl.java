@@ -113,7 +113,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .paymentMethod(PaymentMethod.NORMAL)
                 .orderId(orderId)
                 .orderName(orderName)
-                .totalAmount(totalAmount)
+                .totalAmount(finalAmount)
                 .member(member)
                 .delivery(delivery)
                 .coupon(coupon)
