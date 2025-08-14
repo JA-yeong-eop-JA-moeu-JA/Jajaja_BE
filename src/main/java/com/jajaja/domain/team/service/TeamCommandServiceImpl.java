@@ -26,7 +26,7 @@ public class TeamCommandServiceImpl implements TeamCommandService {
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
     private final TeamRepository teamRepository;
-    private final TeamCommonService teamCommonService;
+    private final TeamCommonServiceImpl teamCommonService;
 
     @Override
     public TeamCreateResponseDto createTeam(Long memberId, Long productId) {
