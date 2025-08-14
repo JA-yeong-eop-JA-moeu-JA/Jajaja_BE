@@ -48,6 +48,7 @@ public class TeamCommonServiceImpl implements TeamCommonService {
 
         Map<String, Object> data = new HashMap<>();
         if (teamOrderId != null) data.put("orderId", teamOrderId);
+        data.put("productId", product.getId());
         data.put("productName", product.getName());
         data.put("productImage", product.getThumbnailUrl());
         data.put("isTeamMatched", true);
