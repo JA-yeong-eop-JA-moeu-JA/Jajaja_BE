@@ -8,6 +8,7 @@ import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -41,5 +42,11 @@ public class MemberController {
                                                                @RequestBody @Valid MemberProfileUpdateRequest request) {
         MemberInfoResponseDto updatedMemberInfo = memberCommandService.updateMemberInfo(memberId, request);
         return ApiResponse.onSuccess(updatedMemberInfo);
+    }
+
+    @PostMapping("/terms/accept")
+    public ApiResponse<?> acceptTerms(@Auth Long memberId, HttpServletResponse response) {
+        memberCommandService.acceptTerms(memberId, response);
+        return ApiResponse.onSuccess(null);
     }
 }

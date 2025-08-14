@@ -89,7 +89,7 @@ public class Member extends BaseEntity {
     public void updateEmail(String email) {
         this.email = email;
     }
-  
+
     public void updatePoint(int point) {
         this.point = point;
     }
@@ -101,5 +101,9 @@ public class Member extends BaseEntity {
 
     public void updateProfileKeyName(String profileKeyName) {
         this.profileKeyName = profileKeyName;
+    }
+
+    public void acceptTerms() {
+        this.termsAccepted = true;
     }
 }
