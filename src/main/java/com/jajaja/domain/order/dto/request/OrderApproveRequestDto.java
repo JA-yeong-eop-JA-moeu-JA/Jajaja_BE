@@ -10,5 +10,5 @@ public record OrderApproveRequestDto (
     String paymentKey,
     
     @NotNull(message = "결제 금액은 필수입니다.")
-    Integer paidAmount
+    Integer finalAmount
 ) {}

@@ -156,7 +156,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
         
         // 결제 금액과 결제해야 할 금액이 동일한지 확인
-        if (!request.paidAmount().equals(order.getTotalAmount())) {
+        if (!request.finalAmount().equals(order.getTotalAmount())) {
             throw new GeneralException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
         }
         
@@ -165,12 +165,12 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             Map<String, Object> body = new HashMap<>();
             body.put("paymentKey", request.paymentKey());
             body.put("orderId", request.orderId());
-            body.put("amount", request.paidAmount());
+            body.put("amount", request.finalAmount());
             
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, getHeaders());
             ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(tossPaymentsConfig.getApproveUrl(), entity, PaymentResponseDto.class);
             PaymentResponseDto responseDto = getPaymentResponseDto(responseEntity);
-            order.updatePaymentInfo(request.orderId(), PaymentMethod.valueOf(responseDto.type()), request.paymentKey(), OrderStatus.DONE, request.paidAmount());
+            order.updatePaymentInfo(request.orderId(), PaymentMethod.valueOf(responseDto.type()), request.paymentKey(), OrderStatus.DONE, request.finalAmount());
             
             // 포인트 사용
             member.updatePoint(member.getPoint() - order.getPointUsedAmount());
