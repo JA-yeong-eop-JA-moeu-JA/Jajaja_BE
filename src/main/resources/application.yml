@@ -61,7 +61,10 @@ jwt:
     expiration:
       access: ${JWT_EXPIRATION_ACCESS}
       refresh: ${JWT_EXPIRATION_REFRESH}
-    redirect-url: ${AUTH_REDIRECT_URL}
+      consent: ${JWT_EXPIRATION_CONSENT}
+    home-redirect-url: ${HOME_REDIRECT_URL}
+    agreement-redirect-url: ${AGREEMENT_REDIRECT_URL}
+    consent-path: ${CONSENT_PATH}
     cookie-domain: ${COOKIE_DOMAIN}
     same-site: ${COOKIE_SAME_SITE}
     secure: ${COOKIE_SECURE}
