@@ -84,7 +84,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         Coupon coupon = validateCoupon(request.appliedCouponId(), memberId, cartProducts);
        validatePointUsage(request.point(), member);
        
-       int totalAmount = 0;
+       int totalAmount;
        if(request.orderType() == OrderType.PERSONAL) {
            totalAmount = cartProducts.stream()
                    .mapToInt(cp ->
@@ -156,7 +156,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
         
         // 결제 금액과 결제해야 할 금액이 동일한지 확인
-        if (!request.paidAmount().equals(order.getPaidAmount())) {
+        if (!request.paidAmount().equals(order.getTotalAmount())) {
             throw new GeneralException(ErrorStatus.PAYMENT_AMOUNT_MISMATCH);
         }
         
@@ -170,7 +170,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, getHeaders());
             ResponseEntity<PaymentResponseDto> responseEntity = restTemplateConfig.restTemplate().postForEntity(tossPaymentsConfig.getApproveUrl(), entity, PaymentResponseDto.class);
             PaymentResponseDto responseDto = getPaymentResponseDto(responseEntity);
-            order.updatePaymentInfo(request.orderId(), PaymentMethod.valueOf(responseDto.type()), OrderStatus.DONE, request.paidAmount());
+            order.updatePaymentInfo(request.orderId(), PaymentMethod.valueOf(responseDto.type()), request.paymentKey(), OrderStatus.DONE, request.paidAmount());
             
             // 포인트 사용
             member.updatePoint(member.getPoint() - order.getPointUsedAmount());
@@ -207,7 +207,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             return OrderApproveResponseDto.of(order);
             
         } catch (HttpClientErrorException e) { // 400번대 에러
-            log.error("토스 환불 4xx 서버 에러: {}", e.getResponseBodyAsString());
+            log.error("토스 환불 4xx 서버 에러: {}", e.getMessage());
             throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_BAD_REQUEST);
         } catch (HttpServerErrorException e) { // 500번대 에러
             log.error("토스 환불 5xx 서버 에러: {}", e.getResponseBodyAsString());
