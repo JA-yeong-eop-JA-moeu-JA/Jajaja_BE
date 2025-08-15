@@ -15,11 +15,12 @@ public record CartProductResponseDto(
 		String optionName,
 		int quantity,
 		String productThumbnail,
-		int unitPrice,
+		int individualPrice,
+		int teamPrice,
 		int totalPrice,
 		boolean teamAvailable
 ) {
-	public static CartProductResponseDto of(CartProduct cartProduct, boolean isTeamAvailable) {
+	public static CartProductResponseDto of(CartProduct cartProduct, int teamPrice, boolean isTeamAvailable) {
 		Product product = cartProduct.getProduct();
 		ProductOption option = cartProduct.getProductOption();
 		
@@ -36,7 +37,8 @@ public record CartProductResponseDto(
 				.optionName(optionName)
 				.quantity(cartProduct.getQuantity())
 				.productThumbnail(product.getThumbnailUrl())
-				.unitPrice(price)
+				.individualPrice(price)
+				.teamPrice(teamPrice)
 				.totalPrice(cartProduct.getUnitPrice() * cartProduct.getQuantity())
 				.teamAvailable(isTeamAvailable)
 				.build();
