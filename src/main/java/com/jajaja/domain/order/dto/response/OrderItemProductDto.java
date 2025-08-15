@@ -15,7 +15,7 @@ public record OrderItemProductDto(
     public static OrderItemProductDto from(OrderProduct orderProduct) {
         return OrderItemProductDto.builder()
                 .id(orderProduct.getProduct().getId())
-                .image(orderProduct.getProduct().getImageUrl())
+                .image(orderProduct.getProduct().getThumbnailUrl())
                 .store(orderProduct.getProduct().getStore())
                 .name(orderProduct.getProduct().getName())
                 .option(orderProduct.getProductOption() == null ? null : orderProduct.getProductOption().getName())
