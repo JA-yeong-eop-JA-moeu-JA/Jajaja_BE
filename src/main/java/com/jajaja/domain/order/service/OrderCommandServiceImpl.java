@@ -100,7 +100,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         int couponDiscount = calculateCouponDiscount(coupon, totalAmount);
         int shippingFee = calculateShippingFee(delivery);
         int pointDiscount = request.point() != null ? request.point() : 0;
-		int finalAmount = totalAmount - couponDiscount - (pointDiscount) + shippingFee;
+		int finalAmount = totalAmount - couponDiscount - pointDiscount + shippingFee;
         String orderId = memberId + "ORDER-" + UUID.randomUUID();
         String orderName = cartProducts.get(0).getProduct().getName() + (cartProducts.size() > 1 ? " 외 " + (cartProducts.size() - 1) + "건" : "");
         
