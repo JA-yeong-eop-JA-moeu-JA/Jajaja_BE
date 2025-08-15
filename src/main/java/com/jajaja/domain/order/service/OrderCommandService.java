@@ -11,4 +11,5 @@ public interface OrderCommandService {
     OrderPrepareResponseDto prepareOrder(Long memberId, OrderPrepareRequestDto request);
     OrderApproveResponseDto approveOrder(Long memberId, OrderApproveRequestDto request);
     OrderRefundResponseDto refundOrder(Long memberId, OrderRefundRequestDto request);
+    void startShipping(Long orderId);
 }
