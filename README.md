@@ -56,7 +56,7 @@ src/main/java/com/jajaja/
 
 
 ## 시스템 아키텍처
-<img width="904" height="558" alt="시스템 아키텍처" src="https://github.com/user-attachments/assets/89d015db-87d1-4cc6-8d0b-0d274f39873c" />
+<img width="1095" height="528" alt="architecture" src="https://github.com/user-attachments/assets/bae2a6a9-f726-4683-bec8-b3d1346f01ec" />
 
 
 ## 브랜치 전략
