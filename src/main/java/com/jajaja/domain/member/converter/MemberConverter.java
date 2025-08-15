@@ -14,6 +14,7 @@ public class MemberConverter {
                 .email(oAuth2Response.getEmail())
                 .profileKeyName("default-profile-image.png")
                 .point(0)
+                .termsAccepted(false)
                 .build();
     }
 }

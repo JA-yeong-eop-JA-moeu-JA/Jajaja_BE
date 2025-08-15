@@ -13,13 +13,16 @@ public class JwtProperties {
 
     private String secretKey = "";
     private Expiration expiration;
-    private String redirectUrl = "";
+    private String homeRedirectUrl = "";
+    private String agreementRedirectUrl = "";
     private String cookieDomain = "";
+    private String consentPath = "";
 
     @Getter
     @Setter
     public static class Expiration {
         private long access;
         private long refresh;
+        private long consent;
     }
 }

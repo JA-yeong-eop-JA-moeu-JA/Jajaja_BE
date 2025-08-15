@@ -8,6 +8,7 @@ import com.jajaja.global.apiPayload.ApiResponse;
 import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -41,5 +42,16 @@ public class MemberController {
                                                                @RequestBody @Valid MemberProfileUpdateRequest request) {
         MemberInfoResponseDto updatedMemberInfo = memberCommandService.updateMemberInfo(memberId, request);
         return ApiResponse.onSuccess(updatedMemberInfo);
+    }
+
+    @Operation(
+            summary = "약관 동의",
+            description = "로그인한 사용자가 약관에 동의합니다. \n" +
+                    "약관 동의 후 정상 access, refresh 토큰을 발급받습니다."
+    )
+    @PostMapping("/terms/accept")
+    public ApiResponse<?> acceptTerms(@Auth Long memberId, HttpServletResponse response) {
+        memberCommandService.acceptTerms(memberId, response);
+        return ApiResponse.onSuccess(null);
     }
 }
