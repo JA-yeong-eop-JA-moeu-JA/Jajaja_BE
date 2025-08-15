@@ -34,7 +34,7 @@ public class SecurityConfig {
     };
 
     private static final String[] GET_WHITELIST = {
-            "/api/products/**", "/api/search/**", "/api/categories/**", "/api/reviews/**"
+            "/api/products/**", "/api/search/**", "/api/categories/**", "/api/reviews/**", "/api/search/recent-keywords", "/api/teams/products"
     };
 
     private static final String[] POST_WHITELIST = {
@@ -65,6 +65,10 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, GET_WHITELIST).permitAll()
                                 .requestMatchers(HttpMethod.POST, POST_WHITELIST).permitAll()
                                 .requestMatchers(HttpMethod.PATCH, PATCH_WHITELIST).permitAll()
+                                // 약관 동의 API는 CONSENT ROLE 필요
+                                .requestMatchers("/api/members/terms/accept").hasRole("CONSENT")
+                                // 나머지 API는 ACCESS ROLE 필요
+                                .requestMatchers("/api/**").hasRole("ACCESS")
                                 .anyRequest().authenticated()
                 )
                 .addFilter(corsConfig.corsFilter())

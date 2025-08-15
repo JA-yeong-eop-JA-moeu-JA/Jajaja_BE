@@ -1,6 +1,9 @@
 package com.jajaja.domain.team.repository;
 
+import com.jajaja.domain.cart.entity.QCart;
 import com.jajaja.domain.member.entity.QMember;
+import com.jajaja.domain.member.entity.QMemberBusinessCategory;
+import com.jajaja.domain.order.entity.QOrder;
 import com.jajaja.domain.product.entity.QProduct;
 import com.jajaja.domain.team.entity.QTeam;
 import com.jajaja.domain.team.entity.QTeamMember;
@@ -41,31 +44,46 @@ public class TeamRepositoryImpl implements TeamRepositoryCustom {
     }
 
     @Override
-    public Optional<Team> findByIdWithLeaderAndMembers(Long teamId) {
+    public Optional<Team> findByIdWithLeaderMembersAndProduct(Long teamId) {
         QTeam team = QTeam.team;
         QMember leader = QMember.member;
         QTeamMember teamMember = QTeamMember.teamMember;
+        QProduct product = QProduct.product;
+        QOrder order = QOrder.order;
 
-        List<Team> result = queryFactory
-                .selectFrom(team)
+        Team result = queryFactory
+                .select(team)
+                .distinct()
+                .from(team)
                 .join(team.leader, leader).fetchJoin()
                 .leftJoin(team.teamMembers, teamMember).fetchJoin()
+                .join(team.product, product).fetchJoin()
+                .leftJoin(team.order, order).fetchJoin()
                 .where(team.id.eq(teamId))
-                .fetch();
+                .fetchOne();
 
-        return result.stream().findFirst();
+        return Optional.ofNullable(result);
     }
 
     @Override
-    public List<Team> findExpiredTeamsWithLeader(TeamStatus status, LocalDateTime now) {
+    public List<Team> findExpiredTeamsWithAll(TeamStatus status, LocalDateTime now) {
         QTeam team = QTeam.team;
         QMember leader = QMember.member;
+        QProduct product = QProduct.product;
+        QCart cart = QCart.cart;
+        QMemberBusinessCategory mbc = QMemberBusinessCategory.memberBusinessCategory;
+        QOrder order = QOrder.order;
 
         return queryFactory
                 .selectFrom(team)
                 .join(team.leader, leader).fetchJoin()
+                .leftJoin(leader.cart, cart).fetchJoin()
+                .leftJoin(leader.memberBusinessCategory, mbc).fetchJoin()
+                .join(team.product, product).fetchJoin()
+                .leftJoin(team.order, order).fetchJoin()
                 .where(team.status.eq(status)
                         .and(team.expireAt.loe(now)))
+                .distinct()
                 .fetch();
     }
 

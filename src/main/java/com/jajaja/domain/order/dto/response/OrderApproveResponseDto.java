@@ -12,7 +12,7 @@ public record OrderApproveResponseDto(
     public record OrderDataDto(
             Long orderId,
             String orderName,
-            int paidAmount
+            int finalAmount
     ) {
         public static OrderDataDto of(Order order) {
             return new OrderDataDto(

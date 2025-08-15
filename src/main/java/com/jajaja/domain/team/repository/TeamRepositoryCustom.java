@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface TeamRepositoryCustom {
     List<Team> findMatchingTeamsByProductId(Long productId);
-    Optional<Team> findByIdWithLeaderAndMembers(Long teamId);
-    List<Team> findExpiredTeamsWithLeader(TeamStatus status, LocalDateTime now);
+    Optional<Team> findByIdWithLeaderMembersAndProduct(Long teamId);
+    List<Team> findExpiredTeamsWithAll(TeamStatus status, LocalDateTime now);
     Page<Team> findAllMatchingTeams(Pageable pageable);
 }

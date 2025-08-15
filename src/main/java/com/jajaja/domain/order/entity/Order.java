@@ -60,7 +60,6 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private Integer totalAmount;
     
-    @Column(nullable = false)
     private Integer paidAmount;
     
     @Column
@@ -105,10 +104,12 @@ public class Order extends BaseEntity {
         this.orderStatus = status;
     }
 
-    public void updatePaymentInfo(String paymentKey, PaymentMethod paymentMethod, OrderStatus orderStatus) {
-        this.paymentKey = paymentKey;
+    public void updatePaymentInfo(String orderId, PaymentMethod paymentMethod, String paymentKey,OrderStatus orderStatus, int paidAmount) {
+        this.orderId = orderId;
         this.paymentMethod = paymentMethod;
+        this.paymentKey = paymentKey;
         this.orderStatus = orderStatus;
+        this.paidAmount = paidAmount;
         this.paidAt = LocalDateTime.now();
     }
 }

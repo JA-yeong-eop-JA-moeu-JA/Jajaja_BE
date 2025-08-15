@@ -48,6 +48,9 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private Integer point;
 
+    @Column(nullable = false)
+    private boolean termsAccepted;
+
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
     private MemberBusinessCategory memberBusinessCategory;
 
@@ -86,7 +89,7 @@ public class Member extends BaseEntity {
     public void updateEmail(String email) {
         this.email = email;
     }
-  
+
     public void updatePoint(int point) {
         this.point = point;
     }
@@ -98,5 +101,9 @@ public class Member extends BaseEntity {
 
     public void updateProfileKeyName(String profileKeyName) {
         this.profileKeyName = profileKeyName;
+    }
+
+    public void acceptTerms() {
+        this.termsAccepted = true;
     }
 }
