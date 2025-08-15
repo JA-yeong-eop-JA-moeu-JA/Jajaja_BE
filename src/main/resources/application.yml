@@ -84,3 +84,7 @@ cloud:
 deployment:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+app:
+  welcome:
+    coupon-ids: ${WELCOME_COUPON_IDS}
