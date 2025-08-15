@@ -23,12 +23,8 @@ public record KakaoResponseDto(
 
     @Override
     public String getName() {
-        return getKakaoAccount().get("name").toString();
-    }
-
-    @Override
-    public String getPhone() {
-        return getKakaoAccount().get("phone_number").toString().replaceFirst("^\\+82\\s*", "0").replaceAll("-", "");
+        Map<String, Object> kakaoProfile = (Map<String, Object>) getKakaoAccount().get("profile");
+        return kakaoProfile.get("nickname").toString();
     }
 
     @Override
