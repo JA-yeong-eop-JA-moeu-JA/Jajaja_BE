@@ -7,7 +7,6 @@ import com.jajaja.domain.notification.entity.enums.NotificationType;
 import com.jajaja.domain.notification.service.NotificationService;
 import com.jajaja.domain.order.entity.Order;
 import com.jajaja.domain.order.entity.enums.OrderStatus;
-import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.domain.order.service.OrderCommandService;
 import com.jajaja.domain.order.dto.request.OrderRefundRequestDto;
 import com.jajaja.domain.product.entity.Product;
@@ -74,6 +73,9 @@ public class TeamExpireScheduler {
             if (order != null) {
                 try {
                     order.updateStatus(OrderStatus.TEAM_MATCHING_FAILED);
+                    // OrderProduct도 함께 팀 매칭 실패 상태로 변경
+                    order.getOrderProducts().forEach(orderProduct -> 
+                        orderProduct.updateStatus(OrderStatus.TEAM_MATCHING_FAILED));
                     OrderRefundRequestDto refundRequest = OrderRefundRequestDto.of(order.getId(), order.getPaymentKey(),"팀 매칭 실패로 인한 자동 환불");
                     orderCommandService.refundOrder(leader.getId(), refundRequest);
                     log.info("팀 매칭 실패 주문 자동 환불 완료 - 주문ID: {}", order.getId());
