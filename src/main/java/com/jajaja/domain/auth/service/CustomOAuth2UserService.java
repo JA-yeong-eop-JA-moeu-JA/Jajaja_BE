@@ -77,7 +77,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         } else {
             existingMember.updateName(oAuth2Response.getName());
-            existingMember.updatePhone(oAuth2Response.getPhone());
+//            existingMember.updatePhone(oAuth2Response.getPhone());
             existingMember.updateEmail(oAuth2Response.getEmail());
             member = existingMember;
         }

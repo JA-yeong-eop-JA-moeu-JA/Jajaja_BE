@@ -10,7 +10,7 @@ public class MemberConverter {
                 .oauthId(oAuth2Response.getProviderId())
                 .oauthType(oAuth2Response.getProvider())
                 .name(oAuth2Response.getName())
-                .phone(oAuth2Response.getPhone())
+//                .phone(oAuth2Response.getPhone())
                 .email(oAuth2Response.getEmail())
                 .profileKeyName("default-profile-image.png")
                 .point(0)
