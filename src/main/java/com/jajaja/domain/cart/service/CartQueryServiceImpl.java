@@ -4,6 +4,7 @@ import com.jajaja.domain.cart.converter.CartConverter;
 import com.jajaja.domain.cart.dto.CartProductResponseDto;
 import com.jajaja.domain.cart.dto.CartResponseDto;
 import com.jajaja.domain.cart.entity.Cart;
+import com.jajaja.domain.product.service.ProductCommonService;
 import com.jajaja.global.common.dto.PriceInfoDto;
 import com.jajaja.domain.coupon.service.CouponCommonService;
 import com.jajaja.domain.team.entity.enums.TeamStatus;
@@ -25,6 +26,7 @@ public class CartQueryServiceImpl implements CartQueryService {
 	private final CartCommonService cartCommonService;
 	private final TeamCommandRepository teamRepository;
 	private final CouponCommonService couponCommonService;
+	private final ProductCommonService productCommonService;
 	
 	@Override
 	public CartResponseDto getCart(Long memberId) {
@@ -43,7 +45,7 @@ public class CartQueryServiceImpl implements CartQueryService {
 		List<CartProductResponseDto> itemInfos = cart.getCartProducts().stream()
 				.map(	cartProduct -> {
 					boolean isTeamAvailable = teamRepository.existsByProductIdAndStatus(cartProduct.getProduct().getId(), TeamStatus.MATCHING);
-					return CartProductResponseDto.of(cartProduct, isTeamAvailable);
+					return CartProductResponseDto.of(cartProduct, productCommonService.calculateDiscountedPrice(cartProduct.getUnitPrice(), cartProduct.getProduct().getDiscountRate()), isTeamAvailable);
 				})
 				.collect(Collectors.toList());
 		

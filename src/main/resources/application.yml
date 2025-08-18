@@ -30,8 +30,7 @@ spring:
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_post
             scope:
-              - name
-              - phone_number
+              - profile_nickname
               - account_email
           google:
             client-name: google
@@ -84,3 +83,7 @@ cloud:
 deployment:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+app:
+  welcome:
+    coupon-ids: ${WELCOME_COUPON_IDS}

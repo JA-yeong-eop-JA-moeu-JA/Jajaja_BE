@@ -190,9 +190,17 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         if (memberId != null) {
             Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
-            MemberBusinessCategory memberBusinessCategory = memberBusinessCategoryRepository.findByMember(member)
-                    .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_BUSINESS_CATEGORY_NOT_FOUND));
-            return memberBusinessCategory.getBusinessCategory().getId();
+
+            return memberBusinessCategoryRepository.findByMember(member)
+                    .map(mbc -> mbc.getBusinessCategory().getId())
+                    .orElseGet(() -> {
+                        if (categoryId != null) {
+                            return businessCategoryRepository.findById(categoryId)
+                                    .orElseThrow(() -> new BadRequestException(ErrorStatus.BUSINESS_CATEGORY_NOT_FOUND))
+                                    .getId();
+                        }
+                        throw new BadRequestException(ErrorStatus.BUSINESS_CATEGORY_REQUIRED);
+                    });
         }
         if (categoryId != null) {
             BusinessCategory category = businessCategoryRepository.findById(categoryId)

@@ -44,6 +44,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -100,7 +101,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         int couponDiscount = calculateCouponDiscount(coupon, totalAmount);
         int shippingFee = calculateShippingFee(delivery);
         int pointDiscount = request.point() != null ? request.point() : 0;
-		int finalAmount = totalAmount - couponDiscount - (pointDiscount) + shippingFee;
+		int finalAmount = totalAmount - couponDiscount - pointDiscount + shippingFee;
         String orderId = memberId + "ORDER-" + UUID.randomUUID();
         String orderName = cartProducts.get(0).getProduct().getName() + (cartProducts.size() > 1 ? " 외 " + (cartProducts.size() - 1) + "건" : "");
         
@@ -204,6 +205,9 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             // 최초 구매 시 포인트 지급
             pointCommandService.addFirstPurchasePointsIfPossible(member);
             
+            // 30초 후 배송 시작 스케줄링
+            scheduleShippingStart(order.getId());
+            
             return OrderApproveResponseDto.of(order);
             
         } catch (HttpClientErrorException e) { // 400번대 에러
@@ -215,6 +219,9 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         } catch (Exception e) {
             log.error("[OrderCommandService] 주문 생성 실패 - 회원ID: {}, 에러: {}", memberId, e.getMessage(), e);
             order.updateStatus(OrderStatus.ABORTED);
+            // OrderProduct도 함께 취소 상태로 변경
+            order.getOrderProducts().forEach(orderProduct -> 
+                orderProduct.updateStatus(OrderStatus.ABORTED));
             throw new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR);
         }
     }
@@ -308,6 +315,9 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             }
 
             order.updateStatus(OrderStatus.REFUNDED);
+            // OrderProduct도 함께 환불 상태로 변경
+            order.getOrderProducts().forEach(orderProduct -> 
+                orderProduct.updateStatus(OrderStatus.REFUNDED));
             
             // 환불 성공 시 구매 통계에서 판매 개수만큼 수량 줄이기
             order.getOrderProducts()
@@ -333,6 +343,9 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             throw new TossPaymentException(ErrorStatus.TOSS_PAYMENT_SERVER_ERROR);
         } catch (Exception e) {
             order.updateStatus(OrderStatus.REFUND_FAILED);
+            // OrderProduct도 함께 환불 실패 상태로 변경
+            order.getOrderProducts().forEach(orderProduct -> 
+                orderProduct.updateStatus(OrderStatus.REFUND_FAILED));
             log.error("[OrderCommandService] 환불 처리 실패 - 주문ID: {}, 에러: {}", request.orderId(), e.getMessage(), e);
             throw new GeneralException(ErrorStatus.REFUND_FAILED);
         }
@@ -442,5 +455,39 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         
         return headers;
+    }
+    
+    @Async("orderTaskExecutor")
+    protected void scheduleShippingStart(Long orderId) {
+        try {
+            Thread.sleep(30000); // 30초 대기
+            startShipping(orderId);
+        } catch (InterruptedException e) {
+            log.error("[OrderCommandService] 배송 시작 스케줄링 중단 - 주문ID: {}", orderId, e);
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            log.error("[OrderCommandService] 배송 시작 스케줄링 실패 - 주문ID: {}", orderId, e);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void startShipping(Long orderId) {
+        try {
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
+            
+            if (order.getOrderStatus() == OrderStatus.DONE) {
+                order.updateStatus(OrderStatus.SHIPPING);
+                // OrderProduct들도 함께 배송 상태로 변경
+                order.getOrderProducts().forEach(orderProduct -> 
+                    orderProduct.updateStatus(OrderStatus.SHIPPING));
+                log.info("[OrderCommandService] 배송 시작 - 주문ID: {}", orderId);
+            } else {
+                log.warn("[OrderCommandService] 배송 시작 불가 - 주문ID: {}, 현재상태: {}", orderId, order.getOrderStatus());
+            }
+        } catch (Exception e) {
+            log.error("[OrderCommandService] 배송 시작 실패 - 주문ID: {}", orderId, e);
+        }
     }
 }

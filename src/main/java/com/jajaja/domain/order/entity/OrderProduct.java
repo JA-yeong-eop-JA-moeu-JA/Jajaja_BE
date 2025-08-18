@@ -43,4 +43,8 @@ public class OrderProduct extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "option_id")
     private ProductOption productOption;
+    
+    public void updateStatus(OrderStatus status) {
+        this.status = status;
+    }
 }

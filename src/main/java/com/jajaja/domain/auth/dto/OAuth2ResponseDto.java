@@ -10,7 +10,5 @@ public interface OAuth2ResponseDto {
 
     String getName();
 
-    String getPhone();
-
     String getEmail();
 }
