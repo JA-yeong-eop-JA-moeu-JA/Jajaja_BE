@@ -1,6 +1,9 @@
 package com.jajaja.domain.cart.service;
 
+import com.jajaja.domain.cart.converter.CartConverter;
 import com.jajaja.domain.cart.dto.CartProductAddRequestDto;
+import com.jajaja.domain.cart.dto.CartProductResponseDto;
+import com.jajaja.domain.cart.dto.CartResponseDto;
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.cart.entity.CartProduct;
 import com.jajaja.domain.cart.repository.CartProductRepository;
@@ -11,8 +14,12 @@ import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.entity.ProductOption;
 import com.jajaja.domain.product.repository.ProductOptionRepository;
 import com.jajaja.domain.product.repository.ProductRepository;
+import com.jajaja.domain.product.service.ProductCommonService;
+import com.jajaja.domain.team.entity.enums.TeamStatus;
+import com.jajaja.domain.team.repository.TeamCommandRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.handler.CartHandler;
+import com.jajaja.global.common.dto.PriceInfoDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,17 +34,19 @@ import java.util.Optional;
 @Transactional
 public class CartCommandServiceImpl implements CartCommandService {
 	
-	private final CartCommonService cartCommonService;
-	private final CouponCommonService couponCommonService;
 	private final CartProductRepository cartProductRepository;
 	private final ProductRepository productRepository;
+	private final TeamCommandRepository teamRepository;
 	private final ProductOptionRepository productOptionRepository;
 	private final MemberCouponRepository memberCouponRepository;
+	private final CouponCommonService couponCommonService;
+	private final ProductCommonService productCommonService;
+	private final CartCommonService cartCommonService;
 	
 	@Override
-	public void addOrUpdateCartProduct(Long memberId, List<CartProductAddRequestDto> request) {
+	public CartResponseDto addOrUpdateCartProduct(Long memberId, List<CartProductAddRequestDto> request) {
 		Cart cart = cartCommonService.findCart(memberId);
-		request.forEach(req -> {
+		List<CartProductResponseDto> items = request.stream().map(req -> {
 			log.info("[CartCommandService] 사용자 {}의 장바구니에 아이템 {} 추가/수정", memberId, req.productId());
 			
 			CartOpterationContext context = prepareCartOperationContext(req.productId(), req.optionId());
@@ -45,20 +54,31 @@ public class CartCommandServiceImpl implements CartCommandService {
 			Optional<CartProduct> existingItem = req.optionId() != null ? cartProductRepository.findByCartIdAndProductIdAndProductOptionId(cart.getId(), context.product().getId(), context.productOption.getId())
 					: cartProductRepository.findByCartIdAndProductIdAndProductOptionIsNull(cart.getId(), context.product().getId());
 			
-			existingItem.ifPresentOrElse(
-					item -> {
+			CartProduct cartProduct = existingItem
+					.map(item -> {
 						log.info("[CartCommandService] 기존 아이템 {}의 옵션과 수량을 변경합니다.", item.getId());
 						item.update(context.productOption(), req.quantity());
-					},
-					() -> {
+						return item;
+					})
+					.orElseGet(() -> {
 						log.info("[CartCommandService] 장바구니에 새로 아이템 {}를 추가합니다.", req.productId());
 						CartProduct newCartProduct = CartProduct.create(cart, context.product(), context.productOption(), req.quantity());
 						cart.addCartProduct(newCartProduct);
-						cartProductRepository.save( newCartProduct);
-					}
-			);
-		});
+						cartProductRepository.save(newCartProduct);
+						return newCartProduct;
+					});
+			
+			boolean isTeamAvailable = teamRepository.existsByProductIdAndStatus(
+					cartProduct.getProduct().getId(), TeamStatus.MATCHING);
+			return CartProductResponseDto.of(cartProduct, productCommonService.calculateDiscountedPrice(cartProduct.getUnitPrice(), cartProduct.getProduct().getDiscountRate()), isTeamAvailable);
+		}).toList();
+		
+		PriceInfoDto priceInfo = cart.getCoupon() != null ?
+				couponCommonService.calculateDiscount(cart, cart.getCoupon()) :
+				PriceInfoDto.noDiscount(cart.calculateTotalAmount());
+		
 		revalidateAppliedCouponIfExists(cart);
+		return CartConverter.toCartResponseDto(cart, items, priceInfo);
 	}
 	
 	@Override

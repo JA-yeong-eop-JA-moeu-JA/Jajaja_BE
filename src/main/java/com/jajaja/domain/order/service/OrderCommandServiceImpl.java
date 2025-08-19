@@ -36,6 +36,7 @@ import com.jajaja.global.apiPayload.exception.custom.TossPaymentException;
 import com.jajaja.global.config.RestTemplateConfig;
 import com.jajaja.global.config.TossPaymentsConfig;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import lombok.RequiredArgsConstructor;
@@ -349,6 +350,18 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             log.error("[OrderCommandService] 환불 처리 실패 - 주문ID: {}, 에러: {}", request.orderId(), e.getMessage(), e);
             throw new GeneralException(ErrorStatus.REFUND_FAILED);
         }
+    }
+    
+    @Override
+    public void expireOrder() {
+        orderRepository.findOrdersByOrderStatusAndCreatedAtBefore(OrderStatus.READY, LocalDateTime.now().minusMinutes(10))
+                .forEach(order -> {
+                    if (order.getOrderStatus() == OrderStatus.READY) {
+                        order.updateStatus(OrderStatus.EXPIRED);
+                        order.getOrderProducts().forEach(orderProduct ->
+                            orderProduct.updateStatus(OrderStatus.EXPIRED));
+                    }
+                });
     }
     
     private Member findMember(Long memberId) {
