@@ -295,7 +295,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                         product.thumbnailUrl,
                         op.price,
                         op.quantity,
-                        review.id.isNotNull()
+                        op.isReviewWritten
                 ))
                 .from(order)
                 .join(order.orderProducts, op)
