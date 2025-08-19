@@ -58,6 +58,8 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
                 .build();
         Review savedReview = reviewRepository.save(review);
 
+        orderProduct.markReviewWritten();
+
         // 리뷰 작성 후 포인트 지급
         member.updatePoint(member.getPoint() + 100); // 고정 100 포인트 지급
         pointCommandService.addReviewPoints(memberId, savedReview.getId());
