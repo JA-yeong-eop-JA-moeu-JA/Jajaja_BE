@@ -124,7 +124,7 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
         List<ReviewListDto> reviewDtos = reviewItemPage.stream()
                 .map(dto -> new ReviewListDto(
                         dto,
-                        true,
+                        false,
                         imageUrlsMap.getOrDefault(dto.id(), List.of())
                 ))
                 .toList();

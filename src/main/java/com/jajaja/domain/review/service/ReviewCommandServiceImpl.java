@@ -2,6 +2,7 @@ package com.jajaja.domain.review.service;
 
 import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.member.repository.MemberRepository;
+import com.jajaja.domain.order.entity.OrderProduct;
 import com.jajaja.domain.order.repository.OrderProductRepository;
 import com.jajaja.domain.point.service.PointCommandService;
 import com.jajaja.domain.product.entity.Product;
@@ -41,18 +42,23 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
-        boolean isPurchased = orderProductRepository.existsByOrderMemberIdAndProductId(memberId, productId);
-        if (!isPurchased) {
-            throw new BadRequestException(ErrorStatus.REVIEW_NOT_ALLOWED);
+        OrderProduct orderProduct = orderProductRepository.findByOrderMemberIdAndProductId(memberId, productId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.REVIEW_NOT_ALLOWED));
+
+        if (reviewRepository.existsByOrderProduct(orderProduct)) {
+            throw new BadRequestException(ErrorStatus.REVIEW_ALREADY_WRITTEN);
         }
 
         Review review = Review.builder()
                 .member(member)
                 .product(product)
+                .orderProduct(orderProduct)
                 .rating(dto.rating().byteValue())
                 .content(dto.content())
                 .build();
         Review savedReview = reviewRepository.save(review);
+
+        orderProduct.markReviewWritten();
 
         // 리뷰 작성 후 포인트 지급
         member.updatePoint(member.getPoint() + 100); // 고정 100 포인트 지급
