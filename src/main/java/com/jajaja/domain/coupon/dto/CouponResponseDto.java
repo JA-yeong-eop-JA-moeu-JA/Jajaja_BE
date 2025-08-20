@@ -10,15 +10,17 @@ public record CouponResponseDto(
 		String couponName,
 		DiscountType discountType,
 		Integer discountValue,
-		CouponConditionDto applicableConditions
+		CouponConditionDto applicableConditions,
+		boolean isApplicable
 ) {
-	public static CouponResponseDto from (Coupon coupon) {
+	public static CouponResponseDto from (Coupon coupon, boolean isApplicable) {
 		return CouponResponseDto.builder()
 				.couponId(coupon.getId())
 				.couponName(coupon.getName())
 				.discountType(coupon.getDiscountType())
 				.discountValue(coupon.getDiscountValue())
 				.applicableConditions(CouponConditionDto.from(coupon))
+				.isApplicable(isApplicable)
 				.build();
 	}
 }
