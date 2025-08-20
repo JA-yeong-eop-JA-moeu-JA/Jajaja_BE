@@ -146,7 +146,7 @@ public class ReviewController {
             description = "전체 리뷰를 정렬 기준(최신 순 | 추천 순)에 따라 조회합니다."
     )
     @GetMapping
-    public ApiResponse<PagingReviewListResponseDto> getAllReviews(
+    public ApiResponse<PagingAllReviewListResponseDto> getAllReviews(
             @Auth Long memberId,
             @Parameter(description = "정렬 기준 (LATEST | RECOMMEND)", example = "LATEST")
             @RequestParam(required = false, defaultValue = "LATEST") String sort,
@@ -157,7 +157,7 @@ public class ReviewController {
             @Parameter(description = "페이지 크기", example = "5")
             @RequestParam(defaultValue = "5") int size
     ) {
-        PagingReviewListResponseDto responseDto = reviewQueryService.getAllReviewList(memberId, sort, page, size);
+        PagingAllReviewListResponseDto responseDto = reviewQueryService.getAllReviewList(memberId, sort, page, size);
         return ApiResponse.onSuccess(responseDto);
     }
 

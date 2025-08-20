@@ -133,7 +133,7 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
     }
 
     @Override
-    public PagingReviewListResponseDto getAllReviewList(Long memberId, String sort, int page, int size) {
+    public PagingAllReviewListResponseDto getAllReviewList(Long memberId, String sort, int page, int size) {
         Page<ReviewItemDto> reviewItemPage;
 
         switch (sort.toLowerCase()) {
@@ -159,15 +159,16 @@ public class ReviewQueryServiceImpl implements ReviewQueryService {
 
         List<ReviewItemDto> convertedDtos = reviewCommonService.changeReviewWriterProfile(reviewItemPage.getContent());
 
-        List<ReviewListDto> reviewDtos = convertedDtos.stream()
-                .map(dto -> new ReviewListDto(
+        List<AllReviewListDto> reviewDtos = convertedDtos.stream()
+                .map(dto -> AllReviewListDto.of(
                         dto,
                         likedReviewIds.contains(dto.id()),
-                        imageUrlsMap.getOrDefault(dto.id(), List.of())
+                        imageUrlsMap.getOrDefault(dto.id(), List.of()),
+                        reviewRepository.findProductIdByReviewId(dto.id()) // int 그대로 전달
                 ))
                 .toList();
 
-        return PagingReviewListResponseDto.of(reviewItemPage, reviewDtos);
+        return PagingAllReviewListResponseDto.of(reviewItemPage, reviewDtos);
     }
 
     @Override
