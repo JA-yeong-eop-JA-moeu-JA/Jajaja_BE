@@ -1,11 +1,11 @@
 package com.jajaja.domain.coupon.service;
 
 import com.jajaja.domain.cart.entity.Cart;
+import com.jajaja.domain.member.entity.Member;
 import com.jajaja.domain.cart.entity.CartProduct;
 import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.global.common.dto.PriceInfoDto;
 import com.jajaja.domain.coupon.entity.Coupon;
-import com.jajaja.domain.coupon.entity.enums.ConditionType;
 import com.jajaja.domain.coupon.entity.enums.DiscountType;
 import com.jajaja.domain.coupon.repository.CouponValidationRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
@@ -28,24 +28,38 @@ public class CouponCommonService {
     private final OrderRepository orderRepository;
     
     /**
-     * 쿠폰 적용 가능 여부를 검증합니다.
+     * 장바구니 전체에 대한 쿠폰 적용 가능 여부를 검증하고, 실패 시 예외를 발생시킵니다.
      */
     public void validateCouponEligibility(Cart cart, Coupon coupon) {
-        validateCouponStatus(coupon);
-        validateMinOrderAmount(cart, coupon);
-        validateCouponConditions(cart, coupon);
-        validateCartNotEmpty(cart);
+        getCouponInvalidityReason(cart.getMember(), cart.getCartProducts(), cart.calculateTotalAmount(), coupon)
+                .ifPresent(errorStatus -> {
+                    throw new CouponHandler(errorStatus);
+                });
+    }
+    
+    /**
+     * 장바구니 전체에 대한 쿠폰 적용 가능 여부를 boolean으로 반환합니다.
+     * */
+    public boolean checkCouponEligibility(Cart cart, Coupon coupon) {
+        Member member = (cart != null) ? cart.getMember() : null;
+        List<CartProduct> products = (cart != null) ? cart.getCartProducts() : Collections.emptyList();
+        int totalAmount = (cart != null) ? cart.calculateTotalAmount() : 0;
+
+        return getCouponInvalidityReason(member, products, totalAmount, coupon).isEmpty();
     }
 
     /**
-     * 선택된 아이템들을 대상으로 쿠폰 적용 가능 여부를 검증합니다.
-     * 주문 생성 시 사용합니다.
+     * 선택된 아이템들을 대상으로 쿠폰 적용 가능 여부를 검증하고, 실패 시 예외를 발생시킵니다.
      */
     public void validateCouponForSelectedItems(List<CartProduct> selectedItems, Coupon coupon) {
-        validateCouponStatus(coupon);
-        validateMinOrderAmountForSelectedItems(selectedItems, coupon);
-        validateCouponConditionsForSelectedItems(selectedItems, coupon);
-        validateSelectedItemsNotEmpty(selectedItems);
+        if (selectedItems == null || selectedItems.isEmpty()) {
+            throw new CouponHandler(ErrorStatus.CART_EMPTY);
+        }
+        Member member = selectedItems.get(0).getCart().getMember();
+        int totalAmount = selectedItems.stream().mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity()).sum();
+
+        getCouponInvalidityReason(member, selectedItems, totalAmount, coupon)
+                .ifPresent(errorStatus -> { throw new CouponHandler(errorStatus); });
     }
 
     /**
@@ -67,84 +81,6 @@ public class CouponCommonService {
                 targetAmount, discountAmount, coupon.getName());
 
         return PriceInfoDto.withDiscount(cart.calculateTotalAmount(), discountAmount);
-    }
-
-    private void validateCouponStatus(Coupon coupon) {
-        if (coupon.getExpiresAt() != null && coupon.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new CouponHandler(ErrorStatus.COUPON_EXPIRED);
-        }
-    }
-
-    private void validateMinOrderAmount(Cart cart, Coupon coupon) {
-        if (coupon.getMinOrderAmount() != null &&
-               cart.calculateTotalAmount() <= coupon.getMinOrderAmount()) {
-            throw new CouponHandler(ErrorStatus.COUPON_MIN_ORDER_AMOUNT_NOT_MET);
-        }
-    }
-
-    private void validateCouponConditions(Cart cart, Coupon coupon) {
-        ConditionType conditionType = coupon.getConditionType();
-        String conditionValues = coupon.getConditionValues();
-        
-        switch (conditionType) {
-            case ALL:
-                // 모든 상품에 적용 가능
-                break;
-            case FIRST:
-                validateNoOrderHistory(cart);
-                break;
-            case BRAND:
-                validateBrandCondition(cart, conditionValues);
-                break;
-            case CATEGORY:
-                validateCategoryCondition(cart, conditionValues);
-                break;
-            default:
-                throw new CouponHandler(ErrorStatus.INVALID_COUPON_TYPE);
-        }
-    }
-
-    private void validateBrandCondition(Cart cart, String brandNames) {
-        List<String> allowedBrands = parseConditionValues(brandNames);
-        if (allowedBrands.isEmpty()) {
-            return;
-        }
-        
-        boolean hasValidBrand = cart.getCartProducts().stream()
-                .anyMatch(cartProduct -> {
-                    return matchesBrandCondition(cartProduct.getProduct().getStore(), allowedBrands);
-                });
-        
-        if (!hasValidBrand) {
-            throw new CouponHandler(ErrorStatus.COUPON_BRAND_CONDITION_NOT_MET);
-        }
-    }
-
-    private void validateCategoryCondition(Cart cart, String categoryNames) {
-        List<String> allowedCategories = parseConditionValues(categoryNames);
-        if (allowedCategories.isEmpty()) {
-            return;
-        }
-        
-        validateCartNotEmpty(cart);
-        
-        boolean hasValidCategory = matchesCategoryCondition(couponValidationRepository.findCategoryNamesByCartId(cart.getId()),
-                allowedCategories);
-        if (!hasValidCategory) {
-            throw new CouponHandler(ErrorStatus.COUPON_CATEGORY_CONDITION_NOT_MET);
-        }
-    }
-    
-    private void validateNoOrderHistory(Cart cart) {
-        if(orderRepository.existsByMember(cart.getMember())) {
-            throw new CouponHandler(ErrorStatus.COUPON_NOT_AVAILABLE);
-        }
-    }
-
-    private void validateCartNotEmpty(Cart cart) {
-        if (cart.getCartProducts() == null || cart.getCartProducts().isEmpty()) {
-            throw new CouponHandler(ErrorStatus.CART_EMPTY);
-        }
     }
 
     private int calculateTargetAmount(Cart cart, Coupon coupon) {
@@ -265,81 +201,60 @@ public class CouponCommonService {
         return productCategoryMap;
     }
 
-    private void validateMinOrderAmountForSelectedItems(List<CartProduct> selectedItems, Coupon coupon) {
-        if (coupon.getMinOrderAmount() != null) {
-            int selectedItemsAmount = selectedItems.stream()
-                    .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
-                    .sum();
-            
-            if (selectedItemsAmount <= coupon.getMinOrderAmount()) {
-                throw new CouponHandler(ErrorStatus.COUPON_MIN_ORDER_AMOUNT_NOT_MET);
-            }
+    /**
+     * 쿠폰 검증에 실패하면 실패 원인(ErrorStatus)을 담은 Optional을, 성공하면 빈 Optional을 반환합니다.
+     */
+    private Optional<ErrorStatus> getCouponInvalidityReason(Member member, List<CartProduct> products, int totalAmount, Coupon coupon) {
+        // 쿠폰 만료일 기준 만료 여부 검증
+        if (coupon.getExpiresAt() != null && coupon.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return Optional.of(ErrorStatus.COUPON_EXPIRED);
         }
-    }
 
-    private void validateCouponConditionsForSelectedItems(List<CartProduct> selectedItems, Coupon coupon) {
-        ConditionType conditionType = coupon.getConditionType();
-        String conditionValues = coupon.getConditionValues();
-        
-        switch (conditionType) {
+        // 최소 주문 금액 검증
+        if (coupon.getMinOrderAmount() != null && totalAmount < coupon.getMinOrderAmount()) {
+            return Optional.of(ErrorStatus.COUPON_MIN_ORDER_AMOUNT_NOT_MET);
+        }
+
+        // 쿠폰 세부 조건 검증
+        switch (coupon.getConditionType()) {
             case ALL:
+                if (products.isEmpty()) return Optional.of(ErrorStatus.CART_EMPTY);
                 break;
+
             case FIRST:
-                validateNoOrderHistory(selectedItems.get(0).getCart());
+                if (member == null) return Optional.of(ErrorStatus.MEMBER_NOT_FOUND);
+                if (orderRepository.existsByMember(member)) return Optional.of(ErrorStatus.COUPON_NOT_AVAILABLE);
                 break;
+
             case BRAND:
-                validateBrandConditionForSelectedItems(selectedItems, conditionValues);
+                if (products.isEmpty()) return Optional.of(ErrorStatus.CART_EMPTY);
+                List<String> allowedBrands = parseConditionValues(coupon.getConditionValues());
+                if (!allowedBrands.isEmpty()) {
+                    boolean hasValidBrand = products.stream()
+                            .anyMatch(cp -> matchesBrandCondition(cp.getProduct().getStore(), allowedBrands));
+                    if (!hasValidBrand) return Optional.of(ErrorStatus.COUPON_BRAND_CONDITION_NOT_MET);
+                }
                 break;
+
             case CATEGORY:
-                validateCategoryConditionForSelectedItems(selectedItems, conditionValues);
+                if (products.isEmpty()) return Optional.of(ErrorStatus.CART_EMPTY);
+                List<String> allowedCategories = parseConditionValues(coupon.getConditionValues());
+                if (!allowedCategories.isEmpty()) {
+                    List<Long> productIds = products.stream().map(cp -> cp.getProduct().getId()).toList();
+                    List<String> productCategoryNames = couponValidationRepository.findCategoryNamesByProductIds(productIds)
+                            .stream()
+                            .map(result -> (String) result[1])
+                            .distinct()
+                            .toList();
+                    if (!matchesCategoryCondition(productCategoryNames, allowedCategories)) {
+                        return Optional.of(ErrorStatus.COUPON_CATEGORY_CONDITION_NOT_MET);
+                    }
+                }
                 break;
+
             default:
-                throw new CouponHandler(ErrorStatus.INVALID_COUPON_TYPE);
+                return Optional.of(ErrorStatus.INVALID_COUPON_TYPE);
         }
-    }
-
-    private void validateBrandConditionForSelectedItems(List<CartProduct> selectedItems, String brandNames) {
-        List<String> allowedBrands = parseConditionValues(brandNames);
-        if (allowedBrands.isEmpty()) {
-            return;
-        }
-        
-        boolean hasValidBrand = selectedItems.stream()
-                .anyMatch(cartProduct -> {
-                    return matchesBrandCondition(cartProduct.getProduct().getStore(), allowedBrands);
-                });
-        
-        if (!hasValidBrand) {
-            throw new CouponHandler(ErrorStatus.COUPON_BRAND_CONDITION_NOT_MET);
-        }
-    }
-
-    private void validateCategoryConditionForSelectedItems(List<CartProduct> selectedItems, String categoryNames) {
-        List<String> allowedCategories = parseConditionValues(categoryNames);
-        if (allowedCategories.isEmpty()) {
-            return;
-        }
-        
-        validateSelectedItemsNotEmpty(selectedItems);
-        
-        List<Long> productIds = selectedItems.stream()
-                .map(cp -> cp.getProduct().getId())
-                .toList();
-        
-        List<String> productCategoryNames = couponValidationRepository.findCategoryNamesByProductIds(productIds)
-                .stream()
-                .map(result -> (String) result[1])
-                .toList();
-        
-        boolean hasValidCategory = matchesCategoryCondition(productCategoryNames, allowedCategories);
-        if (!hasValidCategory) {
-            throw new CouponHandler(ErrorStatus.COUPON_CATEGORY_CONDITION_NOT_MET);
-        }
-    }
-
-    private void validateSelectedItemsNotEmpty(List<CartProduct> selectedItems) {
-        if (selectedItems == null || selectedItems.isEmpty()) {
-            throw new CouponHandler(ErrorStatus.CART_EMPTY);
-        }
+        return Optional.empty(); // 모든 검증 통과
     }
 }
