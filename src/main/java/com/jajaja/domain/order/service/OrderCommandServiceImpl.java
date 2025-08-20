@@ -129,6 +129,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                     .quantity(cartProduct.getQuantity())
                     .price(cartProduct.getUnitPrice())
                     .status(OrderStatus.READY)
+                    .isReviewWritten(false)
                     .build();
             order.getOrderProducts().add(orderProduct);
         });
