@@ -28,16 +28,6 @@ public class CouponCommonService {
     private final OrderRepository orderRepository;
     
     /**
-     * 장바구니 전체에 대한 쿠폰 적용 가능 여부를 검증하고, 실패 시 예외를 발생시킵니다.
-     */
-    public void validateCouponEligibility(Cart cart, Coupon coupon) {
-        getCouponInvalidityReason(cart.getMember(), cart.getCartProducts(), cart.calculateTotalAmount(), coupon)
-                .ifPresent(errorStatus -> {
-                    throw new CouponHandler(errorStatus);
-                });
-    }
-    
-    /**
      * 장바구니 전체에 대한 쿠폰 적용 가능 여부를 boolean으로 반환합니다.
      * */
     public boolean checkCouponEligibility(Cart cart, Coupon coupon) {
@@ -82,6 +72,27 @@ public class CouponCommonService {
 
         return PriceInfoDto.withDiscount(cart.calculateTotalAmount(), discountAmount);
     }
+    
+    /**
+     * 선택된 장바구니 상품들에 대한 쿠폰 할인 금액을 계산합니다.
+     */
+    public PriceInfoDto calculateDiscountForSelectedItems(List<CartProduct> selectedItems, Coupon coupon) {
+        int originalAmount = selectedItems.stream()
+                .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
+                .sum();
+                
+        int targetAmount = calculateTargetAmountForSelectedItems(selectedItems, coupon);
+        if (targetAmount <= 0) {
+            return PriceInfoDto.noDiscount(originalAmount);
+        }
+
+        int discountAmount = calculateDiscountAmount(targetAmount, coupon);
+
+        log.info("[CouponCommonService] 선택된 상품 할인 계산 완료 - 원래금액: {}, 대상금액: {}, 할인금액: {}, 쿠폰: {}", 
+                originalAmount, targetAmount, discountAmount, coupon.getName());
+
+        return PriceInfoDto.withDiscount(originalAmount, discountAmount);
+    }
 
     private int calculateTargetAmount(Cart cart, Coupon coupon) {
         return switch (coupon.getConditionType()) {
@@ -89,6 +100,16 @@ public class CouponCommonService {
             case BRAND -> calculateBrandTargetAmount(cart, coupon.getConditionValues());
             case CATEGORY -> calculateCategoryTargetAmount(cart, coupon.getConditionValues());
 		};
+    }
+    
+    private int calculateTargetAmountForSelectedItems(List<CartProduct> selectedItems, Coupon coupon) {
+        return switch (coupon.getConditionType()) {
+            case ALL, FIRST -> selectedItems.stream()
+                    .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
+                    .sum();
+            case BRAND -> calculateBrandTargetAmountForItems(selectedItems, coupon.getConditionValues());
+            case CATEGORY -> calculateCategoryTargetAmountForItems(selectedItems, coupon.getConditionValues());
+        };
     }
 
     private int calculateDiscountAmount(int targetAmount, Coupon coupon) {
@@ -130,6 +151,18 @@ public class CouponCommonService {
                 .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
                 .sum();
     }
+    
+    private int calculateBrandTargetAmountForItems(List<CartProduct> selectedItems, String brandNames) {
+        List<String> allowedBrands = parseConditionValues(brandNames);
+        if (allowedBrands.isEmpty()) {
+            return 0;
+        }
+        
+        return selectedItems.stream()
+                .filter(cartProduct -> matchesBrandCondition(cartProduct.getProduct().getStore(), allowedBrands))
+                .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
+                .sum();
+    }
 
     // 카테고리에 해당하는 제품들의 금액에서만 할인
     private int calculateCategoryTargetAmount(Cart cart, String categoryNames) {
@@ -141,6 +174,35 @@ public class CouponCommonService {
         Map<Long, List<String>> productCategoryMap = getProductCategoryMap(cart);
         
         return cart.getCartProducts().stream()
+                .filter(cartProduct -> {
+                    List<String> productCategories = productCategoryMap.getOrDefault(
+                            cartProduct.getProduct().getId(), Collections.emptyList());
+                    return matchesCategoryCondition(productCategories, allowedCategories);
+                })
+                .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
+                .sum();
+    }
+    
+    private int calculateCategoryTargetAmountForItems(List<CartProduct> selectedItems, String categoryNames) {
+        List<String> allowedCategories = parseConditionValues(categoryNames);
+        if (allowedCategories.isEmpty()) {
+            return 0;
+        }
+        
+        List<Long> productIds = selectedItems.stream()
+                .map(cp -> cp.getProduct().getId())
+                .toList();
+        
+        Map<Long, List<String>> productCategoryMap = new HashMap<>();
+        List<Object[]> categoryResults = couponValidationRepository.findCategoryNamesByProductIds(productIds);
+        
+        for (Object[] result : categoryResults) {
+            Long productId = (Long) result[0];
+            String categoryName = (String) result[1];
+            productCategoryMap.computeIfAbsent(productId, k -> new ArrayList<>()).add(categoryName);
+        }
+        
+        return selectedItems.stream()
                 .filter(cartProduct -> {
                     List<String> productCategories = productCategoryMap.getOrDefault(
                             cartProduct.getProduct().getId(), Collections.emptyList());

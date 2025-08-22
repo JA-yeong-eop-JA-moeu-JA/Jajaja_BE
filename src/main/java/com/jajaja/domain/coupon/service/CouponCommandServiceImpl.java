@@ -1,7 +1,10 @@
 package com.jajaja.domain.coupon.service;
 
 import com.jajaja.domain.cart.entity.Cart;
+import com.jajaja.domain.cart.entity.CartProduct;
+import com.jajaja.domain.cart.repository.CartProductRepository;
 import com.jajaja.domain.cart.repository.CartRepository;
+import com.jajaja.domain.coupon.dto.CouponApplyRequestDto;
 import com.jajaja.domain.coupon.dto.CouponApplyResponseDto;
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.coupon.entity.enums.CouponStatus;
@@ -16,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -24,14 +29,15 @@ public class CouponCommandServiceImpl implements CouponCommandService{
 	private final MemberRepository memberRepository;
 	private final CouponRepository couponRepository;
 	private final CartRepository cartRepository;
+	private final CartProductRepository cartProductRepository;
 	private final MemberCouponRepository memberCouponRepository;
 	private final CouponCommonService couponCommonService;
 	
 	@Override
-	public CouponApplyResponseDto applyCouponToCart(Long memberId, Long couponId) {
+	public CouponApplyResponseDto applyCouponToCart(Long memberId, CouponApplyRequestDto request) {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new CouponHandler(ErrorStatus.MEMBER_NOT_FOUND));
-		Coupon coupon = validateAndGetCoupon(couponId);
+		Coupon coupon = validateAndGetCoupon(request.couponId());
 		
 		MemberCoupon memberCoupon = validateCouponOwnership(member, coupon);
 		validateCouponStatus(memberCoupon);
@@ -41,15 +47,12 @@ public class CouponCommandServiceImpl implements CouponCommandService{
 			throw new CouponHandler(ErrorStatus.CART_NOT_FOUND);
 		}
 		
-		couponCommonService.validateCouponEligibility(cart, coupon);
-		cart.applyCoupon(memberCoupon); // MemberCoupon 객체 전달
+		List<CartProduct> selectedItems = validateAndGetSelectedItems(cart, request.items());
+		couponCommonService.validateCouponForSelectedItems(selectedItems, coupon);
+		cart.applyCoupon(memberCoupon);
 		
-		return CouponApplyResponseDto.withDiscount(
-				cart.getId(),
-				coupon.getId(),
-				coupon.getName(),
-				couponCommonService.calculateDiscount(cart, coupon)
-		);
+		return CouponApplyResponseDto.withDiscount(cart.getId(), coupon.getId(), coupon.getName(), 
+				couponCommonService.calculateDiscountForSelectedItems(selectedItems, coupon));
 	}
 	
 	@Override
@@ -88,5 +91,25 @@ public class CouponCommandServiceImpl implements CouponCommandService{
 		if (!memberCoupon.getStatus().equals(CouponStatus.AVAILABLE)) {
 			throw new CouponHandler(ErrorStatus.COUPON_NOT_AVAILABLE);
 		}
+	}
+	
+	/**
+	 * 선택된 장바구니 상품들을 검증하고 반환합니다.
+	 */
+	private List<CartProduct> validateAndGetSelectedItems(Cart cart, List<Long> cartProductIds) {
+		List<CartProduct> selectedItems = cartProductRepository.findAllById(cartProductIds);
+		
+		if (selectedItems.size() != cartProductIds.size()) {
+			throw new CouponHandler(ErrorStatus.CART_PRODUCT_NOT_FOUND);
+		}
+		
+		// 선택된 상품들이 모두 해당 장바구니의 상품인지 확인
+		for (CartProduct item : selectedItems) {
+			if (!item.getCart().getId().equals(cart.getId())) {
+				throw new CouponHandler(ErrorStatus.CART_PRODUCT_NOT_FOUND);
+			}
+		}
+		
+		return selectedItems;
 	}
 }
