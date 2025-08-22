@@ -35,15 +35,21 @@ public class CouponCommandServiceImpl implements CouponCommandService{
 		
 		MemberCoupon memberCoupon = validateCouponOwnership(member, coupon);
 		validateCouponStatus(memberCoupon);
+		
 		Cart cart = cartRepository.findByMemberId(memberId);
 		if (cart == null) {
 			throw new CouponHandler(ErrorStatus.CART_NOT_FOUND);
 		}
 		
 		couponCommonService.validateCouponEligibility(cart, coupon);
-		cart.applyCoupon(coupon);
+		cart.applyCoupon(memberCoupon); // MemberCoupon 객체 전달
 		
-		return CouponApplyResponseDto.withDiscount(cart.getId(), coupon.getId(), coupon.getName(), couponCommonService.calculateDiscount(cart, coupon));
+		return CouponApplyResponseDto.withDiscount(
+				cart.getId(),
+				coupon.getId(),
+				coupon.getName(),
+				couponCommonService.calculateDiscount(cart, coupon)
+		);
 	}
 	
 	@Override
