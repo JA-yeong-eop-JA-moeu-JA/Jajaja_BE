@@ -5,8 +5,6 @@ import com.jajaja.domain.member.repository.MemberRepository;
 import com.jajaja.domain.order.entity.OrderProduct;
 import com.jajaja.domain.order.repository.OrderProductRepository;
 import com.jajaja.domain.point.service.PointCommandService;
-import com.jajaja.domain.product.entity.Product;
-import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.review.dto.request.ReviewCreateRequestDto;
 import com.jajaja.domain.review.entity.Review;
 import com.jajaja.domain.review.entity.ReviewImage;
@@ -28,7 +26,6 @@ import java.util.List;
 public class ReviewCommandServiceImpl implements ReviewCommandService {
 
     private final MemberRepository memberRepository;
-    private final ProductRepository productRepository;
     private final OrderProductRepository orderProductRepository;
     private final ReviewRepository reviewRepository;
     private final ReviewImageRepository reviewImageRepository;
@@ -36,13 +33,11 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
     private final PointCommandService pointCommandService;
 
     @Override
-    public Long createReview(Long memberId, Long productId, ReviewCreateRequestDto dto) {
+    public Long createReview(Long memberId, Long orderProductId, ReviewCreateRequestDto dto) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new UnauthorizedException(ErrorStatus.MEMBER_NOT_FOUND));
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 
-        OrderProduct orderProduct = orderProductRepository.findByOrderMemberIdAndProductId(memberId, productId)
+        OrderProduct orderProduct = orderProductRepository.findById(orderProductId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.REVIEW_NOT_ALLOWED));
 
         if (reviewRepository.existsByOrderProduct(orderProduct)) {
@@ -51,7 +46,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
 
         Review review = Review.builder()
                 .member(member)
-                .product(product)
+                .product(orderProduct.getProduct())
                 .orderProduct(orderProduct)
                 .rating(dto.rating().byteValue())
                 .content(dto.content())

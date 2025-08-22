@@ -100,13 +100,13 @@ public class ReviewController {
                             해당 key 값을 imageKeys로 전달해주세요.
                           """
     )
-    @PostMapping("/{productId}")
+    @PostMapping("/{orderProductId}")
     public ApiResponse<ReviewCreateResponseDto> createReview(
             @Auth Long memberId,
-            @PathVariable Long productId,
+            @PathVariable Long orderProductId,
             @Valid @RequestBody ReviewCreateRequestDto requestDto
     ) {
-        Long reviewId = reviewCommandService.createReview(memberId, productId, requestDto);
+        Long reviewId = reviewCommandService.createReview(memberId, orderProductId, requestDto);
         return ApiResponse.onSuccess(new ReviewCreateResponseDto(reviewId));
     }
 
