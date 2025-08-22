@@ -45,7 +45,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -70,6 +69,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private final ProductCommonService productCommonService;
     private final CouponCommonService couponCommonService;
     private final PointCommandService pointCommandService;
+    private final OrderScheduleService orderScheduleService;
 
     private final TossPaymentsConfig tossPaymentsConfig;
     private final RestTemplateConfig restTemplateConfig;
@@ -208,7 +208,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             pointCommandService.addFirstPurchasePointsIfPossible(member);
             
             // 30초 후 배송 시작 스케줄링
-            scheduleShippingStart(order.getId());
+            orderScheduleService.scheduleShippingStart(order.getId());
             
             return OrderApproveResponseDto.of(order);
             
@@ -471,18 +471,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         return headers;
     }
     
-    @Async("orderTaskExecutor")
-    protected void scheduleShippingStart(Long orderId) {
-        try {
-            Thread.sleep(30000); // 30초 대기
-            startShipping(orderId);
-        } catch (InterruptedException e) {
-            log.error("[OrderCommandService] 배송 시작 스케줄링 중단 - 주문ID: {}", orderId, e);
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            log.error("[OrderCommandService] 배송 시작 스케줄링 실패 - 주문ID: {}", orderId, e);
-        }
-    }
     
     @Override
     @Transactional
