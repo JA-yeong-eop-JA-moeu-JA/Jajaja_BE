@@ -8,12 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component
 public class NotificationSseEmitterRepository {
 
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
-    private final Map<Long, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
+    private final Map<Long, CopyOnWriteArrayList<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
     public SseEmitter add(Long memberId) {
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
@@ -21,7 +22,7 @@ public class NotificationSseEmitterRepository {
         emitter.onTimeout(() -> remove(memberId, emitter));
         emitter.onError((ex) -> remove(memberId, emitter));
 
-        emitters.computeIfAbsent(memberId, k -> new ArrayList<>()).add(emitter);
+        emitters.computeIfAbsent(memberId, k -> new CopyOnWriteArrayList<>()).add(emitter);
 
         try {
             emitter.send(SseEmitter.event().comment("open"));
