@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class NotificationSseEmitterRepository {
 
-    private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 10;
+    private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
     private final Map<Long, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
     public SseEmitter add(Long memberId) {
@@ -22,6 +22,12 @@ public class NotificationSseEmitterRepository {
         emitter.onError((ex) -> remove(memberId, emitter));
 
         emitters.computeIfAbsent(memberId, k -> new ArrayList<>()).add(emitter);
+
+        try {
+            emitter.send(SseEmitter.event().comment("open"));
+        } catch (IOException e) {
+            emitter.completeWithError(e);
+        }
 
         return emitter;
     }
