@@ -23,6 +23,12 @@ public class NotificationSseEmitterRepository {
 
         emitters.computeIfAbsent(memberId, k -> new ArrayList<>()).add(emitter);
 
+        try {
+            emitter.send(SseEmitter.event().comment("open"));
+        } catch (IOException e) {
+            emitter.completeWithError(e);
+        }
+
         return emitter;
     }
 
