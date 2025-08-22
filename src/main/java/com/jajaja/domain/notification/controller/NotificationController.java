@@ -9,6 +9,7 @@ import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class NotificationController {
             description = "사용자가 실시간으로 알림을 받기 위해 SSE 연결을 맺는 API입니다."
     )
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@Auth Long memberId) {
+    public SseEmitter subscribe(@Auth Long memberId, HttpServletResponse response) {
         return emitterRepository.add(memberId);
     }
 
