@@ -1,5 +1,6 @@
 package com.jajaja.domain.member.entity;
 
+import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.coupon.entity.enums.CouponStatus;
 import com.jajaja.global.common.domain.BaseEntity;
@@ -33,6 +34,9 @@ public class MemberCoupon extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
+	
+	@OneToOne(mappedBy = "memberCoupon", fetch = FetchType.LAZY)
+	private Cart cart;
 
     public void use() {
         this.status = CouponStatus.USED;

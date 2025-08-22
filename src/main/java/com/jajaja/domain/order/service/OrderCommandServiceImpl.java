@@ -93,7 +93,9 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                            cp.getUnitPrice() * cp.getQuantity())
                    .sum();
        } else {
-           teamRepository.findById(request.teamId()).orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
+           if (request.teamId() != null) {
+               teamRepository.findById(request.teamId()).orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
+           }
            totalAmount = cartProducts.stream()
                    .mapToInt(cp ->
                                cp.getQuantity() * (productCommonService.calculateDiscountedPrice(cp.getUnitPrice(), cp.getProduct().getDiscountRate())))
