@@ -25,8 +25,8 @@ public class TeamController {
             summary = "팀 생성 API | by 지지/이지희",
             description = "‘팀 생성하기 버튼’을 통해 해당 상품의 팀을 생성합니다. 해당 유저는 만들어진 팀의 리더가 됩니다."
     )
-    @PostMapping
-    public ApiResponse<TeamCreateResponseDto> createTeam(@Auth Long memberId, @RequestParam Long productId) {
+    @PostMapping("/{productId}")
+    public ApiResponse<TeamCreateResponseDto> createTeam(@Auth Long memberId, @PathVariable Long productId) {
         TeamCreateResponseDto responseDto = teamCommandService.createTeam(memberId, productId);
         return ApiResponse.onSuccess(responseDto);
     }
