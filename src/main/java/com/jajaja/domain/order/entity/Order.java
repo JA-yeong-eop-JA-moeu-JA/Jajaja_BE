@@ -111,5 +111,9 @@ public class Order extends BaseEntity {
         this.orderStatus = orderStatus;
         this.paidAmount = paidAmount;
         this.paidAt = LocalDateTime.now();
+        
+        // OrderProduct들도 함께 상태 업데이트
+        this.orderProducts.forEach(orderProduct -> 
+            orderProduct.updateStatus(orderStatus));
     }
 }
