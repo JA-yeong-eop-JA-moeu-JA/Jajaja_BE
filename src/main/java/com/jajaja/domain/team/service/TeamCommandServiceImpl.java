@@ -32,18 +32,15 @@ public class TeamCommandServiceImpl implements TeamCommandService {
     private final OrderRepository orderRepository;
 
     @Override
-    public TeamCreateResponseDto createTeam(Long memberId, Long productId, String orderId) {
+    public TeamCreateResponseDto createTeam(Long memberId, Long productId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
-        Order order = orderRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new BadRequestException(ErrorStatus.ORDER_NOT_FOUND));
 
         Team team = Team.builder()
                 .leader(member)
                 .product(product)
-                .order(order)
                 .status(TeamStatus.MATCHING)
                 .expireAt(LocalDateTime.now().plusMinutes(30))
                 .build();
