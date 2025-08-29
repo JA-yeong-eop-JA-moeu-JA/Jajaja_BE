@@ -14,7 +14,7 @@ public class CartConverter {
 	public static CartResponseDto toCartResponseDto(Cart cart, List<CartProductResponseDto> itemInfos, PriceInfoDto priceInfo) {
 		CouponResponseDto coupon = cart.getCoupon() == null 
 			? null 
-			: CouponResponseDto.from(cart.getCoupon());
+			: CouponResponseDto.from(cart.getCoupon(), true);
 		
 		return CartResponseDto.of(
 			itemInfos,

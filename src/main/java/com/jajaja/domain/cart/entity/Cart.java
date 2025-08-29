@@ -2,6 +2,7 @@ package com.jajaja.domain.cart.entity;
 
 import com.jajaja.domain.coupon.entity.Coupon;
 import com.jajaja.domain.member.entity.Member;
+import com.jajaja.domain.member.entity.MemberCoupon;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.custom.BadRequestException;
 import com.jajaja.global.common.domain.BaseEntity;
@@ -26,10 +27,10 @@ public class Cart extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
-    
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id")
-    private Coupon coupon;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_coupon_id")
+	private MemberCoupon memberCoupon;
     
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartProduct> cartProducts = new ArrayList<>();
@@ -71,17 +72,17 @@ public class Cart extends BaseEntity {
     /**
      * Cart에 쿠폰을 적용합니다.
      */
-    public void applyCoupon(Coupon coupon) {
-        this.coupon = coupon;
-    }
-
-    /**
+	public void applyCoupon(MemberCoupon memberCoupon) {
+		this.memberCoupon = memberCoupon;
+	}
+	
+	/**
      * Cart에서 쿠폰을 제거합니다.
      */
-    public void removeCoupon() {
-        this.coupon = null;
-    }
-
+	public void removeCoupon() {
+		this.memberCoupon = null;
+	}
+	
     /**
      * 장바구니의 총 금액을 계산합니다.
      */
@@ -90,4 +91,11 @@ public class Cart extends BaseEntity {
                 .mapToInt(cp -> cp.getUnitPrice() * cp.getQuantity())
                 .sum();
     }
+	
+	/**
+	 * 적용된 쿠폰 정보를 가져옵니다.
+	 */
+	public Coupon getCoupon() {
+		return this.memberCoupon != null ? this.memberCoupon.getCoupon() : null;
+	}
 }

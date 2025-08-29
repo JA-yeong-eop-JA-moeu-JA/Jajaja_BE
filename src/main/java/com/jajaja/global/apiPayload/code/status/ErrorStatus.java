@@ -94,6 +94,7 @@ public enum ErrorStatus implements BaseErrorCode {
     REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REVIEW4002", "해당 상품에 대한 리뷰를 작성할 수 없습니다."),
     REVIEW_TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "REVIEW4003", "이미지는 최대 5장까지 등록할 수 있습니다."),
     REVIEW_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "REVIEW4004", "본인의 리뷰만 삭제할 수 있습니다."),
+    REVIEW_ALREADY_WRITTEN(HttpStatus.BAD_REQUEST, "REVIEW4005", "이미 해당 상품에 대한 리뷰를 작성했습니다."),
 
     // NOTIFICATION 관련 에러
     NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "NOTIFICATION4001", "알림이 없습니다."),

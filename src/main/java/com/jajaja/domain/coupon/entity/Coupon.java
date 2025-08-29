@@ -1,6 +1,5 @@
 package com.jajaja.domain.coupon.entity;
 
-import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.coupon.entity.enums.ConditionType;
 import com.jajaja.domain.coupon.entity.enums.DiscountType;
 import com.jajaja.domain.order.entity.Order;
@@ -52,8 +51,4 @@ public class Coupon extends BaseEntity {
 
     @OneToMany(mappedBy = "coupon", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberCoupon> memberCoupons = new ArrayList<>();
-
-    @OneToOne(mappedBy = "coupon", fetch = FetchType.LAZY)
-    private Cart cart;
-
 }

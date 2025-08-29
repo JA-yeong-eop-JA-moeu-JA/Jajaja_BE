@@ -16,5 +16,6 @@ public interface ReviewRepositoryCustom {
     Page<ReviewItemDto> findPageByMemberIdOrderByCreatedAt(Long memberId, int page, int size);
     Page<ReviewItemDto> findPageAllOrderByCreatedAt(int page, int size);
     Page<ReviewItemDto> findPageAllOrderByLikeCount(int page, int size);
+    Long findProductIdByReviewId(int reviewId);
     Page<ReviewableOrderItemDto> findPageReviewableByMemberId(Long memberId, int page, int size);
 }

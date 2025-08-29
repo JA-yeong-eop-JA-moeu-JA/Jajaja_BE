@@ -1,6 +1,8 @@
 package com.jajaja.domain.team.service;
 
 import com.jajaja.domain.cart.entity.Cart;
+import com.jajaja.domain.order.entity.Order;
+import com.jajaja.domain.order.repository.OrderRepository;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.repository.ProductRepository;
 import com.jajaja.domain.team.dto.response.TeamCreateResponseDto;
@@ -27,12 +29,12 @@ public class TeamCommandServiceImpl implements TeamCommandService {
     private final ProductRepository productRepository;
     private final TeamRepository teamRepository;
     private final TeamCommonServiceImpl teamCommonService;
+    private final OrderRepository orderRepository;
 
     @Override
     public TeamCreateResponseDto createTeam(Long memberId, Long productId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
-
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.PRODUCT_NOT_FOUND));
 

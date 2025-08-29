@@ -272,6 +272,16 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
     }
 
     @Override
+    public Long findProductIdByReviewId(int reviewId) {
+        return queryFactory
+                .select(review.product.id)
+                .from(review)
+                .where(review.id.eq((long) reviewId)
+                        .and(review.deletedAt.isNull()))
+                .fetchOne();
+    }
+
+    @Override
     public Page<ReviewableOrderItemDto> findPageReviewableByMemberId(Long memberId, int page, int size) {
         if (memberId == null) {
             return Page.empty();
@@ -295,7 +305,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom{
                         product.thumbnailUrl,
                         op.price,
                         op.quantity,
-                        review.id.isNotNull()
+                        op.isReviewWritten
                 ))
                 .from(order)
                 .join(order.orderProducts, op)

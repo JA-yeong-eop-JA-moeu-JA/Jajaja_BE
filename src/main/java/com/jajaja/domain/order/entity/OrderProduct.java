@@ -43,8 +43,15 @@ public class OrderProduct extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "option_id")
     private ProductOption productOption;
+
+    @Column(nullable = false)
+    private boolean isReviewWritten;
     
     public void updateStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public void markReviewWritten() {
+        this.isReviewWritten = true;
     }
 }

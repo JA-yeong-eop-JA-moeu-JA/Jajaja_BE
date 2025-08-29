@@ -35,9 +35,8 @@ public class CartController {
 			summary = "장바구니 아이템 추가 및 수정 API | by 엠마/신윤지",
 			description = "장바구니에 아이템을 추가하거나 수량을 수정합니다.")
 	@PostMapping("/products")
-	public ApiResponse<String> addOrUpdateCartProduct(@Auth Long memberId, @RequestBody @Valid List<CartProductAddRequestDto> request) {
-		cartCommandService.addOrUpdateCartProduct(memberId, request);
-		return ApiResponse.onSuccess("성공적으로 장바구니에 상품이 추가/수정되었습니다.");
+	public ApiResponse<CartResponseDto> addOrUpdateCartProduct(@Auth Long memberId, @RequestBody @Valid List<CartProductAddRequestDto> request) {
+		return ApiResponse.onSuccess(cartCommandService.addOrUpdateCartProduct(memberId, request));
 	}
 	
 	@Operation(

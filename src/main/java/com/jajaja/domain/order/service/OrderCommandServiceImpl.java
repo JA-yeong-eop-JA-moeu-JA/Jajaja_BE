@@ -36,6 +36,7 @@ import com.jajaja.global.apiPayload.exception.custom.TossPaymentException;
 import com.jajaja.global.config.RestTemplateConfig;
 import com.jajaja.global.config.TossPaymentsConfig;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -69,6 +69,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     private final ProductCommonService productCommonService;
     private final CouponCommonService couponCommonService;
     private final PointCommandService pointCommandService;
+    private final OrderScheduleService orderScheduleService;
 
     private final TossPaymentsConfig tossPaymentsConfig;
     private final RestTemplateConfig restTemplateConfig;
@@ -92,7 +93,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                            cp.getUnitPrice() * cp.getQuantity())
                    .sum();
        } else {
-           teamRepository.findById(request.teamId()).orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
+		   teamRepository.findById(request.teamId()).orElseThrow(() -> new BadRequestException(ErrorStatus.TEAM_NOT_FOUND));
            totalAmount = cartProducts.stream()
                    .mapToInt(cp ->
                                cp.getQuantity() * (productCommonService.calculateDiscountedPrice(cp.getUnitPrice(), cp.getProduct().getDiscountRate())))
@@ -128,6 +129,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                     .quantity(cartProduct.getQuantity())
                     .price(cartProduct.getUnitPrice())
                     .status(OrderStatus.READY)
+                    .isReviewWritten(false)
                     .build();
             order.getOrderProducts().add(orderProduct);
         });
@@ -206,7 +208,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
             pointCommandService.addFirstPurchasePointsIfPossible(member);
             
             // 30초 후 배송 시작 스케줄링
-            scheduleShippingStart(order.getId());
+            orderScheduleService.scheduleShippingStart(order.getId());
             
             return OrderApproveResponseDto.of(order);
             
@@ -351,6 +353,18 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         }
     }
     
+    @Override
+    public void expireOrder() {
+        orderRepository.findOrdersByOrderStatusAndCreatedAtBefore(OrderStatus.READY, LocalDateTime.now().minusMinutes(10))
+                .forEach(order -> {
+                    if (order.getOrderStatus() == OrderStatus.READY) {
+                        order.updateStatus(OrderStatus.EXPIRED);
+                        order.getOrderProducts().forEach(orderProduct ->
+                            orderProduct.updateStatus(OrderStatus.EXPIRED));
+                    }
+                });
+    }
+    
     private Member findMember(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.MEMBER_NOT_FOUND));
@@ -457,18 +471,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         return headers;
     }
     
-    @Async("orderTaskExecutor")
-    protected void scheduleShippingStart(Long orderId) {
-        try {
-            Thread.sleep(30000); // 30초 대기
-            startShipping(orderId);
-        } catch (InterruptedException e) {
-            log.error("[OrderCommandService] 배송 시작 스케줄링 중단 - 주문ID: {}", orderId, e);
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            log.error("[OrderCommandService] 배송 시작 스케줄링 실패 - 주문ID: {}", orderId, e);
-        }
-    }
     
     @Override
     @Transactional

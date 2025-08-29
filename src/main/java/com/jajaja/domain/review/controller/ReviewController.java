@@ -100,13 +100,13 @@ public class ReviewController {
                             해당 key 값을 imageKeys로 전달해주세요.
                           """
     )
-    @PostMapping("/{productId}")
+    @PostMapping("/{orderProductId}")
     public ApiResponse<ReviewCreateResponseDto> createReview(
             @Auth Long memberId,
-            @PathVariable Long productId,
+            @PathVariable Long orderProductId,
             @Valid @RequestBody ReviewCreateRequestDto requestDto
     ) {
-        Long reviewId = reviewCommandService.createReview(memberId, productId, requestDto);
+        Long reviewId = reviewCommandService.createReview(memberId, orderProductId, requestDto);
         return ApiResponse.onSuccess(new ReviewCreateResponseDto(reviewId));
     }
 
@@ -146,7 +146,7 @@ public class ReviewController {
             description = "전체 리뷰를 정렬 기준(최신 순 | 추천 순)에 따라 조회합니다."
     )
     @GetMapping
-    public ApiResponse<PagingReviewListResponseDto> getAllReviews(
+    public ApiResponse<PagingAllReviewListResponseDto> getAllReviews(
             @Auth Long memberId,
             @Parameter(description = "정렬 기준 (LATEST | RECOMMEND)", example = "LATEST")
             @RequestParam(required = false, defaultValue = "LATEST") String sort,
@@ -157,7 +157,7 @@ public class ReviewController {
             @Parameter(description = "페이지 크기", example = "5")
             @RequestParam(defaultValue = "5") int size
     ) {
-        PagingReviewListResponseDto responseDto = reviewQueryService.getAllReviewList(memberId, sort, page, size);
+        PagingAllReviewListResponseDto responseDto = reviewQueryService.getAllReviewList(memberId, sort, page, size);
         return ApiResponse.onSuccess(responseDto);
     }
 

@@ -1,18 +1,22 @@
 package com.jajaja.domain.cart.service;
 
+import com.jajaja.domain.cart.converter.CartConverter;
 import com.jajaja.domain.cart.dto.CartProductAddRequestDto;
+import com.jajaja.domain.cart.dto.CartProductResponseDto;
+import com.jajaja.domain.cart.dto.CartResponseDto;
 import com.jajaja.domain.cart.entity.Cart;
 import com.jajaja.domain.cart.entity.CartProduct;
 import com.jajaja.domain.cart.repository.CartProductRepository;
-import com.jajaja.domain.coupon.service.CouponCommonService;
-import com.jajaja.domain.member.entity.MemberCoupon;
-import com.jajaja.domain.member.repository.MemberCouponRepository;
 import com.jajaja.domain.product.entity.Product;
 import com.jajaja.domain.product.entity.ProductOption;
 import com.jajaja.domain.product.repository.ProductOptionRepository;
 import com.jajaja.domain.product.repository.ProductRepository;
+import com.jajaja.domain.product.service.ProductCommonService;
+import com.jajaja.domain.team.entity.enums.TeamStatus;
+import com.jajaja.domain.team.repository.TeamCommandRepository;
 import com.jajaja.global.apiPayload.code.status.ErrorStatus;
 import com.jajaja.global.apiPayload.exception.handler.CartHandler;
+import com.jajaja.global.common.dto.PriceInfoDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,38 +31,46 @@ import java.util.Optional;
 @Transactional
 public class CartCommandServiceImpl implements CartCommandService {
 	
-	private final CartCommonService cartCommonService;
-	private final CouponCommonService couponCommonService;
 	private final CartProductRepository cartProductRepository;
 	private final ProductRepository productRepository;
+	private final TeamCommandRepository teamRepository;
 	private final ProductOptionRepository productOptionRepository;
-	private final MemberCouponRepository memberCouponRepository;
+	private final ProductCommonService productCommonService;
+	private final CartCommonService cartCommonService;
 	
 	@Override
-	public void addOrUpdateCartProduct(Long memberId, List<CartProductAddRequestDto> request) {
+	public CartResponseDto addOrUpdateCartProduct(Long memberId, List<CartProductAddRequestDto> request) {
 		Cart cart = cartCommonService.findCart(memberId);
-		request.forEach(req -> {
+		List<CartProductResponseDto> items = request.stream().map(req -> {
 			log.info("[CartCommandService] 사용자 {}의 장바구니에 아이템 {} 추가/수정", memberId, req.productId());
 			
-			CartOpterationContext context = prepareCartOperationContext(req.productId(), req.optionId());
+			CartOperationContext context = prepareCartOperationContext(req.productId(), req.optionId());
 			
 			Optional<CartProduct> existingItem = req.optionId() != null ? cartProductRepository.findByCartIdAndProductIdAndProductOptionId(cart.getId(), context.product().getId(), context.productOption.getId())
 					: cartProductRepository.findByCartIdAndProductIdAndProductOptionIsNull(cart.getId(), context.product().getId());
 			
-			existingItem.ifPresentOrElse(
-					item -> {
+			CartProduct cartProduct = existingItem
+					.map(item -> {
 						log.info("[CartCommandService] 기존 아이템 {}의 옵션과 수량을 변경합니다.", item.getId());
 						item.update(context.productOption(), req.quantity());
-					},
-					() -> {
+						return item;
+					})
+					.orElseGet(() -> {
 						log.info("[CartCommandService] 장바구니에 새로 아이템 {}를 추가합니다.", req.productId());
 						CartProduct newCartProduct = CartProduct.create(cart, context.product(), context.productOption(), req.quantity());
 						cart.addCartProduct(newCartProduct);
-						cartProductRepository.save( newCartProduct);
-					}
-			);
-		});
-		revalidateAppliedCouponIfExists(cart);
+						cartProductRepository.save(newCartProduct);
+						return newCartProduct;
+					});
+			
+			boolean isTeamAvailable = teamRepository.existsByProductIdAndStatus(
+					cartProduct.getProduct().getId(), TeamStatus.MATCHING);
+			return CartProductResponseDto.of(cartProduct, productCommonService.calculateDiscountedPrice(cartProduct.getUnitPrice(), cartProduct.getProduct().getDiscountRate()), isTeamAvailable);
+		}).toList();
+		
+		PriceInfoDto priceInfo = PriceInfoDto.noDiscount(cart.calculateTotalAmount());
+		
+		return CartConverter.toCartResponseDto(cart, items, priceInfo);
 	}
 	
 	@Override
@@ -71,7 +83,6 @@ public class CartCommandServiceImpl implements CartCommandService {
 		} catch (IllegalArgumentException e) {
 			throw new CartHandler(ErrorStatus.CART_PRODUCT_NOT_FOUND);
 		}
-		revalidateAppliedCouponIfExists(cart);
 	}
 
 	@Override
@@ -90,17 +101,15 @@ public class CartCommandServiceImpl implements CartCommandService {
 		
 		cartProductRepository.deleteAll(cartProductsToDelete);
 		cart.getCartProducts().removeAll(cartProductsToDelete);
-		
-		revalidateAppliedCouponIfExists(cart);
 	}
 	
 	/**
 	*  장바구니 내 아이템 명령 실행에 필요한 도메인 객체를 불러오는 과정입니다.
 	 *  option null 처리 등 중복되는 로직 때문에 생성하였습니다.
 	 *
-	 * @return 	Cart, Product, ProductOption을 포함한 CartOpterationContext
+	 * @return 	Cart, Product, ProductOption을 포함한 CartOperationContext
 	* */
-	private CartOpterationContext prepareCartOperationContext(Long productId, Long optionId) {
+	private CartOperationContext prepareCartOperationContext(Long productId, Long optionId) {
 Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new CartHandler(ErrorStatus.PRODUCT_NOT_FOUND));
 		
@@ -113,39 +122,8 @@ Product product = productRepository.findById(productId)
 			option = null;
 		}
 		
-		return new CartOpterationContext(product, option);
+		return new CartOperationContext(product, option);
 	}
 	
-	private record CartOpterationContext(Product product, ProductOption productOption) {}
-	
-	/**
-	 * 장바구니에 쿠폰이 적용되어 있는 경우 쿠폰 적용 조건을 재검증합니다.
-	 * 조건에 맞지 않으면 쿠폰을 자동으로 해제합니다.
-	 */
-	private void revalidateAppliedCouponIfExists(Cart cart) {
-		if (cart.getCoupon() == null) {
-			return;
-		}
-		
-		try {
-			MemberCoupon memberCoupon = memberCouponRepository.findByMemberAndCoupon(cart.getMember(), cart.getCoupon())
-					.orElse(null);
-			
-			if (memberCoupon == null) {
-				log.warn("[CartCommandService] 적용된 쿠폰의 MemberCoupon 정보를 찾을 수 없어 쿠폰을 해제합니다. cartId: {}, couponId: {}", 
-						cart.getId(), cart.getCoupon().getId());
-				cart.removeCoupon();
-				return;
-			}
-			
-			couponCommonService.validateCouponEligibility(cart, cart.getCoupon());
-			log.info("[CartCommandService] 적용된 쿠폰이 여전히 유효합니다. cartId: {}, couponId: {}", 
-					cart.getId(), cart.getCoupon().getId());
-			
-		} catch (Exception e) {
-			log.warn("[CartCommandService] 장바구니 변경으로 인해 쿠폰 조건이 맞지 않아 쿠폰을 해제합니다. cartId: {}, couponId: {}, reason: {}", 
-					cart.getId(), cart.getCoupon().getId(), e.getMessage());
-			cart.removeCoupon();
-		}
-	}
+	private record CartOperationContext(Product product, ProductOption productOption) {}
 }

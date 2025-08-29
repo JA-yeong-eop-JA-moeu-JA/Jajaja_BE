@@ -1,5 +1,6 @@
 package com.jajaja.domain.coupon.controller;
 
+import com.jajaja.domain.coupon.dto.CouponApplyRequestDto;
 import com.jajaja.domain.coupon.dto.CouponApplyResponseDto;
 import com.jajaja.domain.coupon.dto.PagingCouponListResponseDto;
 import com.jajaja.domain.coupon.service.CouponCommandService;
@@ -9,6 +10,7 @@ import com.jajaja.global.security.annotation.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,14 +40,14 @@ public class CouponController {
 	
 	@Operation(
 			summary = "쿠폰 적용/수정 API | by 엠마/신윤지",
-			description = "선택한 쿠폰을 장바구니에 적용합니다."
+			description = "선택한 쿠폰을 장바구니의 선택된 상품들에 적용합니다."
 	)
-	@PostMapping("/{couponId}/apply")
+	@PostMapping("/apply")
 	public ApiResponse<CouponApplyResponseDto> applyCoupon(
 			@Auth Long memberId,
-			@PathVariable Long couponId
+			@Valid @RequestBody CouponApplyRequestDto request
 	) {
-		return ApiResponse.onSuccess(couponCommandService.applyCouponToCart(memberId, couponId));
+		return ApiResponse.onSuccess(couponCommandService.applyCouponToCart(memberId, request));
 	}
 	
 	@Operation(

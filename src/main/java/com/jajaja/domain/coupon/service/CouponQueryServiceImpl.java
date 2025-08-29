@@ -1,5 +1,7 @@
 package com.jajaja.domain.coupon.service;
 
+import com.jajaja.domain.cart.entity.Cart;
+import com.jajaja.domain.cart.repository.CartRepository;
 import com.jajaja.domain.coupon.dto.CouponResponseDto;
 import com.jajaja.domain.coupon.dto.PagingCouponListResponseDto;
 import com.jajaja.domain.member.entity.MemberCoupon;
@@ -23,6 +25,8 @@ public class CouponQueryServiceImpl implements CouponQueryService{
 	
 	private final MemberRepository memberRepository;
 	private final MemberCouponRepository memberCouponRepository;
+	private final CartRepository cartRepository;
+	private final CouponCommonService couponCommonService;
 	
 	@Override
 	public PagingCouponListResponseDto getCouponsByMemberIdWithPaging(Long memberId, int page, int size) {
@@ -31,8 +35,11 @@ public class CouponQueryServiceImpl implements CouponQueryService{
 		Pageable pageable = PageRequest.of(page, size);
 		Page<MemberCoupon> memberCouponPage = memberCouponRepository.findByMemberIdOrderByCreatedAtDesc(memberId, pageable);
 		
+		Cart cart = cartRepository.findByMemberId(memberId);
+		
 		List<CouponResponseDto> couponDtos = memberCouponPage.getContent().stream()
-				.map(memberCoupon -> CouponResponseDto.from(memberCoupon.getCoupon()))
+				.map(memberCoupon -> CouponResponseDto.from(memberCoupon.getCoupon(),
+						couponCommonService.checkCouponEligibility(cart, memberCoupon.getCoupon())))
 				.toList();
 		
 		return PagingCouponListResponseDto.of(memberCouponPage, couponDtos);
